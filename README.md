@@ -1,8 +1,6 @@
 # IDE Core
-This is the source code of application part of the ide. The UI files(including .ui and .css files) is required to run the app. If the compiled IDE cannot find UI files, the application wont run.
+This is the source code of application part of the ide.
 <br/><br/>
-
-Download the [UI files folder](https://github.com/crslancpl/IDEUIFiles) and give the directory path of the UI files as the argument of the IDE app.
 
 ## Depenencies:
 1. [CMake](https://cmake.org/download/)   **We do not set minimum required version**
@@ -15,11 +13,7 @@ Download the [UI files folder](https://github.com/crslancpl/IDEUIFiles) and give
 ## Build
 1. Run `cmake .` again to make sure the make file is right.
 1. Run `make`
-1. Then run the app with `./CloudForest /path/to/your/IDEUIFilesDir`. If you don't have it, Download the [UI files folder](https://github.com/crslancpl/IDEUIFiles) and pass the directory location where you downloaded the file to the IDE argument.
-
-
-
-
+1. Then run the app with `./CloudForest`.
 
 
 
