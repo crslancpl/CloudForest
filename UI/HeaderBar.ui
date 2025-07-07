@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<interface>
+  <object id="HeaderBar" class="GtkHeaderBar">
+    <property name="name">HeaderBar</property>
+    <child type="start">
+    <object class="GtkBox">
+      <property name="width-request">400</property>
+      <child>
+        <object class="GtkButton" id="AppButton">
+          <property name="label">IDE</property>
+          <property name="name">TitlebarButtons</property>
+        </object>
+      </child>
+      <child>
+        <object class="GtkButton">
+          <property name="label">File</property>
+          <property name="name">TitlebarButtons</property>
+        </object>
+      </child>
+      <child>
+        <object class="GtkButton">
+          <property name="label">Compile</property>
+          <property name="name">TitlebarButtons</property>
+        </object>
+      </child>
+      <child>
+        <object class="GtkSearchEntry" id="TitleBarSearchBox">
+          <property name="name">SearchBox</property>
+          <property name="placeholder-text">search</property>
+        </object>
+      </child>
+    </object>
+    </child>
+  </object>
+</interface>

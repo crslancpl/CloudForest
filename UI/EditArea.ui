@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<interface>
+  <object id="BaseGrid" class="GtkGrid">
+    <property name="name">EditAreaBaseGrid</property>
+    <child>
+      <object id="FileInfoPanel" class="GtkBox">
+        <property name="name">MiscPanel</property>
+        <property name="hexpand">true</property>
+        <property name="height-request">30</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
+        <child>
+          <object id="but" class="GtkButton">
+            <property name="label">aaaaa</property>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkBox">
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
+        <child>
+          <object id="LineNoScroll" class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="vscrollbar-policy">external</property>
+            <property name="width-request">60</property>
+            <child>
+              <object id="LineNum" class="GtkTextView">
+                <property name="name">LineNoArea</property>
+                <property name="editable">false</property>
+                <property name="cursor-visible">false</property>
+                <property name="justification">right</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">always</property>
+            <property name="vscrollbar-policy">always</property>
+            <property name="hexpand">true</property>
+            <property name="vexpand">true</property>
+            <child>
+              <object id="TextArea" class="GtkTextView">
+                <property name="name">TextArea</property>
+                <property name="hexpand">true</property>
+                <property name="vexpand">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child>
+      <object id="MiscPanel" class="GtkBox">
+        <property name="name">MiscPanel</property>
+        <property name="hexpand">true</property>
+        <property name="height-request">30</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">3</property>
+        </layout>
+        <child>
+          <object id="OutLineBut" class="GtkButton" />
+        </child>
+        <child>
+          <object id="ErrorBut" class="GtkButton" />
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="hexpand">true</property>
+          </object>
+        </child>
+        <child>
+          <object id="LangBut" class="GtkButton">
+            <property name="name">LangBut</property>
+            <property name="label">none</property>
+          </object>
+        </child>
+        <child>
+          <object id="CursorPosBut" class="GtkButton">
+            <property name="name">CursorPosBut</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

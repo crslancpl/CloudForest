@@ -1,0 +1,50 @@
+#EditAreaBaseGrid {
+    border-radius: 15px;
+    padding: 10px;
+    border-color: red;
+    border-width: 2px;
+    border-style: solid;
+    background-color: rgb(40, 40, 51);
+}
+
+#TextArea,
+#LineNoArea {
+    font-size: 17px;
+    padding-top: 10px;
+    background-color: rgb(40, 40, 51);
+}
+
+#TextArea {
+    padding-left: 10px;
+    padding-right: 30px;
+    font-family: monospace;
+}
+
+#LineNoArea {
+    border-right: solid 3px red;
+    padding-right: 10px;
+    color: cyan;
+    font-family: monospace;
+}
+
+#MiscPanel {
+    /*background-color: rgba(0, 0, 0, 0.5);*/
+}
+
+#LangBut,
+#CursorPosBut {
+    padding-left: 5px;
+    padding-right: 5px;
+    color: rgba(255, 255, 255, 0.6);
+    background-color: transparent;
+    border: none;
+}
+
+#LangBut :hover,
+#CursorPosBut :hover {
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+}

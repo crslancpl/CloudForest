@@ -1,0 +1,9 @@
+#HeaderBar {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: purple;
+    box-shadow: 1px 5px 10px purple;
+}
+
+#SearchBox {
+    box-shadow: 1px 1px 10px red;
+}
