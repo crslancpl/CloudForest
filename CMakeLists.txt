@@ -17,7 +17,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${GTK_INCLUDE_DIRS} ${WEBKIT2_INCLUDE_
 link_directories(${GTK_LIBRARY_DIRS} ${WEBKIT2_LIBRARIES})
 
 add_executable(${PROJECT_NAME}
-    src/Entry.c src/MainWindow.c src/CssLoader.c src/EditArea.c src/ToolFunctions.c
+    src/Entry.c src/MainWindow.c src/CssLoader.c src/EditArea.c src/ToolFunctions.c src/AssetManager.c
     )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 PkgConfig::WEBKIT)

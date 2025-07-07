@@ -7,6 +7,10 @@
 
 typedef struct EditArea{
     int cacheTotalLine;
+    int CursorPos;
+    GtkTextIter *Cursoritr;
+    int IsCurMovedByKey;
+
     GtkGrid *BaseGrid;
 
     GtkButton *LocationBut;

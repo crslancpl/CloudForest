@@ -10,5 +10,9 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 .cache/clangd/index
-.gresource
+*.gresource
 CloudForest
+*.exe
+*.dll
+*.so
+*.o
