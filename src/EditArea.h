@@ -6,16 +6,18 @@
 #include <gtk/gtkwidget.h>
 
 typedef struct EditArea{
+
     int cacheTotalLine;
     int CursorPos;
     GtkTextIter *Cursoritr;
-    int IsCurMovedByKey;
+    bool IsCurMovedByKey;
 
     GtkGrid *BaseGrid;
 
     GtkButton *LocationBut;
     GtkButton *But;
     GtkButton *ErrorBut;
+    GtkLabel *ErrorButLabel;
     GtkButton *OutlineBut;
     GtkButton *LangBut;
     GtkButton *CursorPosBut;
@@ -26,8 +28,14 @@ typedef struct EditArea{
     GtkTextBuffer *LineNoAreaBuffer;
 }EditArea;
 
+
+EditArea* edit_area_new(GtkBuilder *builder, GFile *File);
 void DeleteEditAreaInstance(EditArea *instance);
 
-EditArea* edit_area_new();
+static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
+static void CountLine(EditArea *Parent);
+static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);
+static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent);
+static void CountError(EditArea *Parent);
 
 #endif

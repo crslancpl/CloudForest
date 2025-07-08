@@ -69,10 +69,20 @@
           <property name="row">3</property>
         </layout>
         <child>
-          <object id="OutLineBut" class="GtkButton" />
+          <object id="OutLineBut" class="GtkButton">
+            <property name="name">OutlineBut</property>
+            <property name="label">Outline</property>
+          </object>
         </child>
         <child>
-          <object id="ErrorBut" class="GtkButton" />
+          <object id="ErrorBut" class="GtkButton">
+            <property name="name">ErrorBut</property>
+            <child>
+              <object id="ErrorButLabel" class="GtkLabel">
+                <property name="name">ErrorButLabel</property>
+              </object>
+            </child>
+          </object>
         </child>
         <child>
           <object class="GtkGrid">

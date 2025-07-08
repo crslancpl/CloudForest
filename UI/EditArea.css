@@ -1,6 +1,5 @@
 #EditAreaBaseGrid {
     border-radius: 15px;
-    padding: 10px;
     border-color: red;
     border-width: 2px;
     border-style: solid;
@@ -31,20 +30,25 @@
     /*background-color: rgba(0, 0, 0, 0.5);*/
 }
 
+#OutlineBut,
+#ErrorBut,
 #LangBut,
 #CursorPosBut {
-    padding-left: 5px;
-    padding-right: 5px;
-    color: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
     background-color: transparent;
     border: none;
 }
 
+#OutlineBut :hover,
+#ErrorBut :hover,
 #LangBut :hover,
 #CursorPosBut :hover {
+    border-radius: 10px;
     padding-left: 10px;
     padding-right: 10px;
-    color: white;
     background-color: rgba(255, 255, 255, 0.1);
     border: none;
 }

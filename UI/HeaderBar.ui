@@ -12,9 +12,10 @@
         </object>
       </child>
       <child>
-        <object class="GtkButton">
+        <object id="FileBut" class="GtkMenuButton">
           <property name="label">File</property>
           <property name="name">TitlebarButtons</property>
+          <property name="menu-model">fmenu</property>
         </object>
       </child>
       <child>
@@ -32,4 +33,24 @@
     </object>
     </child>
   </object>
+
+  <menu id="fmenu">
+    <section>
+      <attribute name="display-hint">verticle-buttons</attribute>
+      <item>
+        <attribute name="label">Open File</attribute>
+        <attribute name="action">app.file.open</attribute>
+      </item>
+      <item>
+        <attribute name="label">Open Folder</attribute>
+        <attribute name="action">app.folder.open</attribute>
+      </item>
+      <item>
+        <attribute name="label">Open Recent</attribute>
+        <attribute name="action">app.paste</attribute>
+      </item>
+    </section>
+  </menu>
+
+
 </interface>

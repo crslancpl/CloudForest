@@ -6,4 +6,13 @@
 
 #SearchBox {
     box-shadow: 1px 1px 10px red;
+    border-radius: 30px;
+}
+
+#TitleBarButton {
+    color: white;
+}
+
+#TitleBarButton :hover {
+    color: mediumpurple;
 }
