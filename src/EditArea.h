@@ -5,8 +5,9 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkwidget.h>
 
-typedef struct EditArea{
-
+class EditArea{
+public:
+    char *FileName;
     int cacheTotalLine;
     int CursorPos;
     GtkTextIter *Cursoritr;
@@ -15,7 +16,6 @@ typedef struct EditArea{
     GtkGrid *BaseGrid;
 
     GtkButton *LocationBut;
-    GtkButton *But;
     GtkButton *ErrorBut;
     GtkLabel *ErrorButLabel;
     GtkButton *OutlineBut;
@@ -26,7 +26,7 @@ typedef struct EditArea{
     GtkTextBuffer *TextViewBuffer;
     GtkTextView *LineNoArea;
     GtkTextBuffer *LineNoAreaBuffer;
-}EditArea;
+};
 
 
 EditArea* edit_area_new(GtkBuilder *builder, GFile *File);

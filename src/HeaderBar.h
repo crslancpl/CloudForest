@@ -14,11 +14,12 @@ HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);
 
 
 void LoadFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app);
+void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app);
 
 static GActionEntry app_entries[] =
 {
   { "file.open", LoadFileClicked, NULL, NULL, NULL },
-  { "folder.open", LoadFileClicked, NULL, NULL, NULL }
+  { "folder.open", LoadFolderClicked, NULL, NULL, NULL }
 };
 
 #endif

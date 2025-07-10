@@ -28,7 +28,7 @@ MainWindow *ThisWindow;
 
 void NewWindow (GtkApplication *app, gpointer user_data){
 
-  ThisWindow = malloc(sizeof(MainWindow));
+  ThisWindow = (MainWindow*)malloc(sizeof(MainWindow));
   /* Construct a GtkBuilder instance and load our UI description */
   GtkBuilder *builder = gtk_builder_new ();
 

@@ -12,8 +12,8 @@
           <property name="row">0</property>
         </layout>
         <child>
-          <object id="but" class="GtkButton">
-            <property name="label">aaaaa</property>
+          <object id="LocationBut" class="GtkButton">
+            <property name="name">LocationBut</property>
           </object>
         </child>
       </object>
@@ -43,8 +43,6 @@
 
         <child>
           <object class="GtkScrolledWindow">
-            <property name="hscrollbar-policy">always</property>
-            <property name="vscrollbar-policy">always</property>
             <property name="hexpand">true</property>
             <property name="vexpand">true</property>
             <child>

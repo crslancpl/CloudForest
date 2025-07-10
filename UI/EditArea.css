@@ -1,16 +1,20 @@
+#EditAreaBaseGrid,
+#TextArea,
+#LineNoArea {
+    background-color: rgb(15, 15, 20);
+}
+
 #EditAreaBaseGrid {
     border-radius: 15px;
-    border-color: red;
+    box-shadow: 0px 0px 5px 5px red;
     border-width: 2px;
     border-style: solid;
-    background-color: rgb(40, 40, 51);
 }
 
 #TextArea,
 #LineNoArea {
     font-size: 17px;
     padding-top: 10px;
-    background-color: rgb(40, 40, 51);
 }
 
 #TextArea {
@@ -30,6 +34,7 @@
     /*background-color: rgba(0, 0, 0, 0.5);*/
 }
 
+#LocationBut,
 #OutlineBut,
 #ErrorBut,
 #LangBut,
@@ -42,6 +47,7 @@
     border: none;
 }
 
+#LocationBut :hover,
 #OutlineBut :hover,
 #ErrorBut :hover,
 #LangBut :hover,

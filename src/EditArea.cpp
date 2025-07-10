@@ -14,13 +14,13 @@ EditArea* edit_area_new(GtkBuilder *builder, GFile *File){
     gtk_builder_add_from_file(builder, "UI/EditArea.ui", NULL);
 
     // Create a place hold EditArea pointer;
-    EditArea *NewEditArea = malloc(sizeof(EditArea));
+    EditArea *NewEditArea = (EditArea*)malloc(sizeof(EditArea));
 
     /* Binding */
     NewEditArea->BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
 
     // FileInfo panel(top)
-    NewEditArea->LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"but"));
+    NewEditArea->LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
     // Misc panel(bottom)
     NewEditArea->OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
     NewEditArea->ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
@@ -38,7 +38,7 @@ EditArea* edit_area_new(GtkBuilder *builder, GFile *File){
     NewEditArea->CursorPos = 0;
 
     NewEditArea->IsCurMovedByKey = false;
-    NewEditArea->Cursoritr = malloc(sizeof(GtkTextIter));
+    NewEditArea->Cursoritr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
 
     gtk_scrolled_window_set_vadjustment(
         GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
@@ -52,6 +52,9 @@ EditArea* edit_area_new(GtkBuilder *builder, GFile *File){
     gtk_text_view_set_pixels_below_lines(NewEditArea->LineNoArea, 3);
 
     char *content;
+    NewEditArea->FileName = g_file_get_basename(File);
+    g_print("%s", NewEditArea->FileName);
+    gtk_button_set_label(NewEditArea->LocationBut, NewEditArea->FileName);
     g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
     gtk_text_buffer_set_text(NewEditArea->TextViewBuffer, content, -1);
     g_free(content);
@@ -85,7 +88,7 @@ void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboo
 void CountLine(EditArea *Parent){
     int NewLineCount = gtk_text_buffer_get_line_count(Parent->TextViewBuffer);
     if(NewLineCount != Parent->cacheTotalLine){
-        GtkTextIter *Firstitr = malloc(sizeof(GtkTextIter));
+        GtkTextIter *Firstitr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
         gtk_text_buffer_get_end_iter(Parent->LineNoAreaBuffer, Firstitr);
         if(NewLineCount > Parent->cacheTotalLine){
             while(Parent->cacheTotalLine < NewLineCount){
@@ -95,7 +98,7 @@ void CountLine(EditArea *Parent){
                 Parent->cacheTotalLine ++;
             }
         }else{
-            GtkTextIter *NewEnditr = malloc(sizeof(GtkTextIter));
+            GtkTextIter *NewEnditr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
             gtk_text_buffer_get_iter_at_line(Parent->LineNoAreaBuffer, NewEnditr, NewLineCount);
             gtk_text_buffer_delete(Parent->LineNoAreaBuffer, NewEnditr, Firstitr);
             free(NewEnditr);
