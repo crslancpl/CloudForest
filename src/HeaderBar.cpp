@@ -1,9 +1,8 @@
 #include "HeaderBar.h"
 
+// <gtk/gtk.h> is already included in HeaderBar.h
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
-#include <gtk/gtk.h>
-#include <stdlib.h>
 
 #include "FileManager.h"
 

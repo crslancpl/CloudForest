@@ -1,5 +1,4 @@
 #include "ToolFunctions.h"
-#include <gtk/gtk.h>
 
 
 int GetIntDigitCount(int num){

@@ -1,118 +1,145 @@
 #include "EditArea.h"
 
+// <gtk/gtk.h> is included in EditArea.h
 #include <glib/gprintf.h>
 #include <glib.h>
 #include <glibconfig.h>
-#include <gtk/gtk.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "ToolFunctions.h"
+#include "DataTypes.h"
 
-EditArea* edit_area_new(GtkBuilder *builder, GFile *File){
-    gtk_builder_add_from_file(builder, "UI/EditArea.ui", NULL);
+EditArea::EditArea(GFile *File){
 
-    // Create a place hold EditArea pointer;
-    EditArea *NewEditArea = (EditArea*)malloc(sizeof(EditArea));
+    builder = gtk_builder_new_from_file("UI/EditArea.ui");
 
     /* Binding */
-    NewEditArea->BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
+    BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
 
     // FileInfo panel(top)
-    NewEditArea->LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
+    LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
     // Misc panel(bottom)
-    NewEditArea->OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
-    NewEditArea->ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
-    NewEditArea->ErrorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
-    NewEditArea->LangBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
-    NewEditArea->CursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
+    OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
+    ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
+    ErrorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
+    LangBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
+    CursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
     // TextView
-    NewEditArea->TextView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));
-    NewEditArea->TextViewBuffer = gtk_text_view_get_buffer(NewEditArea->TextView);
-    NewEditArea->LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
-    NewEditArea->LineNoAreaBuffer = gtk_text_view_get_buffer(NewEditArea->LineNoArea);
+    TextView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));
+    TextViewBuffer = gtk_text_view_get_buffer(TextView);
+    LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
+    LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
 
     // Initialize variables
-    NewEditArea->cacheTotalLine = 0;
-    NewEditArea->CursorPos = 0;
+    cacheTotalLine = 0;
+    CursorPos = 0;
 
-    NewEditArea->IsCurMovedByKey = false;
-    NewEditArea->Cursoritr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
+    IsCurMovedByKey = false;
+    Cursoritr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
+    StartItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
+    EndItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
 
     gtk_scrolled_window_set_vadjustment(
         GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
-        gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(NewEditArea->TextView))
+        gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView))
     );
 
-    gtk_text_view_set_bottom_margin (NewEditArea->TextView, 80);
-    gtk_text_view_set_bottom_margin (NewEditArea->LineNoArea, 80);
+    gtk_text_view_set_bottom_margin (TextView, 80);
+    gtk_text_view_set_bottom_margin (LineNoArea, 80);
 
-    gtk_text_view_set_pixels_below_lines(NewEditArea->TextView, 3);
-    gtk_text_view_set_pixels_below_lines(NewEditArea->LineNoArea, 3);
+    gtk_text_view_set_pixels_below_lines(TextView, 5);
+    gtk_text_view_set_pixels_below_lines(LineNoArea, 5);
 
     char *content;
-    NewEditArea->FileName = g_file_get_basename(File);
-    g_print("%s", NewEditArea->FileName);
-    gtk_button_set_label(NewEditArea->LocationBut, NewEditArea->FileName);
+    FileName = g_file_get_basename(File);
+    g_print("%s", FileName);
+    gtk_button_set_label(LocationBut, FileName);
     g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
-    gtk_text_buffer_set_text(NewEditArea->TextViewBuffer, content, -1);
+    gtk_text_buffer_set_text(TextViewBuffer, content, -1);
+
     g_free(content);
 
-    CountLine(NewEditArea);
-    CountError(NewEditArea);
+    CountLine();
+    CountError();
 
     // Connect signals
-    g_signal_connect(NewEditArea->TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),NewEditArea);
-    g_signal_connect(NewEditArea->TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),NewEditArea);
-    g_signal_connect_after(NewEditArea->TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),NewEditArea);
-
-    return NewEditArea;
+    g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
+    g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
+    g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
 }
 
-void DeleteEditAreaInstance(EditArea *instance){
-    free(instance->Cursoritr);
-    instance->Cursoritr = NULL;
+EditArea::~EditArea(){
+    free(Cursoritr);
+    Cursoritr = NULL;
+    g_print("unref basegrid");
+    g_object_unref(BaseGrid);//unref the top level container of EditArea
+}
 
-    g_object_unref(instance->BaseGrid);//unref the top level container of EditArea
+void EditArea::UnrefBuilder(){
+    g_object_unref(builder);
+}
 
-    free(instance);
-    instance = NULL;
+void EditArea::CountLine(){
+    int NewLineCount = gtk_text_buffer_get_line_count(TextViewBuffer);
+    if(NewLineCount != cacheTotalLine){
 
+        gtk_text_buffer_get_end_iter(LineNoAreaBuffer, StartItr);
+        if(NewLineCount > cacheTotalLine){
+            while(cacheTotalLine < NewLineCount){
+                char LineName[GetIntDigitCount(cacheTotalLine)];
+                sprintf(LineName, "%d\n", cacheTotalLine+1);
+                gtk_text_buffer_insert(LineNoAreaBuffer, StartItr, LineName, -1);
+                cacheTotalLine ++;
+            }
+        }else{
+            gtk_text_buffer_get_iter_at_line(LineNoAreaBuffer, EndItr, NewLineCount);
+            gtk_text_buffer_delete(LineNoAreaBuffer, EndItr, StartItr);
+            cacheTotalLine = NewLineCount;
+        }
+    }
+}
+
+void EditArea::CountError(){
+    int err = 0;
+    int warn = 0;
+    int info = 0;
+    char s[75+GetIntDigitCount(err) + GetIntDigitCount(warn) + GetIntDigitCount(info)];
+    sprintf(s, "<span color=\"red\">⚠%d</span> <span color=\"yellow\">⚠%d</span> <span color=\"greenyellow\">⚠%d</span>", err,warn,info);
+    gtk_label_set_markup(ErrorButLabel, s);
+}
+
+void EditArea::ShowTip(char *Text){
+    //
+}
+
+void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions){
+    //
+}
+
+void EditArea::DrawColorByLength(int TextStartPos, int TextLength, char *TagName){
+    GtkTextTag *tag = gtk_text_tag_table_lookup(TagTables::GetLangTagTable(Lang), TagName);
+    gtk_text_iter_set_offset(StartItr, TextStartPos);
+    gtk_text_iter_set_offset(EndItr, TextStartPos+TextLength);
+    gtk_text_buffer_apply_tag(TextViewBuffer, tag, StartItr, EndItr);
+}
+
+void EditArea::DrawColorByPos(int TextStartPos, int TextEndPos, char *TagName){
+    GtkTextTag *tag = gtk_text_tag_table_lookup(TagTables::GetLangTagTable(Lang), TagName);
+    gtk_text_iter_set_offset(StartItr, TextStartPos);
+    gtk_text_iter_set_offset(EndItr, TextEndPos);
+    gtk_text_buffer_apply_tag(TextViewBuffer, tag, StartItr, EndItr);
 }
 
 void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent){
     Parent->IsCurMovedByKey = true;
 }
 
-void CountLine(EditArea *Parent){
-    int NewLineCount = gtk_text_buffer_get_line_count(Parent->TextViewBuffer);
-    if(NewLineCount != Parent->cacheTotalLine){
-        GtkTextIter *Firstitr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
-        gtk_text_buffer_get_end_iter(Parent->LineNoAreaBuffer, Firstitr);
-        if(NewLineCount > Parent->cacheTotalLine){
-            while(Parent->cacheTotalLine < NewLineCount){
-                char LineName[GetIntDigitCount(Parent->cacheTotalLine)];
-                sprintf(LineName, "%d\n", Parent->cacheTotalLine+1);
-                gtk_text_buffer_insert(Parent->LineNoAreaBuffer, Firstitr, LineName, -1);
-                Parent->cacheTotalLine ++;
-            }
-        }else{
-            GtkTextIter *NewEnditr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
-            gtk_text_buffer_get_iter_at_line(Parent->LineNoAreaBuffer, NewEnditr, NewLineCount);
-            gtk_text_buffer_delete(Parent->LineNoAreaBuffer, NewEnditr, Firstitr);
-            free(NewEnditr);
-            NewEnditr= NULL;
-            Parent->cacheTotalLine = NewLineCount;
-        }
-        free(Firstitr);
-        Firstitr=NULL;
-    }
-}
-
 void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
     Parent->IsCurMovedByKey = true;
-    CountLine(Parent);
+    Parent->CountLine();
 }
 
 void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
@@ -120,23 +147,11 @@ void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, E
     gtk_text_buffer_get_iter_at_offset(buffer, Parent->Cursoritr, Parent->CursorPos);
     int LineNo = gtk_text_iter_get_line(Parent->Cursoritr) + 1;
     int LineOffset = gtk_text_iter_get_line_offset(Parent->Cursoritr) + 1;
-
     if(Parent->IsCurMovedByKey == true){
         gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
         Parent->IsCurMovedByKey = false;
     }
-
     char Position[GetIntDigitCount(LineNo)+GetIntDigitCount(LineOffset)+GetIntDigitCount(Parent->cacheTotalLine)+16];
     sprintf(Position, "Line: %d/%d Offset: %d", LineNo, Parent->cacheTotalLine , LineOffset);
     gtk_button_set_label(Parent->CursorPosBut, Position);
-}
-
-
-void CountError(EditArea *Parent){
-    int err = 0;
-    int warn = 0;
-    int info = 0;
-    char s[75+GetIntDigitCount(err) + GetIntDigitCount(warn) + GetIntDigitCount(info)];
-    sprintf(s, "<span color=\"red\">⚠%d</span> <span color=\"yellow\">⚠%d</span> <span color=\"greenyellow\">⚠%d</span>", err,warn,info);
-    gtk_label_set_markup(Parent->ErrorButLabel, s);
 }

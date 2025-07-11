@@ -1,10 +1,14 @@
 #include "FileManager.h"
 
 #include <gtk/gtk.h>
+#include <memory>
 
 #include "EditArea.h"
+#include "DataTypes.h"
 
 GtkWindow *Parent;
+
+using namespace std;
 
 void SetParentWindow(GtkWindow *parent){
     Parent = parent;
@@ -33,7 +37,8 @@ void FileOpened(GObject *source, GAsyncResult *result, void *data){
     GError *err = NULL;
     File = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
     if(File == NULL) return;
-    EditArea *ea = edit_area_new(gtk_builder_new(), File);
+    shared_ptr<EditArea> ea = make_shared<EditArea>(File);
+    SectionData::AddEditArea(ea);
     gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
 }
 
@@ -43,6 +48,6 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
     GError *err = NULL;
     File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
     if(File == NULL) return;
-    EditArea *ea = edit_area_new(gtk_builder_new(), File);
-    gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
+    //EditArea *ea = edit_area_new(gtk_builder_new(), File);
+    //gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
 }

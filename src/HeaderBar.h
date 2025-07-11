@@ -4,11 +4,7 @@
 
 #include <gtk/gtk.h>
 
-typedef struct HeaderBar{
-    GtkApplication *App;
-    GtkHeaderBar *HeaderBar;
-    GtkMenuButton *FileBut;
-}HeaderBar;
+#include "DataTypes.h"
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);
 
