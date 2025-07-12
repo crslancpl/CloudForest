@@ -1,14 +1,13 @@
 #include "HeaderBar.h"
 
+// <gtk/gtk.h> is already included in HeaderBar.h
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
-#include <gtk/gtk.h>
-#include <stdlib.h>
 
 #include "FileManager.h"
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app){
-    HeaderBar *NewHeaderBar = malloc(sizeof(HeaderBar));
+    HeaderBar *NewHeaderBar = (HeaderBar*)malloc(sizeof(HeaderBar));
     gtk_builder_add_from_file(builder, "UI/HeaderBar.ui", NULL);
 
 

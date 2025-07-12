@@ -4,7 +4,7 @@
 
 #include <gtk/gtk.h>
 
-void SetParentWindow(GtkWindow *parent);
+void InitFileManager(GtkWindow *parent);
 void OpenFileChooser(bool FileOrDir);
 static void FileOpened(GObject *source, GAsyncResult *result, void *data);
 

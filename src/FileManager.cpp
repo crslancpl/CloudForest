@@ -1,13 +1,23 @@
 #include "FileManager.h"
 
+#include <cstddef>
 #include <gtk/gtk.h>
+#include <memory>
 
 #include "EditArea.h"
+#include "DataTypes.h"
 
 GtkWindow *Parent;
+GtkFileDialog *FileDia;
+GCancellable *Cancellable;
 
-void SetParentWindow(GtkWindow *parent){
+using namespace std;
+
+void InitFileManager(GtkWindow *parent){
+    g_print("init File manager\n");
     Parent = parent;
+    Cancellable = g_cancellable_new();
+    FileDia = gtk_file_dialog_new();
 }
 
 void OpenFileChooser(bool FileOrDir){
@@ -16,8 +26,6 @@ void OpenFileChooser(bool FileOrDir){
         g_print("Use 'SetParentWindow()' to set the parent first");
         return;
     }
-    GCancellable *Cancellable = g_cancellable_new();
-    GtkFileDialog *FileDia = gtk_file_dialog_new();
 
     if(FileOrDir){
         gtk_file_dialog_set_title(FileDia, "Choose Files");
@@ -32,15 +40,27 @@ void FileOpened(GObject *source, GAsyncResult *result, void *data){
     GFile *File;
     GError *err = NULL;
     File = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
-    EditArea *ea = edit_area_new(gtk_builder_new(), File);
+    if(File == NULL) {
+        // cancelled
+        g_print("Cancelled\n");
+        free(File);
+        return;
+    }
+
+
+    shared_ptr<EditArea> ea = make_shared<EditArea>(File);
+    SectionData::AddEditArea(ea);
     gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
+
+    ea->UnrefBuilder();
 }
 
 
 void FolderSelected(GObject *source, GAsyncResult *result, void *data){
-    GFile *File;
-    GError *err = NULL;
-    File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
-    EditArea *ea = edit_area_new(gtk_builder_new(), File);
-    gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
+    //GFile *File;
+    //GError *err = NULL;
+    //File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
+    //if(File == NULL) return;
+    //EditArea *ea = edit_area_new(gtk_builder_new(), File);
+    //gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
 }
