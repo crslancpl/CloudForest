@@ -1,14 +1,12 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(CloudForest)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/Source/cmake")
 find_package(PkgConfig REQUIRED)
 
 find_library(GTK gtk4)
-find_library(WEBKIT webkitgtk-6.0)
 
 pkg_check_modules(GTK4 REQUIRED IMPORTED_TARGET gtk4)
-pkg_check_modules(WEBKIT REQUIRED IMPORTED_TARGET webkitgtk-6.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -18,4 +16,4 @@ add_executable(${PROJECT_NAME}
     src/FileManager.cpp src/HeaderBar.cpp src/DataTypes.cpp
     )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 PkgConfig::WEBKIT)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4)

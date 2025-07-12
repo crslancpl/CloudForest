@@ -3,7 +3,6 @@
 #include <gtk/gtkcssprovider.h>
 #include <gtk/gtkstyleprovider.h>
 #include <glib/gfileutils.h>
-#include <webkit/webkit.h>
 
 
 #include "MainWindow.h"
