@@ -108,27 +108,27 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkButton">
-            <property name="label">CloudyForest</property>
+            <property name="label">Lan1</property>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">CloudyForest</property>
+            <property name="label">Lan2</property>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">CloudyForest</property>
+            <property name="label">Lan3</property>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">CloudyForest</property>
+            <property name="label">Lan4</property>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">CloudyForest</property>
+            <property name="label">Lan5</property>
           </object>
         </child>
       </object>
