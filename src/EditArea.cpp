@@ -33,6 +33,9 @@ EditArea::EditArea(GFile *File){
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
 
+    // Dialog
+    win = GTK_WINDOW(gtk_builder_get_object(builder, "dialog1"));
+
     // Initialize variables
     cacheTotalLine = 0;
     CursorPos = 0;
@@ -69,13 +72,12 @@ EditArea::EditArea(GFile *File){
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
+    g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
 }
 
 EditArea::~EditArea(){
     free(Cursoritr);
     Cursoritr = NULL;
-    g_print("unref basegrid");
-    g_object_unref(BaseGrid);//unref the top level container of EditArea
 }
 
 void EditArea::UnrefBuilder(){
@@ -131,6 +133,10 @@ void EditArea::DrawColorByPos(int TextStartPos, int TextEndPos, char *TagName){
     gtk_text_iter_set_offset(StartItr, TextStartPos);
     gtk_text_iter_set_offset(EndItr, TextEndPos);
     gtk_text_buffer_apply_tag(TextViewBuffer, tag, StartItr, EndItr);
+}
+
+void ChooseLang(GtkButton *self, EditArea* Parent){
+    gtk_widget_set_visible(GTK_WIDGET(Parent->win), true);
 }
 
 void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent){

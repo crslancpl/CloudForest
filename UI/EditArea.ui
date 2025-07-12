@@ -101,4 +101,38 @@
       </object>
     </child>
   </object>
+
+  <object class="GtkWindow" id="dialog1">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkButton">
+            <property name="label">CloudyForest</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">CloudyForest</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">CloudyForest</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">CloudyForest</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">CloudyForest</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+
 </interface>

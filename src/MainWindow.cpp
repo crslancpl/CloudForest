@@ -40,8 +40,7 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   HeaderBar *hb = LoadHeaderBar(builder, ThisWindow.App);
   gtk_window_set_titlebar(GTK_WINDOW(ThisWindow.Window), GTK_WIDGET(hb->HeaderBar));
 
-  //OpenFileChooser(ThisWindow->Window, false);
-  SetParentWindow(ThisWindow.Window);
+  InitFileManager(ThisWindow.Window);
 
   /* We do not need the builder any more */
   g_object_unref (builder);

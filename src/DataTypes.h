@@ -65,6 +65,8 @@ public:
     GtkTextView *LineNoArea;
     GtkTextBuffer *LineNoAreaBuffer;
 
+    GtkWindow *win;
+
     /* These iter are shared by multiple functions. ex: draw, delete line */
     GtkTextIter *StartItr;
     GtkTextIter *EndItr;
