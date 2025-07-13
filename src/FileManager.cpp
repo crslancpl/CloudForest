@@ -9,14 +9,12 @@
 
 GtkWindow *Parent;
 GtkFileDialog *FileDia;
-GCancellable *Cancellable;
 
 using namespace std;
 
 void InitFileManager(GtkWindow *parent){
     g_print("init File manager\n");
     Parent = parent;
-    Cancellable = g_cancellable_new();
     FileDia = gtk_file_dialog_new();
 }
 
@@ -29,10 +27,10 @@ void OpenFileChooser(bool FileOrDir){
 
     if(FileOrDir){
         gtk_file_dialog_set_title(FileDia, "Choose Files");
-        gtk_file_dialog_open (FileDia, Parent, Cancellable, FileOpened, NULL);
+        gtk_file_dialog_open (FileDia, NULL, NULL, FileOpened, NULL);
     }else{
         gtk_file_dialog_set_title(FileDia, "Choose Folder");
-        gtk_file_dialog_select_folder(FileDia, Parent, Cancellable, FileOpened, NULL);
+        gtk_file_dialog_select_folder(FileDia, NULL, NULL, FileOpened, NULL);
     }
 }
 
