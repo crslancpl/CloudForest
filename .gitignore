@@ -16,3 +16,4 @@ CloudForest
 *.dll
 *.so
 *.o
+.vscode

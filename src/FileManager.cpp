@@ -26,11 +26,13 @@ void OpenFileChooser(bool FileOrDir){
     }
 
     if(FileOrDir){
+        // open one file
         gtk_file_dialog_set_title(FileDia, "Choose Files");
         gtk_file_dialog_open (FileDia, NULL, NULL, FileOpened, NULL);
     }else{
-        gtk_file_dialog_set_title(FileDia, "Choose Folder");
-        gtk_file_dialog_select_folder(FileDia, NULL, NULL, FileOpened, NULL);
+        // open one folder
+        //gtk_file_dialog_set_title(FileDia, "Choose Folder");
+        //gtk_file_dialog_select_folder(FileDia, NULL, NULL, FileOpened, NULL);
     }
 }
 
@@ -41,7 +43,6 @@ void FileOpened(GObject *source, GAsyncResult *result, void *data){
     if(File == NULL) {
         // cancelled
         g_print("Cancelled\n");
-        free(File);
         return;
     }
 
