@@ -4,7 +4,6 @@
 #include <gtk/gtk.h>
 #include <memory>
 
-#include "EditArea.h"
 #include "DataTypes.h"
 
 GtkWindow *Parent;
@@ -46,8 +45,8 @@ void FileOpened(GObject *source, GAsyncResult *result, void *data){
         return;
     }
 
-
     shared_ptr<EditArea> ea = make_shared<EditArea>(File);
+    
     SectionData::AddEditArea(ea);
     gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
 

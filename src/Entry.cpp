@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 
 #include "MainWindow.h"
-#include "AssetManager.h"
+
 
 int main (int argc,char *argv[]){
 #ifdef GTK_SRCDIR

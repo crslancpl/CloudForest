@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 #include "ToolFunctions.h"
 #include "DataTypes.h"
@@ -91,9 +92,8 @@ void EditArea::CountLine(){
         gtk_text_buffer_get_end_iter(LineNoAreaBuffer, StartItr);
         if(NewLineCount > cacheTotalLine){
             while(cacheTotalLine < NewLineCount){
-                char LineName[GetIntDigitCount(cacheTotalLine)];
-                sprintf(LineName, "%d\n", cacheTotalLine+1);
-                gtk_text_buffer_insert(LineNoAreaBuffer, StartItr, LineName, -1);
+                string Line = to_string(cacheTotalLine + 1) + '\n';
+                gtk_text_buffer_insert(LineNoAreaBuffer, StartItr, Line.c_str(), -1);
                 cacheTotalLine ++;
             }
         }else{
@@ -108,9 +108,8 @@ void EditArea::CountError(){
     int err = 0;
     int warn = 0;
     int info = 0;
-    char s[75+GetIntDigitCount(err) + GetIntDigitCount(warn) + GetIntDigitCount(info)];
-    sprintf(s, "<span color=\"red\">⚠%d</span> <span color=\"yellow\">⚠%d</span> <span color=\"greenyellow\">⚠%d</span>", err,warn,info);
-    gtk_label_set_markup(ErrorButLabel, s);
+    string s = "<span color=\"red\">⚠" + to_string(err) + "</span> <span color=\"yellow\">⚠" + to_string(warn)+ "</span> <span color=\"greenyellow\">⚠"+ to_string(info)+"</span>";
+    gtk_label_set_markup(ErrorButLabel, s.c_str());
 }
 
 void EditArea::ShowTip(char *Text){
@@ -157,7 +156,6 @@ void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, E
         gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
         Parent->IsCurMovedByKey = false;
     }
-    char Position[GetIntDigitCount(LineNo)+GetIntDigitCount(LineOffset)+GetIntDigitCount(Parent->cacheTotalLine)+16];
-    sprintf(Position, "Line: %d/%d Offset: %d", LineNo, Parent->cacheTotalLine , LineOffset);
-    gtk_button_set_label(Parent->CursorPosBut, Position);
+    string Pos = "Line: " + to_string(LineNo) + '/' + to_string(Parent->cacheTotalLine) + " Offset: " + to_string(LineOffset);
+    gtk_button_set_label(Parent->CursorPosBut, Pos.c_str());
 }

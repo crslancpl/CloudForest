@@ -39,7 +39,7 @@
 #ErrorBut,
 #LangBut,
 #CursorPosBut {
-    border-radius: 10px;
+    border-radius: 20px;
     padding-left: 10px;
     padding-right: 10px;
     color: white;
@@ -52,7 +52,7 @@
 #ErrorBut :hover,
 #LangBut :hover,
 #CursorPosBut :hover {
-    border-radius: 10px;
+    border-radius: 50%;
     padding-left: 10px;
     padding-right: 10px;
     background-color: rgba(255, 255, 255, 0.1);
