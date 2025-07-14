@@ -6,7 +6,7 @@
       <object id="FileInfoPanel" class="GtkBox">
         <property name="name">MiscPanel</property>
         <property name="hexpand">true</property>
-        <property name="height-request">30</property>
+        <property name="height-request">26</property>
         <layout>
           <property name="column">0</property>
           <property name="row">0</property>
@@ -61,7 +61,7 @@
       <object id="MiscPanel" class="GtkBox">
         <property name="name">MiscPanel</property>
         <property name="hexpand">true</property>
-        <property name="height-request">30</property>
+        <property name="height-request">26</property>
         <layout>
           <property name="column">0</property>
           <property name="row">3</property>

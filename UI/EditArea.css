@@ -1,7 +1,11 @@
-#EditAreaBaseGrid,
-#TextArea,
-#LineNoArea {
-    background-color: rgb(15, 15, 20);
+#EditAreaBaseGrid {
+    background-color: rgba(15, 15, 20, 0.1);
+    color: white;
+}
+
+#EditAreaBaseGrid textview,
+#EditAreaBaseGrid textview text {
+    background-color: rgba(15, 15, 20, 0.1);
 }
 
 #EditAreaBaseGrid {
@@ -11,13 +15,13 @@
     border-style: solid;
 }
 
-#TextArea,
-#LineNoArea {
+textview {
     font-size: 17px;
     padding-top: 10px;
 }
 
 #TextArea {
+    color: white;
     padding-left: 10px;
     padding-right: 30px;
     font-family: monospace;
@@ -34,27 +38,15 @@
     /*background-color: rgba(0, 0, 0, 0.5);*/
 }
 
-#LocationBut,
-#OutlineBut,
-#ErrorBut,
-#LangBut,
-#CursorPosBut {
-    border-radius: 20px;
+#EditAreaBaseGrid button {
+    border-radius: 30px;
     padding-left: 10px;
     padding-right: 10px;
     color: white;
-    background-color: transparent;
     border: none;
+    background-color: transparent;
 }
 
-#LocationBut :hover,
-#OutlineBut :hover,
-#ErrorBut :hover,
-#LangBut :hover,
-#CursorPosBut :hover {
-    border-radius: 50%;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
+#EditAreaBaseGrid button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }

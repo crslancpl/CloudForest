@@ -1,18 +1,23 @@
-#HeaderBar {
+headerbar {
+    background-image: none;
     background-color: rgba(0, 0, 0, 0.6);
     color: purple;
     box-shadow: 1px 5px 10px purple;
 }
 
+headerbar button {
+    border-radius: 20px;
+    border-style: none;
+    background-color: transparent;
+    color: skyblue;
+}
+
+headerbar button:hover {
+    border: 1px solid red;
+    color: magenta;
+}
+
 #SearchBox {
     box-shadow: 1px 1px 10px red;
     border-radius: 30px;
-}
-
-#TitleBarButton {
-    color: white;
-}
-
-#TitleBarButton :hover {
-    color: mediumpurple;
 }
