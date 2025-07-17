@@ -11,7 +11,11 @@
 
 using namespace std;
 
-
+class FilePanel{
+    public:
+    GtkListView *FileTree;
+    GtkGrid *Grid;
+};
 class MainWindow{
 public:
     GtkApplication *App;

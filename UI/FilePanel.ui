@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<interface>
+<requires lib="gtk" version="4.0" />
+<requires lib="webkitgtk" version="6.0" />
+  <object id="FilePanel" class="GtkGrid">
+    <property name="name">FilePanel</property>
+    <child>
+        <object id="FileTree" class="GtkListView">
+          <property name="name">o</property>
+        </object>
+    </child>
+  </object>
+</interface>

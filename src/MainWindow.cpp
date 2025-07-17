@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <gtk/gtkcssprovider.h>
@@ -28,6 +29,13 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   gtk_window_set_default_size(ThisWindow.Window, 800, 600);
   gtk_window_set_application (ThisWindow.Window, app);
 
+  FilePanel p;
+  gtk_builder_add_from_file(builder, "UI/FilePanel.ui", NULL);
+  p.FileTree=GTK_LIST_VIEW(gtk_builder_get_object(builder,"FileTree"));
+  p.Grid=GTK_GRID(gtk_builder_get_object(builder, "FilePanel"));
+  gtk_window_set_child(ThisWindow.Window, GTK_WIDGET(p.Grid));
+
+  LoadCssFromPath("UI/FilePanel.css");
   LoadCssFromPath("UI/MainWindow.css");
   LoadCssFromPath("UI/HeaderBar.css");
   LoadCssFromPath("UI/EditArea.css");
