@@ -25,6 +25,7 @@ textview {
     padding-left: 10px;
     padding-right: 30px;
     font-family: monospace;
+    caret-color: white;
 }
 
 #LineNoArea {

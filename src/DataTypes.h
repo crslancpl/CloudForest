@@ -3,6 +3,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <gio/gio.h>
 #include <vector>
 #include <map>
 #include <memory>
@@ -57,7 +58,8 @@ public:
     GtkButton *ErrorBut;
     GtkLabel *ErrorButLabel;
     GtkButton *OutlineBut;
-    GtkButton *LangBut;
+    GtkMenuButton *LangBut;
+    GMenu *LangMenu;
     GtkButton *CursorPosBut;
 
     GtkTextView *TextView;

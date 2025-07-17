@@ -1,6 +1,7 @@
 #include "EditArea.h"
 
 // <gtk/gtk.h> is included in EditArea.h
+#include <gio/gmenu.h>
 #include <glib/gprintf.h>
 #include <glib.h>
 #include <glibconfig.h>
@@ -26,7 +27,8 @@ EditArea::EditArea(GFile *File){
     OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
     ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
     ErrorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
-    LangBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
+    LangBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "LangBut"));
+    LangMenu = G_MENU(gtk_builder_get_object(builder, "LangMenu"));
     CursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
     // TextView
     TextView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));

@@ -88,9 +88,11 @@
           </object>
         </child>
         <child>
-          <object id="LangBut" class="GtkButton">
+          <object id="LangBut" class="GtkMenuButton">
             <property name="name">LangBut</property>
             <property name="label">none</property>
+            <property name="menu-model">LangMenu</property>
+            <property name="direction">up</property>
           </object>
         </child>
         <child>
@@ -102,37 +104,8 @@
     </child>
   </object>
 
-  <object class="GtkWindow" id="dialog1">
-    <child>
-      <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Lan1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Lan2</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Lan3</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Lan4</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Lan5</property>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
+  <menu id="LangMenu">
+    <section id="LangMEnuContent" />
+  </menu>
 
 </interface>
