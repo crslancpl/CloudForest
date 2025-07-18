@@ -12,10 +12,11 @@
 using namespace std;
 
 class FilePanel{
-    public:
+public:
     GtkListView *FileTree;
     GtkGrid *Grid;
 };
+
 class MainWindow{
 public:
     GtkApplication *App;
@@ -89,6 +90,7 @@ public:
 class SectionData{
 public:
     static vector<shared_ptr<EditArea>> AllEditArea;
+
     static int EditAreaNum;
 
     static void AddEditArea(shared_ptr<EditArea> EditAreaPtr);

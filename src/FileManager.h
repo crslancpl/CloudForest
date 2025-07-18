@@ -6,6 +6,9 @@
 
 void InitFileManager(GtkWindow *parent);
 void OpenFileChooser(bool FileOrDir);
-static void FileOpened(GObject *source, GAsyncResult *result, void *data);
+static void FileSelected(GObject *source, GAsyncResult *result, void *data);
+static void FolderSelected(GObject *source, GAsyncResult *result, void *data);
+static void OpenFile(GFile *File);
+static void ReadFolder(GFile *Folder);
 
 #endif

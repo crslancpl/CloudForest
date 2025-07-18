@@ -75,7 +75,7 @@ EditArea::EditArea(GFile *File){
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
-    g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
+    //g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
 }
 
 EditArea::~EditArea(){
