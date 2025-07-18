@@ -5,7 +5,7 @@
   <object id="FilePanel" class="GtkGrid">
     <property name="name">FilePanel</property>
     <child>
-        <object id="FileTree" class="GtkListView">
+        <object id="FileTree" class="GtkBox">
           <property name="name">o</property>
         </object>
     </child>

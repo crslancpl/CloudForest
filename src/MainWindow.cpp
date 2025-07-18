@@ -30,9 +30,6 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   gtk_window_set_application (ThisWindow.Window, app);
 
   FilePanel p;
-  gtk_builder_add_from_file(builder, "UI/FilePanel.ui", NULL);
-  p.FileTree=GTK_LIST_VIEW(gtk_builder_get_object(builder,"FileTree"));
-  p.Grid=GTK_GRID(gtk_builder_get_object(builder, "FilePanel"));
   gtk_window_set_child(ThisWindow.Window, GTK_WIDGET(p.Grid));
 
   LoadCssFromPath("UI/FilePanel.css");

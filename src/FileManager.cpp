@@ -51,7 +51,6 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
 
 void FolderSelected(GObject *source, GAsyncResult *result, void *data){
     GFile *File;
-    FP.SetParent(File);
     GError *err = NULL;
     File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
     if(File == NULL) {
@@ -59,7 +58,7 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-
+    FP.SetParent(File);
     ReadFolder(File);
 }
 
