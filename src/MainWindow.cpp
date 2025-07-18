@@ -12,7 +12,7 @@
 #include "CssLoader.h"
 #include "FileManager.h"
 #include "HeaderBar.h"
-
+#include <memory>
 
 MainWindow ThisWindow;
 
@@ -29,8 +29,8 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   gtk_window_set_default_size(ThisWindow.Window, 800, 600);
   gtk_window_set_application (ThisWindow.Window, app);
 
-  FilePanel p;
-  gtk_window_set_child(ThisWindow.Window, GTK_WIDGET(p.Grid));
+  shared_ptr<FilePanel> p=make_shared<FilePanel>();
+  gtk_window_set_child(ThisWindow.Window, GTK_WIDGET(p->Grid));
 
   LoadCssFromPath("UI/FilePanel.css");
   LoadCssFromPath("UI/MainWindow.css");

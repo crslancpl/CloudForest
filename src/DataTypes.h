@@ -15,7 +15,7 @@ class FilePanel{
 public:
     GtkGrid *Grid;
     GtkBox *FileTree;
-
+    GtkBuilder *builder;
     void NewFolder(GFile *File);
     void SetParent(GFile *File);
 

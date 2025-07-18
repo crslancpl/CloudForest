@@ -1,4 +1,5 @@
 #include "DataTypes.h"
+#include <cstddef>
 #include <gio/gio.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -12,11 +13,16 @@ void FilePanel::SetParent(GFile *File){
 void FilePanel::NewFolder(GFile *File){
     char *p = g_file_get_relative_path(Parent,File);
     g_print("%s\n",p);
+    GtkButton *but= GTK_BUTTON(gtk_button_new());
+    gtk_button_set_label(but, p);
+    //gtk_box_append(FileTree, GTK_WIDGET(but));
+
 }
 
 
 FilePanel::FilePanel(){
-    GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+    builder = gtk_builder_new();
+    gtk_builder_add_from_file(builder, "UI/FailPanel.ui",NULL);
     FileTree=GTK_BOX(gtk_builder_get_object(builder,"FileTree"));
     Grid=GTK_GRID(gtk_builder_get_object(builder, "FilePanel"));
 }
