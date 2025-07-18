@@ -22,7 +22,7 @@ void FilePanel::NewFolder(GFile *File){
 
 FilePanel::FilePanel(){
     builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "UI/FailPanel.ui",NULL);
+    gtk_builder_add_from_file(builder, "UI/FilePanel.ui",NULL);
     FileTree=GTK_BOX(gtk_builder_get_object(builder,"FileTree"));
     Grid=GTK_GRID(gtk_builder_get_object(builder, "FilePanel"));
 }
