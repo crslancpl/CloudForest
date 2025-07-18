@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "DataTypes.h"
-
+FilePanel FP;
 GtkWindow *Parent;
 GtkFileDialog *FileDia;
 
@@ -51,6 +51,7 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
 
 void FolderSelected(GObject *source, GAsyncResult *result, void *data){
     GFile *File;
+    FP.SetParent(File);
     GError *err = NULL;
     File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
     if(File == NULL) {
@@ -73,7 +74,7 @@ void ReadFolder(GFile *Folder){
         }
 
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            g_print("Folder: %s\n", g_file_info_get_name(info));
+            FP.NewFolder(g_file_enumerator_get_child(FileEnum, info));
             ReadFolder(g_file_enumerator_get_child(FileEnum, info));
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             g_print("File: %s\n", g_file_info_get_name(info));

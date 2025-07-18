@@ -10,6 +10,7 @@ pkg_check_modules(GTK4 REQUIRED IMPORTED_TARGET gtk4)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME}
+    src/FilePanel.cpp
     src/Entry.cpp src/MainWindow.cpp src/CssLoader.cpp
     src/EditArea.cpp src/ToolFunctions.cpp src/AssetManager.cpp
     src/FileManager.cpp src/HeaderBar.cpp src/DataTypes.cpp
