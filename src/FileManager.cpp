@@ -6,20 +6,20 @@
 
 #include "DataTypes.h"
 FilePanel FP;
-GtkWindow *Parent;
+GtkWindow *ParentWindow;
 GtkFileDialog *FileDia;
 
 using namespace std;
 
 void InitFileManager(GtkWindow *parent){
     g_print("init File manager\n");
-    Parent = parent;
+    ParentWindow = parent;
     FileDia = gtk_file_dialog_new();
 }
 
 void OpenFileChooser(bool FileOrDir){
     // Pass True if select files. Pass False if select folder
-    if(Parent == NULL){
+    if(ParentWindow == NULL){
         g_print("Use 'SetParentWindow()' to set the parent first");
         return;
     }
