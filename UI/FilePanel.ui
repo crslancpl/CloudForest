@@ -3,8 +3,12 @@
   <object class="GtkGrid" id="BaseGrid">
     <property name="name">FilePanelBaseGrid</property>
     <child>
+      <object class="GtkScrolledWindow">
+      <child>
       <object class="GtkBox" id="FileTree">
-        <property name="name">FileTree</property>
+      <property name="name">FileTree</property>
+      </object>
+      </child>
       </object>
     </child>
   </object>
