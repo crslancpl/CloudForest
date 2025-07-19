@@ -21,16 +21,12 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   ThisWindow = MainWindow();
   /* Construct a GtkBuilder instance and load our UI description */
   GtkBuilder *builder = gtk_builder_new ();
-
   /* Constructing MainWindow */
   gtk_builder_add_from_file (builder, "UI/MainWindow.ui", NULL);
   ThisWindow.Window = GTK_WINDOW(gtk_builder_get_object (builder, "MainWindow"));
   ThisWindow.App = app;
   gtk_window_set_default_size(ThisWindow.Window, 800, 600);
   gtk_window_set_application (ThisWindow.Window, app);
-
-  shared_ptr<FilePanel> p=make_shared<FilePanel>();
-  gtk_window_set_child(ThisWindow.Window, GTK_WIDGET(p->Grid));
 
   LoadCssFromPath("UI/FilePanel.css");
   LoadCssFromPath("UI/MainWindow.css");

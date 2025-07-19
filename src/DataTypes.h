@@ -13,13 +13,11 @@ using namespace std;
 
 class FilePanel{
 public:
-    GtkGrid *Grid;
+    FilePanel();
+    GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    GtkBuilder *builder;
     void NewFolder(GFile *File);
     void SetParent(GFile *File);
-
-    FilePanel();
 };
 
 class MainWindow{

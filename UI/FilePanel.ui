@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <interface>
-<requires lib="gtk" version="4.0" />
-<requires lib="webkitgtk" version="6.0" />
-  <object id="FilePanel" class="GtkGrid">
-    <property name="name">FilePanel</property>
+  <object class="GtkGrid" id="BaseGrid">
+    <property name="name">FilePanelBaseGrid</property>
     <child>
-        <object id="FileTree" class="GtkBox">
-          <property name="name">o</property>
-        </object>
+      <object class="GtkBox" id="FileTree">
+        <property name="name">FileTree</property>
+      </object>
     </child>
   </object>
 </interface>

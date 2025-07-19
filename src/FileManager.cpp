@@ -5,7 +5,8 @@
 #include <memory>
 
 #include "DataTypes.h"
-FilePanel FP;
+
+FilePanel *FP;
 GtkWindow *ParentWindow;
 GtkFileDialog *FileDia;
 
@@ -58,7 +59,10 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-    FP.SetParent(File);
+    FilePanel p;
+    FP = &p;
+    FP->SetParent(File);
+    gtk_window_set_child(ParentWindow,GTK_WIDGET(FP->BaseGrid));
     ReadFolder(File);
 }
 
@@ -73,20 +77,20 @@ void ReadFolder(GFile *Folder){
         }
 
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            FP.NewFolder(g_file_enumerator_get_child(FileEnum, info));
+            FP->NewFolder(g_file_enumerator_get_child(FileEnum, info));
             ReadFolder(g_file_enumerator_get_child(FileEnum, info));
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             g_print("File: %s\n", g_file_info_get_name(info));
-            OpenFile(g_file_enumerator_get_child(FileEnum, info));
         }
     }
 }
 
 void OpenFile(GFile *File){
-    //shared_ptr<EditArea> ea = make_shared<EditArea>(File);
+    GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
+    shared_ptr<EditArea> ea = make_shared<EditArea>(File);
 
-    //SectionData::AddEditArea(ea);
-    //gtk_window_set_child(Parent, GTK_WIDGET(ea->BaseGrid));
+    SectionData::AddEditArea(ea);
+    gtk_window_set_child(ParentWindow, GTK_WIDGET(ea->BaseGrid));
 
-    //ea->UnrefBuilder();
+    ea->UnrefBuilder();
 }
