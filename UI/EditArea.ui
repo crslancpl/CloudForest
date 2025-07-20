@@ -108,4 +108,24 @@
     <section id="LangMEnuContent" />
   </menu>
 
+  <object class="GtkGrid" id="EditAreaHolder">
+    <child>
+      <object class="GtkScrolledWindow">
+        <child>
+        <object class="GtkBox" id="Switcher">
+          <layout>
+            <property name="row">1</property>
+          </layout>
+        </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkStack" id="Container">
+        <layout>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+  </object>
 </interface>

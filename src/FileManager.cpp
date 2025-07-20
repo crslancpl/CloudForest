@@ -45,8 +45,6 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-
-    OpenFile(File);
 }
 
 
@@ -91,10 +89,18 @@ void ReadFolder(GFile *Folder,bool isRoot){
 
 void OpenFile(GFile *File){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
-    shared_ptr<EditArea> ea = make_shared<EditArea>(File);
+    shared_ptr<EditArea> ea;
+    ea = SectionData::GetEditAreaFromFileAbsoPath(g_file_get_path(File));
+    if(ea == NULL){
+        // Not Opened
+        ea = make_shared<EditArea>(File);
+        SectionData::AddEditArea(ea);
+    }else{
+        // Opened
+        gtk_stack_set_visible_child_name(GTK_STACK(gtk_widget_get_parent(GTK_WIDGET(ea->BaseGrid))), ea->AbsoPath);
+    }
 
-    SectionData::AddEditArea(ea);
-    gtk_window_set_child(ParentWindow, GTK_WIDGET(ea->BaseGrid));
+    //gtk_window_set_child(ParentWindow, GTK_WIDGET(ea->BaseGrid));
 
     ea->UnrefBuilder();
 }

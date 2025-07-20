@@ -161,3 +161,18 @@ void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, E
     string Pos = "Line: " + to_string(LineNo) + '/' + to_string(Parent->cacheTotalLine) + " Offset: " + to_string(LineOffset);
     gtk_button_set_label(Parent->CursorPosBut, Pos.c_str());
 }
+
+EditAreaHolder::EditAreaHolder(){
+    GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
+    BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
+    Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
+}
+
+void EditAreaHolder::Show(shared_ptr<EditArea> editarea){
+    if(gtk_stack_get_child_by_name(Container, editarea->AbsoPath)==NULL){
+        // Edit area is not listed in this EditAreaHolder
+        gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
+        gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->AbsoPath);
+    }
+    gtk_stack_set_visible_child_name(Container, editarea->AbsoPath);
+}

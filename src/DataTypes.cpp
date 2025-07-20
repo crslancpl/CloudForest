@@ -13,9 +13,21 @@ void SectionData::AddEditArea(shared_ptr<EditArea> EditAreaPtr){
     g_print(" Editarea count %d\n", (int)AllEditArea.size());
 }
 
-shared_ptr<EditArea> SectionData::GetEditAreaFromFileName(const char *FileName){
+void SectionData::RemoveEditArea(shared_ptr<EditArea> EditAreaPtr){
+    int Pos = 0;
     for(shared_ptr<EditArea> ea: AllEditArea){
-        if(ea->FileName == FileName){
+        if(ea->AbsoPath == EditAreaPtr->AbsoPath){
+            gtk_widget_unparent(GTK_WIDGET(ea->BaseGrid));
+            break;
+        }
+        Pos++;
+    }
+    AllEditArea.erase(AllEditArea.begin() + Pos);
+}
+
+shared_ptr<EditArea> SectionData::GetEditAreaFromFileAbsoPath(const string &AbsoPath){
+    for(shared_ptr<EditArea> ea: AllEditArea){
+        if(ea->FileName == AbsoPath){
             return ea;
         }
     }

@@ -11,6 +11,8 @@
 
 using namespace std;
 
+/* EdiaArea class is defined in DataTypes.h */
+
 static void ChooseLang(GtkButton *self, EditArea* Parent);
 static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
 static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);

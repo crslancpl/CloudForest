@@ -59,6 +59,8 @@ public:
 
     int cacheTotalLine;
     char *FileName;
+    char *RelePath;
+    char *AbsoPath;
     int CursorPos;
     GtkTextIter *Cursoritr;
     bool IsCurMovedByKey;
@@ -93,14 +95,24 @@ public:
     void DrawColorByPos(int TextStartPos, int TextEndPos, char *TagName);
 };
 
+class EditAreaHolder{
+public:
+    EditAreaHolder();
+    GtkStack *Container;
+    GtkBox *Switcher;
+    GtkGrid *BaseGrid;
+    void SwitchTo(const string &RelePath);
+    void Show(shared_ptr<EditArea> editarea);
+};
+
 class SectionData{
 public:
     static vector<shared_ptr<EditArea>> AllEditArea;
 
     static int EditAreaNum;
-
+    static void RemoveEditArea(shared_ptr<EditArea> EditAreaPtr);
     static void AddEditArea(shared_ptr<EditArea> EditAreaPtr);
-    static shared_ptr<EditArea> GetEditAreaFromFileName(const char* FileName);
+    static shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsPath);
 };
 
 class TagTables{
