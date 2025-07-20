@@ -8,21 +8,24 @@
 #include <gtk/gtkshortcut.h>
 
 
-GFile *Parent;
+GFile *RootFolder;
 
 void FilePanel::SetParent(GFile *File){
-    Parent = File;
+    RootFolder = File;
 }
 
-void FilePanel::NewFolder(GFile *File){
-    char *p = g_file_get_relative_path(Parent,File);
+void FilePanel::NewFolder(GtkBox *Parent,GFile *File,GFile *ParentFolder){
+    GtkBox *Box=GTK_BOX(gtk_box_new(GtkOrientation::GTK_ORIENTATION_VERTICAL, 5));
+    gtk_box_append(Parent,GTK_WIDGET(Box) );
+    char *p = g_file_get_relative_path(ParentFolder,File);
     g_print("%s\n",p);
     GtkButton *but= GTK_BUTTON(gtk_button_new());
     gtk_button_set_label(but, p);
     gtk_box_append(FileTree, GTK_WIDGET(but));
 }
 
-FilePanel::FilePanel(){
+
+void FilePanel::init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));

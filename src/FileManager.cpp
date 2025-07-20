@@ -6,7 +6,7 @@
 
 #include "DataTypes.h"
 
-FilePanel *FP;
+
 GtkWindow *ParentWindow;
 GtkFileDialog *FileDia;
 
@@ -60,15 +60,15 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
     FilePanel p;
-    FP = &p;
-    FP->SetParent(File);
-    gtk_window_set_child(ParentWindow,GTK_WIDGET(FP->BaseGrid));
-    ReadFolder(File);
+   // FP = &p;
+   // FP->SetParent(File);
+    //gtk_window_set_child(ParentWindow,GTK_WIDGET(FP->BaseGrid));
+    //ReadFolder(File);
 }
 
-void ReadFolder(GFile *Folder){
-    GFileEnumerator *FileEnum = g_file_enumerate_children(Folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
+void ReadFolder(GFile *Folder,bool isRoot){
 
+    GFileEnumerator *FileEnum = g_file_enumerate_children(Folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
     while (true) {
         GFileInfo *info = g_file_enumerator_next_file(FileEnum, NULL,NULL);
         if(info == NULL){
@@ -77,8 +77,12 @@ void ReadFolder(GFile *Folder){
         }
 
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            FP->NewFolder(g_file_enumerator_get_child(FileEnum, info));
-            ReadFolder(g_file_enumerator_get_child(FileEnum, info));
+            if (isRoot){
+               // FP->NewFolder(FP->FileTree,g_file_enumerator_get_child(FileEnum, info),Folder);
+            }else{
+               // FP->NewFolder(g_file_enumerator_get_child(FileEnum, info),Folder);
+            }
+            //ReadFolder(g_file_enumerator_get_child(FileEnum, info));
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             g_print("File: %s\n", g_file_info_get_name(info));
         }

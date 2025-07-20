@@ -4,5 +4,10 @@
 <requires lib="webkitgtk" version="6.0" />
   <object id="MainWindow" class="GtkWindow">
     <property name="name">MainWindow</property>
+    <child>
+        <object class="GtkGrid" id="WindowGrid">
+
+        </object>
+    </child>
   </object>
 </interface>

@@ -1,7 +1,9 @@
 #include <cstddef>
+#include <cstdlib>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <gtk/gtkcssprovider.h>
+#include <gtk/gtkshortcut.h>
 #include <gtk/gtkstyleprovider.h>
 #include <glib/gfileutils.h>
 
@@ -19,11 +21,14 @@ MainWindow ThisWindow;
 void NewWindow (GtkApplication *app, gpointer user_data){
 
   ThisWindow = MainWindow();
+  ThisWindow.FP=(FilePanel *)malloc(sizeof(FilePanel));
+  ThisWindow.FP->init();
   /* Construct a GtkBuilder instance and load our UI description */
   GtkBuilder *builder = gtk_builder_new ();
   /* Constructing MainWindow */
   gtk_builder_add_from_file (builder, "UI/MainWindow.ui", NULL);
   ThisWindow.Window = GTK_WINDOW(gtk_builder_get_object (builder, "MainWindow"));
+  ThisWindow.WindowGrid = GTK_GRID(gtk_builder_get_object(builder,"WindowGrid"));
   ThisWindow.App = app;
   gtk_window_set_default_size(ThisWindow.Window, 800, 600);
   gtk_window_set_application (ThisWindow.Window, app);
@@ -41,8 +46,11 @@ void NewWindow (GtkApplication *app, gpointer user_data){
   HeaderBar *hb = LoadHeaderBar(builder, ThisWindow.App);
   gtk_window_set_titlebar(GTK_WINDOW(ThisWindow.Window), GTK_WIDGET(hb->HeaderBar));
 
-  InitFileManager(ThisWindow.Window);
-
+  //InitFileManager(ThisWindow.Window);
+  if(ThisWindow.FP->BaseGrid==NULL){
+      abort();
+  }
+  gtk_grid_attach(ThisWindow.WindowGrid,GTK_WIDGET(ThisWindow.FP->BaseGrid), 0, 0, 1,1 );
   /* We do not need the builder any more */
   g_object_unref (builder);
 }

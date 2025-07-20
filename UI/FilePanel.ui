@@ -4,8 +4,12 @@
     <property name="name">FilePanelBaseGrid</property>
     <child>
       <object class="GtkScrolledWindow">
+        <property name="vexpand">true</property>
+        <property name="hexpand">true</property>
         <child>
           <object class="GtkBox" id="FileTree">
+          <property name="spacing">5</property>
+            <property name="orientation">vertical</property>
             <property name="name">FileTree</property>
           </object>
         </child>

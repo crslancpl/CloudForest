@@ -13,10 +13,11 @@ using namespace std;
 
 class FilePanel{
 public:
-    FilePanel();
+
+    void init();
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    void NewFolder(GFile *File);
+    void NewFolder(GtkBox *Parent,GFile *File,GFile *ParentFolder);
     void SetParent(GFile *File);
 };
 
@@ -24,10 +25,12 @@ class MainWindow{
 public:
     GtkApplication *App;
     GtkWindow *Window;
+    FilePanel *FP;
     GtkButton *AppBut;
     GtkButton *FileBut;
     GtkButton *CompileBut;
     GtkSearchEntry *SearchBar;
+    GtkGrid *WindowGrid;
 };
 
 class HeaderBar{
