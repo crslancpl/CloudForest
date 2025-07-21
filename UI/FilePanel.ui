@@ -16,4 +16,13 @@
       </object>
     </child>
   </object>
+  <object class="GtkGrid" id="FolderBaseGrid">
+    <child>
+        <object class="GtkButton" id="FolderToggleBut">
+        </object>
+    </child>
+    <child>
+        <object class="GtkBox" id="Content" />
+    </child>
+  </object>
 </interface>

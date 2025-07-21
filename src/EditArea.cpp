@@ -6,6 +6,7 @@
 #include <glib.h>
 #include <glibconfig.h>
 
+#include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -166,7 +167,7 @@ void EditAreaHolder::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
     Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
-    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 80, 80);
+    gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), true);
 }
 
 void EditAreaHolder::Show(shared_ptr<EditArea> editarea){

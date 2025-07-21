@@ -75,14 +75,22 @@ public:
     void SwitchTo(const string &RelePath);
     void Show(shared_ptr<EditArea> editarea);
 };
-
+class Folder {
+public:
+    char *FolderName;
+    GtkGrid *BaseGrid;
+    GtkButton *FolderToggleBut;
+    GtkBox *Content;
+    void init(GFile *Folder,GFile *Parent);
+    void AddChildFolder(Folder *Child);
+};
 class FilePanel{
 public:
 
     void init();
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    void NewFolder(GtkBox *Parent,GFile *File,GFile *ParentFolder);
+    void NewFolder(Folder *Parent,GFile *File,GFile *ParentFolder);
     void SetParent(GFile *File);
 };
 
