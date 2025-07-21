@@ -11,35 +11,6 @@
 
 using namespace std;
 
-class FilePanel{
-public:
-
-    void init();
-    GtkGrid *BaseGrid;
-    GtkBox *FileTree;
-    void NewFolder(GtkBox *Parent,GFile *File,GFile *ParentFolder);
-    void SetParent(GFile *File);
-};
-
-class MainWindow{
-public:
-    GtkApplication *App;
-    GtkWindow *Window;
-    FilePanel *FP;
-    GtkButton *AppBut;
-    GtkButton *FileBut;
-    GtkButton *CompileBut;
-    GtkSearchEntry *SearchBar;
-    GtkGrid *WindowGrid;
-};
-
-class HeaderBar{
-public:
-    GtkApplication *App;
-    GtkHeaderBar *HeaderBar;
-    GtkMenuButton *FileBut;
-};
-
 class Suggestion{
 public:
     Suggestion(string *content, string *type, string *doc);
@@ -97,12 +68,42 @@ public:
 
 class EditAreaHolder{
 public:
-    EditAreaHolder();
+    void Init();
     GtkStack *Container;
     GtkBox *Switcher;
     GtkGrid *BaseGrid;
     void SwitchTo(const string &RelePath);
     void Show(shared_ptr<EditArea> editarea);
+};
+
+class FilePanel{
+public:
+
+    void init();
+    GtkGrid *BaseGrid;
+    GtkBox *FileTree;
+    void NewFolder(GtkBox *Parent,GFile *File,GFile *ParentFolder);
+    void SetParent(GFile *File);
+};
+
+class MainWindow{
+public:
+    EditAreaHolder *EAHolder;
+    GtkApplication *App;
+    GtkWindow *Window;
+    FilePanel *FP;
+    GtkButton *AppBut;
+    GtkButton *FileBut;
+    GtkButton *CompileBut;
+    GtkSearchEntry *SearchBar;
+    GtkGrid *WindowGrid;
+};
+
+class HeaderBar{
+public:
+    GtkApplication *App;
+    GtkHeaderBar *HeaderBar;
+    GtkMenuButton *FileBut;
 };
 
 class SectionData{

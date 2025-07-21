@@ -109,6 +109,7 @@
   </menu>
 
   <object class="GtkGrid" id="EditAreaHolder">
+    <property name="name">EAH</property>
     <child>
       <object class="GtkScrolledWindow">
         <child>
