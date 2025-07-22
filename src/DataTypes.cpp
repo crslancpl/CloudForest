@@ -27,11 +27,12 @@ void SectionData::RemoveEditArea(shared_ptr<EditArea> EditAreaPtr){
 
 shared_ptr<EditArea> SectionData::GetEditAreaFromFileAbsoPath(const string &AbsoPath){
     for(shared_ptr<EditArea> ea: AllEditArea){
-        if(ea->FileName == AbsoPath){
+        if(ea->AbsoPath == AbsoPath){
+            g_print("Found");
             return ea;
         }
     }
-    g_print("No edit area found with this file name");
+    g_print("No edit area found with this file name ");
     return NULL;
 }
 

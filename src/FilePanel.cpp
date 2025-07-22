@@ -26,7 +26,7 @@ void FilePanel::init(){
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
     FileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
-    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 200, 20);
+    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 250, 20);
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
 }
 void Folder::init(GFile *Folder,GFile *Parent){

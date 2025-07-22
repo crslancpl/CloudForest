@@ -45,6 +45,7 @@ EditArea::EditArea(GFile *File){
     CursorPos = 0;
 
     IsCurMovedByKey = false;
+
     Cursoritr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
     StartItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
     EndItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
@@ -60,14 +61,24 @@ EditArea::EditArea(GFile *File){
     gtk_text_view_set_pixels_below_lines(TextView, 5);
     gtk_text_view_set_pixels_below_lines(LineNoArea, 5);
 
-    char *content;
-    FileName = g_file_get_basename(File);
-    g_print("%s", FileName);
-    gtk_button_set_label(LocationBut, FileName);
-    g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
-    gtk_text_buffer_set_text(TextViewBuffer, content, -1);
 
-    g_free(content);
+    if (File == NULL) {
+        // Don't open file
+        g_print("NULL gfile\n");
+        gtk_button_set_label(LocationBut, "New File");
+        FileName = "New File";
+        AbsoPath = "New File";
+    }else{
+        char *content;
+        FileName = g_file_get_basename(File);
+        AbsoPath = g_file_get_path(File);
+        g_print("%s", FileName);
+        gtk_button_set_label(LocationBut, FileName);
+        g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
+        gtk_text_buffer_set_text(TextViewBuffer, content, -1);
+        g_free(content);
+        content = NULL;
+    }
 
     CountLine();
     CountError();
@@ -167,14 +178,23 @@ void EditAreaHolder::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
     Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
+    Container = GTK_STACK(gtk_builder_get_object(builder, "Container"));
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), true);
 }
 
 void EditAreaHolder::Show(shared_ptr<EditArea> editarea){
+
     if(gtk_stack_get_child_by_name(Container, editarea->AbsoPath)==NULL){
         // Edit area is not listed in this EditAreaHolder
-        gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
+
+        if(editarea->BaseGrid == NULL)abort();
+        if(gtk_widget_get_parent(GTK_WIDGET(editarea->BaseGrid)) != NULL){
+            gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
+        }
+
         gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->AbsoPath);
     }
+
     gtk_stack_set_visible_child_name(Container, editarea->AbsoPath);
+
 }

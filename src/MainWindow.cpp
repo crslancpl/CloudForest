@@ -32,7 +32,7 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     ThisWindow.Window = GTK_WINDOW(gtk_builder_get_object (builder, "MainWindow"));
     ThisWindow.WindowGrid = GTK_GRID(gtk_builder_get_object(builder,"WindowGrid"));
     ThisWindow.App = app;
-    gtk_window_set_default_size(ThisWindow.Window, 800, 600);
+    gtk_window_set_default_size(ThisWindow.Window, 1200, 800);
     gtk_window_set_application (ThisWindow.Window, app);
 
     LoadCssFromPath("UI/FilePanel.css");
@@ -48,10 +48,11 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     HeaderBar *hb = LoadHeaderBar(builder, ThisWindow.App);
     gtk_window_set_titlebar(GTK_WINDOW(ThisWindow.Window), GTK_WIDGET(hb->HeaderBar));
 
-    //InitFileManager(ThisWindow.Window);
+    InitFileManager(&ThisWindow);
 
     gtk_grid_attach(ThisWindow.WindowGrid,GTK_WIDGET(ThisWindow.FP->BaseGrid), 0, 0, 1,1 );
     gtk_grid_attach(ThisWindow.WindowGrid, GTK_WIDGET(ThisWindow.EAHolder->BaseGrid), 1, 0, 1, 1);
+
     /* We do not need the builder any more */
     g_object_unref (builder);
 }

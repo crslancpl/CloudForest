@@ -110,13 +110,16 @@
 
   <object class="GtkGrid" id="EditAreaHolder">
     <property name="name">EAH</property>
+    <property name="vexpand">true</property>
+    <property name="hexpand">true</property>
     <child>
       <object class="GtkScrolledWindow">
+        <layout>
+          <property name="row">0</property>
+          <property name="column">0</property>
+        </layout>
         <child>
         <object class="GtkBox" id="Switcher">
-          <layout>
-            <property name="row">1</property>
-          </layout>
         </object>
         </child>
       </object>
@@ -125,6 +128,7 @@
       <object class="GtkStack" id="Container">
         <layout>
           <property name="row">1</property>
+          <property name="column">0</property>
         </layout>
       </object>
     </child>
