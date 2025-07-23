@@ -2,7 +2,9 @@
     background-color: rgba(15, 15, 20, 0.6);
     color: white;
 }
-
+#EditAreaBaseGrid button {
+    background-image: none;
+}
 #EditAreaBaseGrid textview,
 #EditAreaBaseGrid textview text {
     background-color: transparent;

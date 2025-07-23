@@ -83,6 +83,7 @@ public:
     GtkBox *Content;
     void init(GFile *Folder,GFile *Parent);
     void AddChildFolder(Folder *Child);
+    void SetAsRoot(GtkBox *Box);
 };
 class FilePanel{
 public:

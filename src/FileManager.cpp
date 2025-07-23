@@ -1,6 +1,7 @@
 #include "FileManager.h"
 
 #include <cstddef>
+#include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
 
@@ -59,12 +60,12 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
 
-    ReadFolder(File, true);
+    ReadFolder(File, true,NULL);
 }
 
-void ReadFolder(GFile *Folder,bool isRoot){
+void ReadFolder(GFile *folder,bool isRoot,Folder *F){
 
-    GFileEnumerator *FileEnum = g_file_enumerate_children(Folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
+    GFileEnumerator *FileEnum = g_file_enumerate_children(folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
     while (true) {
         GFileInfo *info = g_file_enumerator_next_file(FileEnum, NULL,NULL);
         if(info == NULL){
@@ -73,12 +74,15 @@ void ReadFolder(GFile *Folder,bool isRoot){
         }
 
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
+            Folder Child;
             if (isRoot){
-               // FP->NewFolder(FP->FileTree,g_file_enumerator_get_child(FileEnum, info),Folder);
+               Child.init(folder, NULL);
+               Child.SetAsRoot(ParentWindow->FP->FileTree);
             }else{
-               // FP->NewFolder(g_file_enumerator_get_child(FileEnum, info),Folder);
+                Child.init(g_file_enumerator_get_child(FileEnum,info),folder);
+
             }
-            ReadFolder(g_file_enumerator_get_child(FileEnum, info),false);
+            ReadFolder(g_file_enumerator_get_child(FileEnum, info),false,&Child);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             g_print("File: %s\n", g_file_info_get_name(info));
             OpenFile(g_file_enumerator_get_child(FileEnum, info));

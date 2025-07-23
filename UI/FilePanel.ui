@@ -19,10 +19,19 @@
   <object class="GtkGrid" id="FolderBaseGrid">
     <child>
         <object class="GtkButton" id="FolderToggleBut">
+         <layout><property name="row">0</property><property
+                        name="column"
+                    >0</property></layout>
+            <property name="hexpand">true</property>
         </object>
     </child>
     <child>
-        <object class="GtkBox" id="Content" />
+        <object class="GtkBox" id="Content">
+          <layout><property name="row">1</property><property
+                        name="column"
+                    >0</property></layout>
+            <property name="hexpand">true</property>
+        </object>
     </child>
   </object>
 </interface>

@@ -30,16 +30,28 @@ void FilePanel::init(){
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
 }
 void Folder::init(GFile *Folder,GFile *Parent){
+    if(Parent==NULL){
+        g_print("\n\n\niamgay\n\n\n");
+    }
     GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "FolderBaseGrid"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
+    if(Parent==NULL){
+        g_print("ggg");
+    FolderName=g_file_get_basename(Folder);
+    }else {
     FolderName = g_file_get_relative_path(Parent,Folder);
+    }
     gtk_button_set_label(FolderToggleBut, FolderName);
 
 
 }
 void Folder::AddChildFolder(Folder *Child){
     gtk_box_append(Content, GTK_WIDGET(Child->BaseGrid));
+
+}
+void Folder::SetAsRoot(GtkBox *Box){
+    gtk_box_append(Box, GTK_WIDGET(BaseGrid));
 }

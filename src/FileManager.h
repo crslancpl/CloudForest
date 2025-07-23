@@ -10,6 +10,6 @@ void OpenFileChooser(bool FileOrDir);
 static void FileSelected(GObject *source, GAsyncResult *result, void *data);
 static void FolderSelected(GObject *source, GAsyncResult *result, void *data);
 static void OpenFile(GFile *File);
-static void ReadFolder(GFile *Folder, bool IsRoot);
+static void ReadFolder(GFile *folder, bool IsRoot,Folder *F);
 
 #endif
