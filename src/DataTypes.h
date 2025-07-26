@@ -83,9 +83,12 @@ public:
     GtkBox *BaseBox;
     GtkButton *FolderToggleBut;
     GtkBox *Content;
-    void init(GFile *Folder,GFile *Parent);
+    void init(GFile *Folder,GFile *Parent,int level);
     void AddChildFolder(shared_ptr<Folder> Child);
     void SetAsRoot(GtkBox *Box);
+    int Level;
+    static float OffSet;
+    bool IsOpen=true;
 };
 
 class File {

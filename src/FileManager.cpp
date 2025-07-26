@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "DataTypes.h"
-
+#include "FilePanel.h"
 
 MainWindow *ParentWindow;
 GtkFileDialog *FileDia;
@@ -66,7 +66,8 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
 void ReadFolder(GFile *folder,bool isRoot,shared_ptr<Folder> F){
     if(isRoot){
         F = make_shared<Folder>();
-        F->init(folder, NULL);
+        F->init(folder, NULL ,0);
+        g_signal_connect(F->FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),&F);
         F->SetAsRoot(ParentWindow->FP->FileTree);
     }
 
@@ -82,6 +83,7 @@ void ReadFolder(GFile *folder,bool isRoot,shared_ptr<Folder> F){
 
             GFile *fi = g_file_enumerator_get_child(FileEnum,info);
             shared_ptr<Folder> Child = ParentWindow->FP->NewFolder(fi, folder, F);
+            g_signal_connect(Child->FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),&Child);
             ReadFolder(fi,false,Child);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             //g_print("File: %s\n", g_file_info_get_name(info));

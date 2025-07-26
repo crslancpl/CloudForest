@@ -3,11 +3,12 @@
 #include <cstdlib>
 #include <exception>
 #include <gio/gio.h>
+#include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
-
+#include "FilePanel.h"
 
 GFile *RootFolder;
 
@@ -17,7 +18,7 @@ void FilePanel::SetParent(GFile *File){
 
 shared_ptr<Folder> FilePanel::NewFolder(GFile *File,GFile *ParentFolder,shared_ptr<Folder> Parent){
     shared_ptr<Folder> Child=make_shared<Folder>();
-    Child->init(File, ParentFolder);
+    Child->init(File, ParentFolder,Parent->Level+1);
     Parent->AddChildFolder(Child);
     return Child;
 }
@@ -36,14 +37,16 @@ void FilePanel::init(){
     gtk_box_set_spacing(FileTree, 5);
 }
 
-void Folder::init(GFile *Folder,GFile *Parent){
+float Folder::OffSet;
+void Folder::init(GFile *Folder,GFile *Parent,int level){
     if(builder == NULL){
         builder = gtk_builder_new_from_file("UI/FilePanel.ui");
     }
-
+    Level=level;
     BaseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
+
     if(Parent==NULL){
         FolderName = g_file_get_basename(Folder);
     }else {
@@ -51,9 +54,21 @@ void Folder::init(GFile *Folder,GFile *Parent){
     }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
-    gtk_label_set_xalign(FileLab, 0);
+    gtk_label_set_xalign(FileLab, level*OffSet);
     gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
     Inited = true;
+    if(Content==NULL){
+        g_print("61");
+    }
+
+}
+void ToggleFolder(GtkButton* self,shared_ptr<Folder>F){
+    if(F==NULL){
+        g_print("63");
+    }
+    gtk_widget_set_visible(GTK_WIDGET(F->FolderToggleBut) , false);
+
+
 }
 
 void Folder::AddChildFolder(shared_ptr<Folder> Child){

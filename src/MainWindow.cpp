@@ -19,7 +19,7 @@
 MainWindow ThisWindow;
 
 void NewWindow (GtkApplication *app, gpointer user_data){
-
+    Folder::OffSet=0.1;
     ThisWindow = MainWindow();
     ThisWindow.FP=(FilePanel *)malloc(sizeof(FilePanel));
     ThisWindow.FP->init();
