@@ -77,21 +77,38 @@ public:
 };
 class Folder {
 public:
+    GtkBuilder *builder;
+    bool Inited = false;
     char *FolderName;
-    GtkGrid *BaseGrid;
+    GtkBox *BaseBox;
     GtkButton *FolderToggleBut;
     GtkBox *Content;
     void init(GFile *Folder,GFile *Parent);
-    void AddChildFolder(Folder *Child);
+    void AddChildFolder(shared_ptr<Folder> Child);
     void SetAsRoot(GtkBox *Box);
 };
+
+class File {
+public:
+    GFile *file;
+    shared_ptr<EditArea> ea;
+    GtkButton *FileButton;
+    char *FileAbsoPath;
+    char *FileRelePath;
+    char *FileName;
+
+    void init(GFile *FileGFile);
+    void Open();
+};
+
 class FilePanel{
 public:
 
     void init();
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    void NewFolder(Folder *Parent,GFile *File,GFile *ParentFolder);
+    shared_ptr<Folder> NewFolder(GFile *File,GFile *ParentFolder,shared_ptr<Folder> Parent);
+    void NewFile(GFile *File, shared_ptr<Folder> Parent);
     void SetParent(GFile *File);
 };
 

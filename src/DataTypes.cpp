@@ -10,7 +10,7 @@ vector<shared_ptr<EditArea>>SectionData::AllEditArea = {};
 
 void SectionData::AddEditArea(shared_ptr<EditArea> EditAreaPtr){
     AllEditArea.push_back(EditAreaPtr);
-    g_print(" Editarea count %d\n", (int)AllEditArea.size());
+    //g_print(" Editarea count %d\n", (int)AllEditArea.size());
 }
 
 void SectionData::RemoveEditArea(shared_ptr<EditArea> EditAreaPtr){
@@ -32,7 +32,7 @@ shared_ptr<EditArea> SectionData::GetEditAreaFromFileAbsoPath(const string &Abso
             return ea;
         }
     }
-    g_print("No edit area found with this file name ");
+    //g_print("No edit area found with this file name ");
     return NULL;
 }
 

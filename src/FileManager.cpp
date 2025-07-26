@@ -60,32 +60,32 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
 
-    ReadFolder(File, true,NULL);
+    ReadFolder(File,true,NULL);
 }
 
-void ReadFolder(GFile *folder,bool isRoot,Folder *F){
+void ReadFolder(GFile *folder,bool isRoot,shared_ptr<Folder> F){
+    if(isRoot){
+        F = make_shared<Folder>();
+        F->init(folder, NULL);
+        F->SetAsRoot(ParentWindow->FP->FileTree);
+    }
 
     GFileEnumerator *FileEnum = g_file_enumerate_children(folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
     while (true) {
         GFileInfo *info = g_file_enumerator_next_file(FileEnum, NULL,NULL);
         if(info == NULL){
             // All file read
-            break;
+            return;
         }
 
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            Folder Child;
-            if (isRoot){
-               Child.init(folder, NULL);
-               Child.SetAsRoot(ParentWindow->FP->FileTree);
-            }else{
-                Child.init(g_file_enumerator_get_child(FileEnum,info),folder);
 
-            }
-            ReadFolder(g_file_enumerator_get_child(FileEnum, info),false,&Child);
+            GFile *fi = g_file_enumerator_get_child(FileEnum,info);
+            shared_ptr<Folder> Child = ParentWindow->FP->NewFolder(fi, folder, F);
+            ReadFolder(fi,false,Child);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
-            g_print("File: %s\n", g_file_info_get_name(info));
-            OpenFile(g_file_enumerator_get_child(FileEnum, info));
+            //g_print("File: %s\n", g_file_info_get_name(info));
+            //OpenFile(g_file_enumerator_get_child(FileEnum, info));
         }
     }
 }

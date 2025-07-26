@@ -3,13 +3,30 @@
     background-color: transparent;
     color: aliceblue;
 }
-#FileTree button {
-    border: none;
-    color: azure;
-}
+
 #FilePanelBaseGrid {
-    background-color: rgba(255, 255, 255, 0.5);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: rgba(140, 140, 140, 0.8);
 }
-#FilePanelBaseGrid button {
+
+#FileTree scrolledwindow {
+    padding-top: 10px;
+    padding-bottom: 10px;
     background-image: none;
+}
+
+#FileTree button {
+    background-image: none;
+    background-color: transparent;
+}
+
+.FolderButton {
+    border: none;
+    color: aquamarine;
+}
+
+.FileButton {
+    border: none;
+    color: chartreuse;
 }

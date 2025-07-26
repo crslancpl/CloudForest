@@ -6,6 +6,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 
 GFile *RootFolder;
@@ -14,12 +15,16 @@ void FilePanel::SetParent(GFile *File){
     RootFolder = File;
 }
 
-void FilePanel::NewFolder(Folder *Parent,GFile *File,GFile *ParentFolder){
-    Folder *Child=(Folder *)malloc(sizeof(Folder));
+shared_ptr<Folder> FilePanel::NewFolder(GFile *File,GFile *ParentFolder,shared_ptr<Folder> Parent){
+    shared_ptr<Folder> Child=make_shared<Folder>();
     Child->init(File, ParentFolder);
     Parent->AddChildFolder(Child);
+    return Child;
 }
 
+void FilePanel::NewFile(GFile *File, shared_ptr<Folder> Parent){
+
+}
 
 void FilePanel::init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
@@ -28,30 +33,52 @@ void FilePanel::init(){
     FileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
     gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 250, 20);
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
+    gtk_box_set_spacing(FileTree, 5);
 }
-void Folder::init(GFile *Folder,GFile *Parent){
-    if(Parent==NULL){
-        g_print("\n\n\niamgay\n\n\n");
-    }
-    GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
 
-    BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "FolderBaseGrid"));
+void Folder::init(GFile *Folder,GFile *Parent){
+    if(builder == NULL){
+        builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+    }
+
+    BaseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
     if(Parent==NULL){
-        g_print("ggg");
-    FolderName=g_file_get_basename(Folder);
+        FolderName = g_file_get_basename(Folder);
     }else {
-    FolderName = g_file_get_relative_path(Parent,Folder);
+        FolderName = g_file_get_relative_path(Parent,Folder);
     }
-    gtk_button_set_label(FolderToggleBut, FolderName);
-
-
+    gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
+    GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
+    gtk_label_set_xalign(FileLab, 0);
+    gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
+    Inited = true;
 }
-void Folder::AddChildFolder(Folder *Child){
-    gtk_box_append(Content, GTK_WIDGET(Child->BaseGrid));
 
+void Folder::AddChildFolder(shared_ptr<Folder> Child){
+
+    if(!Inited){
+        g_print("init folder first\n");
+        return;
+    }
+    gtk_box_append(Content, GTK_WIDGET(Child->BaseBox));
 }
+
 void Folder::SetAsRoot(GtkBox *Box){
-    gtk_box_append(Box, GTK_WIDGET(BaseGrid));
+    gtk_box_append(Box, GTK_WIDGET(BaseBox));
+}
+
+void File::init(GFile *FileGFile){
+    file = FileGFile;
+    FileAbsoPath = g_file_get_path(file);
+    FileName = g_file_get_basename(file);
+}
+
+void File::Open(){
+    if(ea == NULL){
+        ea = make_shared<EditArea>(file);
+        SectionData::AddEditArea(ea);
+    }
+
 }

@@ -72,7 +72,7 @@ EditArea::EditArea(GFile *File){
         char *content;
         FileName = g_file_get_basename(File);
         AbsoPath = g_file_get_path(File);
-        g_print("%s", FileName);
+        //g_print("%s", FileName);
         gtk_button_set_label(LocationBut, FileName);
         g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
         gtk_text_buffer_set_text(TextViewBuffer, content, -1);
