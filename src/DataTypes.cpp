@@ -8,7 +8,12 @@
 
 vector<shared_ptr<EditArea>> SectionData::AllEditArea = {};
 vector<shared_ptr<Folder>> SectionData::AllFolder = {};
+vector<shared_ptr<File>> SectionData::AllFile ={};
+MainWindow SectionData::currentwindow;
 
+void SectionData::AddFile(shared_ptr<File> file){
+    AllFile.push_back(file);
+};
 void SectionData::AddEditArea(shared_ptr<EditArea> EditAreaPtr){
     AllEditArea.push_back(EditAreaPtr);
     //g_print(" Editarea count %d\n", (int)AllEditArea.size());

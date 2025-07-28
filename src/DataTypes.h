@@ -75,22 +75,6 @@ public:
     void SwitchTo(const string &RelePath);
     void Show(shared_ptr<EditArea> editarea);
 };
-class Folder {
-public:
-    GtkBuilder *builder;
-    bool Inited = false;
-    char *FolderName;
-    GtkBox *BaseBox;
-    GtkButton *FolderToggleBut;
-    GtkBox *Content;
-    void init(GFile *Folder,GFile *Parent,int level);
-    void AddChildFolder(shared_ptr<Folder> Child);
-    void SetAsRoot(GtkBox *Box);
-    int Level;
-    static int OffSet;
-    bool IsOpen=true;
-};
-
 class File {
 public:
     GFile *file;
@@ -100,19 +84,38 @@ public:
     char *FileRelePath;
     char *FileName;
 
-    void init(GFile *FileGFile);
+    void init(GFile *FileGFile,int level);
     void Open();
 };
 
+class Folder {
+public:
+    GtkBuilder *builder;
+    bool Inited = false;
+    char *FolderName;
+    GtkBox *BaseBox;
+    GtkButton *FolderToggleBut;
+    GtkBox *Content;
+    GFile *f;
+    void init(GFile *Folder,GFile *Parent,int level);
+    void AddChildFolder(shared_ptr<Folder> Child);
+    void AddChildFile(shared_ptr<File> Child);
+    void SetAsRoot(GtkBox *Box);
+    int Level;
+
+    bool IsOpen=false;
+};
+
+
 class FilePanel{
 public:
-
+    static int OffSet;
     void init();
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    shared_ptr<Folder> NewFolder(GFile *File,GFile *ParentFolder,shared_ptr<Folder> Parent);
-    void NewFile(GFile *File, shared_ptr<Folder> Parent);
-    void SetParent(GFile *File);
+    shared_ptr<Folder> NewFolder(GFile *file,GFile *ParentFolder,shared_ptr<Folder> Parent);
+    shared_ptr<File> NewFile(GFile *file, shared_ptr<Folder> Parent);
+    void SetParent(GFile *file);
 };
 
 class MainWindow{
@@ -139,13 +142,15 @@ class SectionData{
 public:
     static vector<shared_ptr<EditArea>> AllEditArea;
     static vector<shared_ptr<Folder>> AllFolder;
+    static vector<shared_ptr<File>> AllFile;
     static int EditAreaNum;
     static void RemoveEditArea(shared_ptr<EditArea> EditAreaPtr);
     static void AddEditArea(shared_ptr<EditArea> EditAreaPtr);
     static shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsPath);
-
+    static void AddFile(shared_ptr<File> file);
     static void RemoveFolder(shared_ptr<Folder> Folder);
     static void AddFolder(shared_ptr<Folder> Folder);
+    static MainWindow currentwindow;
 };
 
 class TagTables{

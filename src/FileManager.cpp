@@ -78,13 +78,15 @@ void ReadFolder(GFile *folder,bool isRoot,shared_ptr<Folder> F){
             // All file read
             return;
         }
-
+            GFile *fi = g_file_enumerator_get_child(FileEnum,info);
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
 
-            GFile *fi = g_file_enumerator_get_child(FileEnum,info);
+
             shared_ptr<Folder> Child = ParentWindow->FP->NewFolder(fi, folder, F);
             ReadFolder(fi,false,Child);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
+            shared_ptr<File> file = ParentWindow->FP->NewFile(fi,F);
+
             //g_print("File: %s\n", g_file_info_get_name(info));
             //OpenFile(g_file_enumerator_get_child(FileEnum, info));
         }

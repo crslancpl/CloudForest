@@ -3,3 +3,4 @@
 #include <memory>
 #include "DataTypes.h"
 void ToggleFolder(GtkButton* self,Folder *F);
+void FileButtonClick(GtkButton *self,File *Parent);
