@@ -6,7 +6,8 @@
 #include <memory>
 #include <string.h>
 
-vector<shared_ptr<EditArea>>SectionData::AllEditArea = {};
+vector<shared_ptr<EditArea>> SectionData::AllEditArea = {};
+vector<shared_ptr<Folder>> SectionData::AllFolder = {};
 
 void SectionData::AddEditArea(shared_ptr<EditArea> EditAreaPtr){
     AllEditArea.push_back(EditAreaPtr);
@@ -34,6 +35,10 @@ shared_ptr<EditArea> SectionData::GetEditAreaFromFileAbsoPath(const string &Abso
     }
     //g_print("No edit area found with this file name ");
     return NULL;
+}
+
+void SectionData::AddFolder(shared_ptr<Folder> Folder){
+    AllFolder.push_back(Folder);
 }
 
 Suggestion::Suggestion(string *content, string *type, string *doc){

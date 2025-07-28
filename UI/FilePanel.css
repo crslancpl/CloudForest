@@ -4,10 +4,17 @@
     color: aliceblue;
 }
 
+#FileTree button {
+    border: solid 1px transparent;
+    background-image: none;
+    background-color: transparent;
+    font-family: sans-serif;
+}
+
 #FilePanelBaseGrid {
     padding-top: 10px;
     padding-bottom: 10px;
-    background-color: rgba(140, 140, 140, 0.8);
+    background-color: rgba(100, 100, 100, 0.9);
 }
 
 #FileTree scrolledwindow {
@@ -16,17 +23,12 @@
     background-image: none;
 }
 
-#FileTree button {
-    background-image: none;
-    background-color: transparent;
-}
-
 .FolderButton {
     border: none;
-    color: aquamarine;
+    color: greenyellow;
 }
 
 .FileButton {
     border: none;
-    color: chartreuse;
+    color: rgb(20, 255, 255);
 }

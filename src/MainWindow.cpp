@@ -15,11 +15,12 @@
 #include "FileManager.h"
 #include "HeaderBar.h"
 #include <memory>
+#include <type_traits>
 
 MainWindow ThisWindow;
 
 void NewWindow (GtkApplication *app, gpointer user_data){
-    Folder::OffSet=0.1;
+    Folder::OffSet=20;
     ThisWindow = MainWindow();
     ThisWindow.FP=(FilePanel *)malloc(sizeof(FilePanel));
     ThisWindow.FP->init();
@@ -34,6 +35,9 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     ThisWindow.App = app;
     gtk_window_set_default_size(ThisWindow.Window, 1200, 800);
     gtk_window_set_application (ThisWindow.Window, app);
+    shared_ptr<EditArea> NewEa = make_shared<EditArea>((GFile*)NULL);
+    SectionData::AddEditArea(NewEa);
+    ThisWindow.EAHolder->Show(NewEa);
 
     LoadCssFromPath("UI/FilePanel.css");
     LoadCssFromPath("UI/MainWindow.css");

@@ -5,6 +5,7 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
@@ -20,6 +21,7 @@ shared_ptr<Folder> FilePanel::NewFolder(GFile *File,GFile *ParentFolder,shared_p
     shared_ptr<Folder> Child=make_shared<Folder>();
     Child->init(File, ParentFolder,Parent->Level+1);
     Parent->AddChildFolder(Child);
+    SectionData::AddFolder(Child);
     return Child;
 }
 
@@ -37,11 +39,11 @@ void FilePanel::init(){
     gtk_box_set_spacing(FileTree, 5);
 }
 
-float Folder::OffSet;
+int Folder::OffSet;
+
 void Folder::init(GFile *Folder,GFile *Parent,int level){
-    if(builder == NULL){
-        builder = gtk_builder_new_from_file("UI/FilePanel.ui");
-    }
+    builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+
     Level=level;
     BaseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
@@ -54,21 +56,20 @@ void Folder::init(GFile *Folder,GFile *Parent,int level){
     }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
-    gtk_label_set_xalign(FileLab, level*OffSet);
+
+    gtk_widget_set_margin_start(GTK_WIDGET(FileLab), OffSet * Level);
+    gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
+    gtk_widget_set_halign(GTK_WIDGET(FileLab), GTK_ALIGN_START);
+    gtk_widget_set_valign(GTK_WIDGET(FileLab), GTK_ALIGN_CENTER);
     gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
     Inited = true;
-    if(Content==NULL){
-        g_print("61");
-    }
 
+    g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);
 }
-void ToggleFolder(GtkButton* self,shared_ptr<Folder>F){
-    if(F==NULL){
-        g_print("63");
-    }
-    gtk_widget_set_visible(GTK_WIDGET(F->FolderToggleBut) , false);
 
-
+void ToggleFolder(GtkButton* self,Folder *F){
+    gtk_widget_set_visible(GTK_WIDGET(F->Content) , !F->IsOpen);
+    F->IsOpen = !F->IsOpen;
 }
 
 void Folder::AddChildFolder(shared_ptr<Folder> Child){
@@ -95,5 +96,4 @@ void File::Open(){
         ea = make_shared<EditArea>(file);
         SectionData::AddEditArea(ea);
     }
-
 }

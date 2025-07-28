@@ -87,7 +87,7 @@ public:
     void AddChildFolder(shared_ptr<Folder> Child);
     void SetAsRoot(GtkBox *Box);
     int Level;
-    static float OffSet;
+    static int OffSet;
     bool IsOpen=true;
 };
 
@@ -138,11 +138,14 @@ public:
 class SectionData{
 public:
     static vector<shared_ptr<EditArea>> AllEditArea;
-
+    static vector<shared_ptr<Folder>> AllFolder;
     static int EditAreaNum;
     static void RemoveEditArea(shared_ptr<EditArea> EditAreaPtr);
     static void AddEditArea(shared_ptr<EditArea> EditAreaPtr);
     static shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsPath);
+
+    static void RemoveFolder(shared_ptr<Folder> Folder);
+    static void AddFolder(shared_ptr<Folder> Folder);
 };
 
 class TagTables{

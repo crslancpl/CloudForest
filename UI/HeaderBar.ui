@@ -28,7 +28,7 @@
         <object class="GtkSearchEntry" id="TitleBarSearchBox">
           <property name="name">SearchBox</property>
           <property name="placeholder-text">search</property>
-          <property name="hexpand">true</property>
+          <!--property name="hexpand">true</property-->
         </object>
       </child>
     </object>

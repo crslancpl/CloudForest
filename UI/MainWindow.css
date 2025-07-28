@@ -1,5 +1,5 @@
 #MainWindow {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 10px;
-    box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);
+    /*box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);*/
 }
