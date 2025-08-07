@@ -120,6 +120,7 @@
         </layout>
         <child>
         <object class="GtkBox" id="Switcher">
+            <property name="name">Switcher</property>
         </object>
         </child>
       </object>

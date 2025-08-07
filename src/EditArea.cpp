@@ -1,19 +1,22 @@
 #include "EditArea.h"
 
 // <gtk/gtk.h> is included in EditArea.h
+#include <cstddef>
 #include <gio/gmenu.h>
 #include <glib/gprintf.h>
 #include <glib.h>
 #include <glibconfig.h>
 
 #include <gtk/gtk.h>
+#include <memory>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <utility>
 
 #include "ToolFunctions.h"
-#include "DataTypes.h"
+#include "Classes.h"
 
 EditArea::EditArea(GFile *File){
 
@@ -46,9 +49,9 @@ EditArea::EditArea(GFile *File){
 
     IsCurMovedByKey = false;
 
-    Cursoritr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
-    StartItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
-    EndItr = (GtkTextIter*)malloc(sizeof(GtkTextIter));
+    Cursoritr = new GtkTextIter();
+    StartItr = new GtkTextIter();
+    EndItr = new GtkTextIter();
 
     gtk_scrolled_window_set_vadjustment(
         GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
@@ -80,14 +83,21 @@ EditArea::EditArea(GFile *File){
         content = NULL;
     }
 
+
+
     CountLine();
     CountError();
+    LoadCursorPos();
 
     // Connect signals
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     //g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
+
+    Lang = "cf";
+
+    //ChangeLanguage();
 }
 
 EditArea::~EditArea(){
@@ -126,6 +136,16 @@ void EditArea::CountError(){
     gtk_label_set_markup(ErrorButLabel, s.c_str());
 }
 
+void EditArea::LoadCursorPos(){
+    g_object_get(TextViewBuffer, "cursor-position", &CursorPos, NULL);
+
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, Cursoritr, CursorPos);
+    int LineNo = gtk_text_iter_get_line(Cursoritr) + 1;
+    int LineOffset = gtk_text_iter_get_line_offset(Cursoritr) + 1;
+    string Pos = "Line: " + to_string(LineNo) + '/' + to_string(cacheTotalLine) + " Offset: " + to_string(LineOffset);
+    gtk_button_set_label(CursorPosBut, Pos.c_str());
+}
+
 void EditArea::ShowTip(char *Text){
     //
 }
@@ -134,18 +154,43 @@ void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions)
     //
 }
 
-void EditArea::DrawColorByLength(int TextStartPos, int TextLength, char *TagName){
-    GtkTextTag *tag = gtk_text_tag_table_lookup(TagTables::GetLangTagTable(Lang), TagName);
-    gtk_text_iter_set_offset(StartItr, TextStartPos);
-    gtk_text_iter_set_offset(EndItr, TextStartPos+TextLength);
-    gtk_text_buffer_apply_tag(TextViewBuffer, tag, StartItr, EndItr);
+void EditArea::ChangeLanguage(){
+    //
+    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
+    gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
+    gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
+    GtkTextTagTable *t = gtk_text_buffer_get_tag_table(TextViewBuffer);
+    gtk_text_tag_table_foreach(t, GtkTextTagTableForeach(RemoveTagFromTable),t);
+    for(TagStyle style:TagTables::GetLangTagTable(Lang)->LangStyles){
+        g_print("%s\n", style.TagName.c_str());
+        GtkTextTag *tag = gtk_text_tag_new(style.TagName.c_str());
+        for ( pair<string, string> s: style.Styles) {
+            GValue *v = new GValue;
+            *v = G_VALUE_INIT;
+            g_value_init(v, G_TYPE_STRING);
+            g_value_set_string(v, s.second.c_str());
+            g_object_set_property(G_OBJECT(tag), s.first.c_str(), v);
+        }
+        gtk_text_tag_table_add(t, tag);
+    }
+    g_print("Tags count %d", gtk_text_tag_table_get_size(t));
 }
 
-void EditArea::DrawColorByPos(int TextStartPos, int TextEndPos, char *TagName){
-    GtkTextTag *tag = gtk_text_tag_table_lookup(TagTables::GetLangTagTable(Lang), TagName);
-    gtk_text_iter_set_offset(StartItr, TextStartPos);
-    gtk_text_iter_set_offset(EndItr, TextEndPos);
-    gtk_text_buffer_apply_tag(TextViewBuffer, tag, StartItr, EndItr);
+void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos + TextLength);
+    gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
+}
+
+void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, EndItr, TextEndPos);
+    gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
+}
+
+void RemoveTagFromTable(GtkTextTag* tag,GtkTextTagTable* table){
+    g_print("removing tag\n");
+    gtk_text_tag_table_remove(table, tag);
 }
 
 void ChooseLang(GtkButton *self, EditArea* Parent){
@@ -162,17 +207,27 @@ void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
 }
 
 void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
-    g_object_get(buffer, "cursor-position",&Parent->CursorPos, NULL);
-    gtk_text_buffer_get_iter_at_offset(buffer, Parent->Cursoritr, Parent->CursorPos);
-    int LineNo = gtk_text_iter_get_line(Parent->Cursoritr) + 1;
-    int LineOffset = gtk_text_iter_get_line_offset(Parent->Cursoritr) + 1;
+    Parent->LoadCursorPos();
     if(Parent->IsCurMovedByKey == true){
         gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
         Parent->IsCurMovedByKey = false;
     }
-    string Pos = "Line: " + to_string(LineNo) + '/' + to_string(Parent->cacheTotalLine) + " Offset: " + to_string(LineOffset);
-    gtk_button_set_label(Parent->CursorPosBut, Pos.c_str());
 }
+
+
+
+
+
+void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHolder& parentholder){
+    EA = editarea;
+    ParentHolder = &parentholder;
+    Button = GTK_BUTTON(gtk_button_new_with_label(editarea->FileName));
+}
+
+void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
+    Parent->ParentHolder->Show(Parent->EA);
+}
+
 
 void EditAreaHolder::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
@@ -182,7 +237,7 @@ void EditAreaHolder::Init(){
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), true);
 }
 
-void EditAreaHolder::Show(shared_ptr<EditArea> editarea){
+void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
 
     if(gtk_stack_get_child_by_name(Container, editarea->AbsoPath)==NULL){
         // Edit area is not listed in this EditAreaHolder
@@ -193,6 +248,12 @@ void EditAreaHolder::Show(shared_ptr<EditArea> editarea){
         }
 
         gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->AbsoPath);
+        TabButtons.emplace_back(make_shared<EditAreaHolderTabBut>());
+        shared_ptr<EditAreaHolderTabBut> &b = TabButtons[TabButtons.size()-1];
+        b->Init(editarea, *this);
+        gtk_box_append(Switcher, GTK_WIDGET(b->Button));//Switcher
+        EditAreaHolderTabBut *edhtb = b.get();
+        g_signal_connect(b->Button, "clicked", G_CALLBACK(SwitcherButtonClicked), edhtb);
     }
 
     gtk_stack_set_visible_child_name(Container, editarea->AbsoPath);

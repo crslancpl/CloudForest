@@ -1,11 +1,12 @@
-#ifndef DATATYPES_H_
-#define DATATYPES_H_
+#ifndef CLASSES_H_
+#define CLASSES_H_
 #pragma once
 
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <vector>
 #include <map>
+#include <utility>
 #include <memory>
 #include <string>
 
@@ -60,21 +61,36 @@ public:
     void UnrefBuilder();
     void CountLine();
     void CountError();
+    void LoadCursorPos();
     void ShowTip(char *Text);
     void ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions);// auto complete
-    void DrawColorByLength(int TextStartPos, int TextLength, char *TagName);
-    void DrawColorByPos(int TextStartPos, int TextEndPos, char *TagName);
+    void ChangeLanguage();
+    void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
+    void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
+};
+
+class EditAreaHolder;
+
+class EditAreaHolderTabBut{
+    public:
+    shared_ptr<EditArea> EA;
+    EditAreaHolder* ParentHolder;
+    GtkButton *Button;
+    void Init(const shared_ptr<EditArea>& editarea, EditAreaHolder& parentholder);
 };
 
 class EditAreaHolder{
 public:
+    vector<shared_ptr<EditAreaHolderTabBut>> TabButtons;
     void Init();
     GtkStack *Container;
     GtkBox *Switcher;
     GtkGrid *BaseGrid;
     void SwitchTo(const string &RelePath);
-    void Show(shared_ptr<EditArea> editarea);
+    void Show(const shared_ptr<EditArea>& editarea);
+    void NewTabButton();
 };
+
 class File {
 public:
     GFile *file;
@@ -90,6 +106,7 @@ public:
 
 class Folder {
 public:
+    bool ChildLoaded = false;
     GtkBuilder *builder;
     bool Inited = false;
     char *FolderName;
@@ -97,9 +114,9 @@ public:
     GtkButton *FolderToggleBut;
     GtkBox *Content;
     GFile *f;
-    void init(GFile *Folder,GFile *Parent,int level);
-    void AddChildFolder(shared_ptr<Folder> Child);
-    void AddChildFile(shared_ptr<File> Child);
+    void init(GFile &Folder,GFile *Parent,int level);
+    void AddChildFolder(Folder& Child);
+    void AddChildFile(File& Child);
     void SetAsRoot(GtkBox *Box);
     int Level;
 
@@ -113,8 +130,8 @@ public:
     void init();
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
-    shared_ptr<Folder> NewFolder(GFile *file,GFile *ParentFolder,shared_ptr<Folder> Parent);
-    shared_ptr<File> NewFile(GFile *file, shared_ptr<Folder> Parent);
+    Folder& NewFolder(GFile *file,GFile *ParentFolder,Folder& Parent);// Not nullable. The root folder will not be added with this function
+    File& NewFile(GFile *file, Folder& Parent);// Not nullable. File has to be under a folder
     void SetParent(GFile *file);
 };
 
@@ -147,17 +164,28 @@ public:
     static void RemoveEditArea(shared_ptr<EditArea> EditAreaPtr);
     static void AddEditArea(shared_ptr<EditArea> EditAreaPtr);
     static shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsPath);
-    static void AddFile(shared_ptr<File> file);
-    static void RemoveFolder(shared_ptr<Folder> Folder);
-    static void AddFolder(shared_ptr<Folder> Folder);
+    static shared_ptr<File> AddFile();// Not nullable
+    static shared_ptr<Folder> AddFolder();// Not nullable
+    static void RemoveFolder(Folder& folder);// Not nullable
     static MainWindow currentwindow;
+};
+
+class TagStyle{
+    public:
+    TagStyle(const string &Name);
+    string TagName;
+    map<string,string> Styles;
+    // Property, Value
+    bool AddStyle(pair<string, string> Style);
 };
 
 class TagTables{
 public:
-    static map<string,GtkTextTagTable*> LangTextTagTable;
-    static void AddToLang(const string &Lang, GtkTextTag* Tag);
-    static GtkTextTagTable *GetLangTagTable(const string &Lang);
+    string Lang;
+    vector<TagStyle> LangStyles;
+    static map<string,TagTables*> LangTextTagsStyle;
+    static void AddToLang(const string &Lang, TagStyle *Tag);
+    static TagTables *GetLangTagTable(const string &Lang);
 };
 
 #endif

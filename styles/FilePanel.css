@@ -1,7 +1,6 @@
 #FileTree button:hover {
     border: solid 1px navajowhite;
     background-color: transparent;
-    color: aliceblue;
 }
 
 #FileTree button {
@@ -14,7 +13,7 @@
 #FilePanelBaseGrid {
     padding-top: 10px;
     padding-bottom: 10px;
-    background-color: rgba(100, 100, 100, 0.9);
+    background-color: rgba(50, 50, 50, 0.9);
 }
 
 #FileTree scrolledwindow {
@@ -25,10 +24,16 @@
 
 .FolderButton {
     border: none;
-    color: greenyellow;
+    color: orange;
 }
 
 .FileButton {
     border: none;
-    color: rgb(20, 255, 255);
+    color: wheat;
+}
+
+.rootfolder {
+    background-color: rgba(80, 80, 80, 0.7);
+    border-radius: 5px;
+    margin: 5px 5px 0px 5px;
 }

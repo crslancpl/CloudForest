@@ -1,6 +1,7 @@
-#include "DataTypes.h"
+#include "Classes.h"
 
 #include <glib/gprintf.h>
+#include <string>
 #include <utility>
 #include <vector>
 #include <memory>
@@ -11,9 +12,18 @@ vector<shared_ptr<Folder>> SectionData::AllFolder = {};
 vector<shared_ptr<File>> SectionData::AllFile ={};
 MainWindow SectionData::currentwindow;
 
-void SectionData::AddFile(shared_ptr<File> file){
-    AllFile.push_back(file);
-};
+shared_ptr<File> SectionData::AddFile(){
+    AllFile.emplace_back(make_shared<File>());
+    shared_ptr<File> f = AllFile[AllFile.size() -1];
+    return f;
+}
+
+shared_ptr<Folder> SectionData::AddFolder(){
+    AllFolder.emplace_back(make_shared<Folder>());
+    shared_ptr<Folder> p = AllFolder[AllFolder.size() -1];
+    return p;// new Folder will by pushed to the last position
+}
+
 void SectionData::AddEditArea(shared_ptr<EditArea> EditAreaPtr){
     AllEditArea.push_back(EditAreaPtr);
     //g_print(" Editarea count %d\n", (int)AllEditArea.size());
@@ -42,34 +52,8 @@ shared_ptr<EditArea> SectionData::GetEditAreaFromFileAbsoPath(const string &Abso
     return NULL;
 }
 
-void SectionData::AddFolder(shared_ptr<Folder> Folder){
-    AllFolder.push_back(Folder);
-}
-
 Suggestion::Suggestion(string *content, string *type, string *doc){
     Content = content;
     Type = type;
     Doc = doc;
-}
-
-map<string,GtkTextTagTable*> TagTables::LangTextTagTable = {};
-
-void TagTables::AddToLang(const string &Lang, GtkTextTag* Tag){
-    auto result = LangTextTagTable.find(Lang);
-    if(result == LangTextTagTable.end()){
-        //new language
-        LangTextTagTable.emplace(Lang ,gtk_text_tag_table_new());
-    }else{
-        gtk_text_tag_table_add(result->second, Tag);
-    }
-}
-
-GtkTextTagTable* TagTables::GetLangTagTable(const string &Lang){
-    auto result = LangTextTagTable.find(Lang);
-    if(result == LangTextTagTable.end()){
-        //unknown language
-        return NULL;
-    }else{
-        return result->second;
-    }
 }

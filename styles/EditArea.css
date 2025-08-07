@@ -56,5 +56,15 @@ textview {
 }
 
 #EditAreaBaseGrid button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    border: rgba(255, 0, 0, 0.6) solid 1px;
+}
+
+#Switcher button {
+    border-radius: 20px;
+    margin: 5px;
+    background-color: black;
+}
+
+#Switcher button:hover {
+    border: deepskyblue 1px solid;
 }

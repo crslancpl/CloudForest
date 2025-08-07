@@ -5,6 +5,7 @@
     <child type="start">
     <object class="GtkBox">
       <property name="hexpand">true</property>
+      <property name="name">headerbarbuttonbox</property>
       <child>
         <object class="GtkButton" id="AppButton">
           <property name="label">IDE</property>

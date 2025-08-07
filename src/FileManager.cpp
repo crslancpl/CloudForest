@@ -5,7 +5,7 @@
 #include <gtk/gtk.h>
 #include <memory>
 
-#include "DataTypes.h"
+#include "Classes.h"
 #include "FilePanel.h"
 
 MainWindow *ParentWindow;
@@ -46,7 +46,7 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-    OpenFile(File);
+    OpenFile(*File);
 }
 
 
@@ -60,47 +60,43 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
 
-    ReadFolder(File,true,NULL);
+    ReadAsRootFoler(*File);
 }
 
-void ReadFolder(GFile *folder,bool isRoot,shared_ptr<Folder> F){
-    if(isRoot){
-        F = make_shared<Folder>();
-        F->init(folder, NULL ,0);
-        F->SetAsRoot(ParentWindow->FP->FileTree);
-        SectionData::AddFolder(F);
-    }
+void ReadAsRootFoler(GFile &folder){
+    shared_ptr<Folder> NewFolder = SectionData::AddFolder();
+    NewFolder->init(folder, NULL ,0);
+    NewFolder->SetAsRoot(ParentWindow->FP->FileTree);
+}
 
-    GFileEnumerator *FileEnum = g_file_enumerate_children(folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
+void ReadFolder(GFile &folder, Folder &F){
+
+    GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
+
     while (true) {
         GFileInfo *info = g_file_enumerator_next_file(FileEnum, NULL,NULL);
         if(info == NULL){
             // All file read
             return;
         }
-            GFile *fi = g_file_enumerator_get_child(FileEnum,info);
+
+        GFile *fi = g_file_enumerator_get_child(FileEnum,info);
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-
-
-            shared_ptr<Folder> Child = ParentWindow->FP->NewFolder(fi, folder, F);
-            ReadFolder(fi,false,Child);
+            Folder Child = ParentWindow->FP->NewFolder(fi, &folder, F);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
-            shared_ptr<File> file = ParentWindow->FP->NewFile(fi,F);
-
-            //g_print("File: %s\n", g_file_info_get_name(info));
-            //OpenFile(g_file_enumerator_get_child(FileEnum, info));
+            File file = ParentWindow->FP->NewFile(fi,F);
         }
     }
 }
 
-void OpenFile(GFile *File){
+void OpenFile(GFile &File){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
     shared_ptr<EditArea> ea;
-    ea = SectionData::GetEditAreaFromFileAbsoPath(g_file_get_path(File));
+    ea = SectionData::GetEditAreaFromFileAbsoPath(g_file_get_path(&File));
 
     if(ea == NULL){
         // Not Opened
-        ea = make_shared<EditArea>(File);
+        ea = make_shared<EditArea>(&File);
         SectionData::AddEditArea(ea);
         //gtk_stack_add_child(ParentWindow->EAHolder->Container, GTK_WIDGET(ea->BaseGrid));
     }else{

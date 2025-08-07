@@ -4,7 +4,7 @@
 
 #include <gtk/gtk.h>
 
-#include "DataTypes.h"
+#include "Classes.h"
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);
 

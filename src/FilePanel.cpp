@@ -1,4 +1,4 @@
-#include "DataTypes.h"
+#include "Classes.h"
 #include "FileManager.h"
 #include <cstddef>
 #include <cstdlib>
@@ -19,20 +19,18 @@ void FilePanel::SetParent(GFile *file){
     RootFolder = file;
 }
 
-shared_ptr<Folder> FilePanel::NewFolder(GFile *file,GFile *ParentFolder,shared_ptr<Folder> Parent){
-    shared_ptr<Folder> Child=make_shared<Folder>();
-    Child->init(file, ParentFolder,Parent->Level+1);
-    Parent->AddChildFolder(Child);
-    SectionData::AddFolder(Child);
-    return Child;
+Folder& FilePanel::NewFolder(GFile *file,GFile *ParentFolder,Folder& Parent){
+    shared_ptr<Folder> Child = SectionData::AddFolder();
+    Child->init(*file, ParentFolder,Parent.Level+1);
+    Parent.AddChildFolder(*Child.get());
+    return *Child.get();
 }
 
-shared_ptr<File> FilePanel::NewFile(GFile *file, shared_ptr<Folder> Parent){
-    shared_ptr<File> childfile=make_shared<File>();
-    childfile->init(file,Parent->Level+1);
-    Parent->AddChildFile(childfile);
-    SectionData::AddFile(childfile);
-    return childfile ;
+File& FilePanel::NewFile(GFile *file, Folder& Parent){
+    shared_ptr<File> childfile = SectionData::AddFile();
+    childfile->init(file,Parent.Level+1);
+    Parent.AddChildFile(*childfile.get());
+    return *childfile.get();
 }
 
 void FilePanel::init(){
@@ -40,25 +38,26 @@ void FilePanel::init(){
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
     FileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
-    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 250, 20);
+    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 270, 20);
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
     gtk_box_set_spacing(FileTree, 5);
 }
 
 
 
-void Folder::init(GFile *Folder,GFile *Parent,int level){
-    builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+void Folder::init(GFile &Folder,GFile *Parent,int level){
 
+    builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+    f = &Folder;
     Level=level;
     BaseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
 
     if(Parent==NULL){
-        FolderName = g_file_get_basename(Folder);
+        FolderName = g_file_get_basename(&Folder);
     }else {
-        FolderName = g_file_get_relative_path(Parent,Folder);
+        FolderName = g_file_get_relative_path(Parent,&Folder);
     }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
@@ -72,31 +71,36 @@ void Folder::init(GFile *Folder,GFile *Parent,int level){
     Inited = true;
 
     g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);
+
 }
 
 void ToggleFolder(GtkButton* self,Folder *F){
+    if(!F->ChildLoaded){
+        ReadFolder(*F->f, *F);
+        F->ChildLoaded = true;
+    }
+
     gtk_widget_set_visible(GTK_WIDGET(F->Content) , !F->IsOpen);
     F->IsOpen = !F->IsOpen;
+
 }
 
-void Folder::AddChildFolder(shared_ptr<Folder> Child){
-
-
+void Folder::AddChildFolder(Folder& Child){
     if(!Inited){
-        g_print("init folder first\n");
+        g_print("Folder::AddChildFolder: init folder first\n");
         return;
     }
-    gtk_box_append(Content, GTK_WIDGET(Child->BaseBox));
+    gtk_box_append(Content, GTK_WIDGET(Child.BaseBox));
 }
-void Folder::AddChildFile(shared_ptr<File> Child){
-    gtk_box_append(Content, GTK_WIDGET(Child->FileButton));
+void Folder::AddChildFile(File& Child){
+    gtk_box_append(Content, GTK_WIDGET(Child.FileButton));
 }
 void Folder::SetAsRoot(GtkBox *Box){
+    gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
     gtk_box_append(Box, GTK_WIDGET(BaseBox));
 }
-void FileButtonClick(GtkButton *self,File *Parent){
-    Parent->Open();
-    g_print("99");
+void FileButtonClick(GtkButton *self,File &Parent){
+    Parent.Open();
 }
 void File::init(GFile *FileGFile,int level){
     FileButton = GTK_BUTTON(gtk_button_new());
@@ -116,7 +120,6 @@ void File::Open(){
     if(ea == NULL){
         ea = make_shared<EditArea>(file);
         SectionData::AddEditArea(ea);
-
     }
     SectionData::currentwindow.EAHolder->Show(ea);
 }

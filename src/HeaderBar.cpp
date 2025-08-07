@@ -1,5 +1,5 @@
+#include "Classes.h"
 #include "HeaderBar.h"
-
 // <gtk/gtk.h> is already included in HeaderBar.h
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
@@ -14,7 +14,6 @@ HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app){
     NewHeaderBar->App = app;
     NewHeaderBar->HeaderBar = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
     NewHeaderBar->FileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "FileBut"));
-
 
     g_action_map_add_action_entries (G_ACTION_MAP (NewHeaderBar->App), app_entries, G_N_ELEMENTS (app_entries), NewHeaderBar->App);
 

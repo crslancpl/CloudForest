@@ -1,6 +1,6 @@
 #pragma once
 #include <gtk/gtk.h>
 #include <memory>
-#include "DataTypes.h"
+#include "Classes.h"
 void ToggleFolder(GtkButton* self,Folder *F);
-void FileButtonClick(GtkButton *self,File *Parent);
+void FileButtonClick(GtkButton *self,File &Parent);

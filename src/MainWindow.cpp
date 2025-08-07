@@ -10,7 +10,7 @@
 
 #include "MainWindow.h"
 
-#include "DataTypes.h"
+#include "Classes.h"
 #include "CssLoader.h"
 #include "FileManager.h"
 #include "HeaderBar.h"
@@ -22,9 +22,9 @@
 void NewWindow (GtkApplication *app, gpointer user_data){
     FilePanel::OffSet=20;
     SectionData::currentwindow = MainWindow();
-    SectionData::currentwindow.FP=(FilePanel *)malloc(sizeof(FilePanel));
+    SectionData::currentwindow.FP=new FilePanel();
     SectionData::currentwindow.FP->init();
-    SectionData::currentwindow.EAHolder = (EditAreaHolder*)malloc(sizeof(EditAreaHolder));
+    SectionData::currentwindow.EAHolder = new EditAreaHolder();
     SectionData::currentwindow.EAHolder->Init();
     /* Construct a GtkBuilder instance and load our UI description */
     GtkBuilder *builder = gtk_builder_new ();
@@ -39,10 +39,9 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     SectionData::AddEditArea(NewEa);
     SectionData::currentwindow.EAHolder->Show(NewEa);
 
-    LoadCssFromPath("UI/FilePanel.css");
-    LoadCssFromPath("UI/MainWindow.css");
-    LoadCssFromPath("UI/HeaderBar.css");
-    LoadCssFromPath("UI/EditArea.css");
+    LoadCssFromPath("styles/DefaultTheme.css");
+
+
 
     // share a builder so it can be unref later at once
 

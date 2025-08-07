@@ -1,23 +1,24 @@
 headerbar {
     background-image: none;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgb(0, 0, 0);
     color: red;
     box-shadow: 1px 5px 10px purple;
 }
 
-headerbar button {
+#headerbarbuttonbox button {
     border-radius: 20px;
     border-style: none;
     background-color: transparent;
     color: skyblue;
 }
 
-headerbar button:hover {
+#headerbarbuttonbox button:hover {
     border: 1px solid red;
     color: magenta;
 }
 
 #SearchBox {
+    margin: 5px;
     background-color: rgb(10, 10, 10);
     box-shadow: 1px 1px 10px red;
     border-radius: 30px;
