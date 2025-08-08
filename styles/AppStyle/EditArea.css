@@ -1,0 +1,38 @@
+#EditAreaBaseGrid {
+    border-radius: 15px;
+    border-width: 2px;
+    border-style: solid;
+}
+
+#EAH {
+    padding: 10px;
+}
+
+textview {
+    font-size: 17px;
+    padding-top: 10px;
+}
+
+#TextArea {
+    padding-left: 10px;
+    padding-right: 30px;
+}
+
+#LineNoArea {
+    padding-right: 10px;
+}
+
+#MiscPanel {
+    /*background-color: rgba(0, 0, 0, 0.5);*/
+}
+
+#EditAreaBaseGrid button {
+    border-radius: 30px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.SwitcherBaseBox {
+    border-radius: 20px;
+    margin: 5px;
+}

@@ -3,5 +3,5 @@
 #pragma once
 
 int GetIntDigitCount(int num);
-
+char* GenerateId();
 #endif

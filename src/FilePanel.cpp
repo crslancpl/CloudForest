@@ -11,7 +11,10 @@
 #include <gtk/gtkshortcut.h>
 #include <memory>
 #include <string>
+
 #include "FilePanel.h"
+#include "EditArea.h"
+#include "SectionData.h"
 
 GFile *RootFolder;
 int FilePanel::OffSet;
@@ -19,15 +22,15 @@ void FilePanel::SetParent(GFile *file){
     RootFolder = file;
 }
 
-Folder& FilePanel::NewFolder(GFile *file,GFile *ParentFolder,Folder& Parent){
-    shared_ptr<Folder> Child = SectionData::AddFolder();
+FPFolderButton& FilePanel::NewFolder(GFile *file,GFile *ParentFolder,FPFolderButton& Parent){
+    shared_ptr<FPFolderButton> Child = NewFolderButton();
     Child->init(*file, ParentFolder,Parent.Level+1);
     Parent.AddChildFolder(*Child.get());
     return *Child.get();
 }
 
-File& FilePanel::NewFile(GFile *file, Folder& Parent){
-    shared_ptr<File> childfile = SectionData::AddFile();
+FPFileButton& FilePanel::NewFile(GFile *file, FPFolderButton& Parent){
+    shared_ptr<FPFileButton> childfile = NewFileButton();
     childfile->init(file,Parent.Level+1);
     Parent.AddChildFile(*childfile.get());
     return *childfile.get();
@@ -45,7 +48,7 @@ void FilePanel::init(){
 
 
 
-void Folder::init(GFile &Folder,GFile *Parent,int level){
+void FPFolderButton::init(GFile &Folder,GFile *Parent,int level){
 
     builder = gtk_builder_new_from_file("UI/FilePanel.ui");
     f = &Folder;
@@ -74,7 +77,7 @@ void Folder::init(GFile &Folder,GFile *Parent,int level){
 
 }
 
-void ToggleFolder(GtkButton* self,Folder *F){
+void ToggleFolder(GtkButton* self,FPFolderButton *F){
     if(!F->ChildLoaded){
         ReadFolder(*F->f, *F);
         F->ChildLoaded = true;
@@ -85,41 +88,41 @@ void ToggleFolder(GtkButton* self,Folder *F){
 
 }
 
-void Folder::AddChildFolder(Folder& Child){
+void FPFolderButton::AddChildFolder(FPFolderButton& Child){
     if(!Inited){
         g_print("Folder::AddChildFolder: init folder first\n");
         return;
     }
     gtk_box_append(Content, GTK_WIDGET(Child.BaseBox));
 }
-void Folder::AddChildFile(File& Child){
-    gtk_box_append(Content, GTK_WIDGET(Child.FileButton));
+void FPFolderButton::AddChildFile(FPFileButton& Child){
+    gtk_box_append(Content, GTK_WIDGET(Child.Button));
 }
-void Folder::SetAsRoot(GtkBox *Box){
+void FPFolderButton::SetAsRoot(GtkBox *Box){
     gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
     gtk_box_append(Box, GTK_WIDGET(BaseBox));
 }
-void FileButtonClick(GtkButton *self,File &Parent){
+void FileButtonClick(GtkButton *self,FPFileButton &Parent){
     Parent.Open();
 }
-void File::init(GFile *FileGFile,int level){
-    FileButton = GTK_BUTTON(gtk_button_new());
+void FPFileButton::init(GFile *FileGFile,int level){
+    Button = GTK_BUTTON(gtk_button_new());
 
     file = FileGFile;
     FileAbsoPath = g_file_get_path(file);
     FileName = g_file_get_basename(file);
     GtkLabel *L = GTK_LABEL(gtk_label_new(FileName));
-    gtk_button_set_child(FileButton,GTK_WIDGET(L));
+    gtk_button_set_child(Button,GTK_WIDGET(L));
     gtk_widget_set_margin_start(GTK_WIDGET(L), FilePanel::OffSet * level);
     gtk_widget_set_halign(GTK_WIDGET(L), GTK_ALIGN_START);
     gtk_widget_add_css_class(GTK_WIDGET(L), string("FileButton").c_str());
-    g_signal_connect(FileButton, "clicked", G_CALLBACK(FileButtonClick),this);
+    g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick),this);
 }
 
-void File::Open(){
+void FPFileButton::Open(){
     if(ea == NULL){
-        ea = make_shared<EditArea>(file);
-        SectionData::AddEditArea(ea);
+        ea = make_shared<EditArea>(file, this);
+        AddEditArea(ea);
     }
-    SectionData::currentwindow.EAHolder->Show(ea);
+    GetAppWindow().EAHolder->Show(ea);
 }

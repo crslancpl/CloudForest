@@ -6,7 +6,9 @@
 #include <memory>
 
 #include "Classes.h"
+#include "EditArea.h"
 #include "FilePanel.h"
+#include "SectionData.h"
 
 MainWindow *ParentWindow;
 GtkFileDialog *FileDia;
@@ -46,7 +48,7 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-    OpenFile(*File);
+    OpenFile(*File, nullptr);
 }
 
 
@@ -64,12 +66,12 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
 }
 
 void ReadAsRootFoler(GFile &folder){
-    shared_ptr<Folder> NewFolder = SectionData::AddFolder();
+    shared_ptr<FPFolderButton> NewFolder = NewFolderButton();
     NewFolder->init(folder, NULL ,0);
     NewFolder->SetAsRoot(ParentWindow->FP->FileTree);
 }
 
-void ReadFolder(GFile &folder, Folder &F){
+void ReadFolder(GFile &folder, FPFolderButton &F){
 
     GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
 
@@ -82,22 +84,24 @@ void ReadFolder(GFile &folder, Folder &F){
 
         GFile *fi = g_file_enumerator_get_child(FileEnum,info);
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            Folder Child = ParentWindow->FP->NewFolder(fi, &folder, F);
+            FPFolderButton Child = ParentWindow->FP->NewFolder(fi, &folder, F);
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
-            File file = ParentWindow->FP->NewFile(fi,F);
+            FPFileButton file = ParentWindow->FP->NewFile(fi,F);
         }
     }
 }
 
-void OpenFile(GFile &File){
+void OpenFile(GFile &file, FPFileButton* f){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
     shared_ptr<EditArea> ea;
-    ea = SectionData::GetEditAreaFromFileAbsoPath(g_file_get_path(&File));
+    ea = GetEditAreaFromFileAbsoPath(g_file_get_path(&file));
 
     if(ea == NULL){
         // Not Opened
-        ea = make_shared<EditArea>(&File);
-        SectionData::AddEditArea(ea);
+        ea = make_shared<EditArea>(&file, f);
+        ea->CorreFileButton = f;
+        AddEditArea(ea);
+
         //gtk_stack_add_child(ParentWindow->EAHolder->Container, GTK_WIDGET(ea->BaseGrid));
     }else{
         // Opened
@@ -105,4 +109,17 @@ void OpenFile(GFile &File){
     ParentWindow->EAHolder->Show(ea);
 
     ea->UnrefBuilder();
+}
+
+void CreateFile(EditArea &ea){
+    gtk_file_dialog_save(FileDia, GetAppWindow().Window, NULL, FileCreated, &ea);
+}
+
+void FileCreated(GObject *source, GAsyncResult *result, void *data){
+    EditArea* ea = (EditArea*)data;
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, NULL);
+    ea->EditingFile = file;
+    ea->Save();
+    ea->LoadFile(file);
+
 }

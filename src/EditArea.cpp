@@ -15,11 +15,15 @@
 #include <string>
 #include <utility>
 
+#include "FileManager.h"
+#include "SectionData.h"
 #include "ToolFunctions.h"
 #include "Classes.h"
+#include "EditArea.h"
+#include "FilePanel.h"
 
-EditArea::EditArea(GFile *File){
-
+EditArea::EditArea(GFile *file, FPFileButton* filebut){
+    CorreFileButton = filebut;
     builder = gtk_builder_new_from_file("UI/EditArea.ui");
 
     /* Binding */
@@ -27,6 +31,7 @@ EditArea::EditArea(GFile *File){
 
     // FileInfo panel(top)
     LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
+    SaveBut = GTK_BUTTON(gtk_builder_get_object(builder, "SaveBut"));
     // Misc panel(bottom)
     OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
     ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
@@ -46,6 +51,7 @@ EditArea::EditArea(GFile *File){
     // Initialize variables
     cacheTotalLine = 0;
     CursorPos = 0;
+    RandomId = GenerateId();
 
     IsCurMovedByKey = false;
 
@@ -53,6 +59,8 @@ EditArea::EditArea(GFile *File){
     StartItr = new GtkTextIter();
     EndItr = new GtkTextIter();
 
+
+    gtk_button_set_label(SaveBut, "Saved");
     gtk_scrolled_window_set_vadjustment(
         GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
         gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView))
@@ -65,25 +73,7 @@ EditArea::EditArea(GFile *File){
     gtk_text_view_set_pixels_below_lines(LineNoArea, 5);
 
 
-    if (File == NULL) {
-        // Don't open file
-        g_print("NULL gfile\n");
-        gtk_button_set_label(LocationBut, "New File");
-        FileName = "New File";
-        AbsoPath = "New File";
-    }else{
-        char *content;
-        FileName = g_file_get_basename(File);
-        AbsoPath = g_file_get_path(File);
-        //g_print("%s", FileName);
-        gtk_button_set_label(LocationBut, FileName);
-        g_file_load_contents(File,NULL,&content, NULL, NULL,NULL);
-        gtk_text_buffer_set_text(TextViewBuffer, content, -1);
-        g_free(content);
-        content = NULL;
-    }
-
-
+    LoadFile(file);
 
     CountLine();
     CountError();
@@ -93,11 +83,8 @@ EditArea::EditArea(GFile *File){
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
+    g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButClicked), this);
     //g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
-
-    Lang = "cf";
-
-    //ChangeLanguage();
 }
 
 EditArea::~EditArea(){
@@ -176,6 +163,30 @@ void EditArea::ChangeLanguage(){
     g_print("Tags count %d", gtk_text_tag_table_get_size(t));
 }
 
+void EditArea::LoadFile(GFile* newfile){
+    if (newfile == NULL) {
+        // Don't open file
+        g_print("NULL gfile\n");
+        gtk_button_set_label(LocationBut, "New File");
+        FileName = "New File";
+        AbsoPath = "New File";
+    }else{
+        char *content;
+        FileName = g_file_get_basename(newfile);
+        AbsoPath = g_file_get_path(newfile);
+        gtk_button_set_label(LocationBut, FileName);
+        g_file_load_contents(newfile,NULL,&content, NULL, NULL,NULL);
+        gtk_text_buffer_set_text(TextViewBuffer, content, -1);
+        g_free(content);
+        content = NULL;
+        EditingFile = newfile;
+        if(ParentSwitcher != NULL){
+            gtk_button_set_label(ParentSwitcher->Button, FileName);
+        }
+
+    }
+}
+
 void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos + TextLength);
@@ -186,6 +197,51 @@ void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, EndItr, TextEndPos);
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
+}
+
+void EditArea::Destroy(){
+
+    if (CorreFileButton != nullptr) {
+        CorreFileButton->ea = nullptr;
+        CorreFileButton = nullptr;
+    }
+
+    gtk_stack_remove(ParentSwitcher->ParentHolder->Container, GTK_WIDGET(BaseGrid));
+    int pos = 0;
+    RemoveEditArea(this);
+
+    for(shared_ptr<EditAreaHolderTabBut> t: ParentHolder->TabButtons){
+
+        if(t->EA.get() == this){
+            gtk_box_remove(ParentHolder->Switcher, GTK_WIDGET(t->BaseBox));
+            ParentHolder->TabButtons.erase(ParentHolder->TabButtons.begin()+pos);
+            break;
+        }
+        pos ++;
+    }
+
+
+    ParentSwitcher->ParentHolder = nullptr;
+    ParentHolder = nullptr;
+}
+
+void EditArea::Save(){
+    if(EditingFile == NULL){
+        g_print("NULL\n");
+        CreateFile(*this);
+    }else{
+        gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
+        gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
+        char* content = gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
+        g_file_replace_contents(
+            EditingFile, content, gtk_text_buffer_get_char_count(TextViewBuffer),
+            NULL, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, NULL, NULL, NULL);
+    }
+
+    IsSaved = true;
+    gtk_button_set_label(SaveBut, "Saved");
+    gtk_widget_remove_css_class(GTK_WIDGET(ParentSwitcher->Button), "SwitcherButtonUnsaved");
+    gtk_widget_add_css_class(GTK_WIDGET(ParentSwitcher->Button), "SwitcherButtonSaved");
 }
 
 void RemoveTagFromTable(GtkTextTag* tag,GtkTextTagTable* table){
@@ -202,6 +258,12 @@ void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboo
 }
 
 void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
+    if(Parent->IsSaved == true){
+        Parent->IsSaved = false;
+        gtk_widget_remove_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonSaved");
+        gtk_widget_add_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonUnsaved");
+        gtk_button_set_label(Parent->SaveBut, "Save");
+    }
     Parent->IsCurMovedByKey = true;
     Parent->CountLine();
 }
@@ -214,19 +276,42 @@ void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, E
     }
 }
 
-
-
+void SaveButClicked(GtkButton *self, EditArea* parent){
+    parent->Save();
+}
 
 
 void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHolder& parentholder){
     EA = editarea;
     ParentHolder = &parentholder;
+    BaseBox = (GtkBox*)gtk_box_new(GtkOrientation::GTK_ORIENTATION_HORIZONTAL, 0);
     Button = GTK_BUTTON(gtk_button_new_with_label(editarea->FileName));
+    CloseButton = GTK_BUTTON(gtk_button_new_with_label("⛌"));
+    gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("SwitcherBaseBox").c_str());
+    gtk_widget_add_css_class(GTK_WIDGET(Button), string("SwitcherButtonSaved").c_str());
+    gtk_widget_add_css_class(GTK_WIDGET(CloseButton), string("SwitcherCloseButton").c_str());
+    gtk_box_append(BaseBox, GTK_WIDGET(Button));
+    gtk_box_append(BaseBox, GTK_WIDGET(CloseButton));
+
+    editarea->ParentSwitcher = this;
+    editarea->ParentHolder = &parentholder;
+
+    g_signal_connect(Button, "clicked", G_CALLBACK(SwitcherButtonClicked),this);
+    g_signal_connect(CloseButton, "clicked", G_CALLBACK(SwitcherCloseButtonClicked), this);
 }
 
 void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
-    Parent->ParentHolder->Show(Parent->EA);
+    if (Parent->EA != NULL) {
+        Parent->ParentHolder->Show(Parent->EA);
+    }
 }
+
+void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
+    Parent->EA->Destroy();
+}
+
+
+
 
 
 void EditAreaHolder::Init(){
@@ -238,24 +323,17 @@ void EditAreaHolder::Init(){
 }
 
 void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
-
-    if(gtk_stack_get_child_by_name(Container, editarea->AbsoPath)==NULL){
+    if(gtk_stack_get_child_by_name(Container, editarea->RandomId)==NULL){
         // Edit area is not listed in this EditAreaHolder
-
-        if(editarea->BaseGrid == NULL)abort();
         if(gtk_widget_get_parent(GTK_WIDGET(editarea->BaseGrid)) != NULL){
             gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
         }
-
-        gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->AbsoPath);
+        gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->RandomId);
         TabButtons.emplace_back(make_shared<EditAreaHolderTabBut>());
         shared_ptr<EditAreaHolderTabBut> &b = TabButtons[TabButtons.size()-1];
         b->Init(editarea, *this);
-        gtk_box_append(Switcher, GTK_WIDGET(b->Button));//Switcher
-        EditAreaHolderTabBut *edhtb = b.get();
-        g_signal_connect(b->Button, "clicked", G_CALLBACK(SwitcherButtonClicked), edhtb);
+        editarea->ParentSwitcher = b.get();
+        gtk_box_append(Switcher, GTK_WIDGET(b->BaseBox));//Switcher
     }
-
-    gtk_stack_set_visible_child_name(Container, editarea->AbsoPath);
-
+    gtk_stack_set_visible_child_name(Container, editarea->RandomId);
 }

@@ -11,10 +11,6 @@
 }
 
 #EditAreaBaseGrid {
-    border-radius: 15px;
-    /*box-shadow: 2px 2px 5px 5px rgba(255, 0, 0, 0.8);*/
-    border-width: 2px;
-    border-style: solid;
     border-color: transparent;
 }
 
@@ -22,34 +18,19 @@
     padding: 10px;
 }
 
-textview {
-    font-size: 17px;
-    padding-top: 10px;
-}
-
 #TextArea {
     color: white;
-    padding-left: 10px;
-    padding-right: 30px;
     font-family: monospace;
     caret-color: white;
 }
 
 #LineNoArea {
     border-right: solid 3px red;
-    padding-right: 10px;
     color: cyan;
     font-family: monospace;
 }
 
-#MiscPanel {
-    /*background-color: rgba(0, 0, 0, 0.5);*/
-}
-
 #EditAreaBaseGrid button {
-    border-radius: 30px;
-    padding-left: 10px;
-    padding-right: 10px;
     color: white;
     border: none;
     background-color: transparent;
@@ -59,12 +40,38 @@ textview {
     border: rgba(255, 0, 0, 0.6) solid 1px;
 }
 
-#Switcher button {
-    border-radius: 20px;
-    margin: 5px;
+.SwitcherBaseBox {
+    background-image: none;
     background-color: black;
 }
 
-#Switcher button:hover {
+.SwitcherBaseBox:hover {
     border: deepskyblue 1px solid;
+}
+
+.SwitcherButtonSaved {
+    color: white;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherButtonUnsaved {
+    color: red;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherCloseButton {
+    color: white;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherCloseButton:hover {
+    color: red;
+    background-image: none;
+    background-color: transparent;
 }

@@ -1,5 +1,12 @@
 #include "ToolFunctions.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+#include <algorithm>
+#include <string>
 
+using namespace std;
 
 int GetIntDigitCount(int num){
     int count = 1;
@@ -8,4 +15,13 @@ int GetIntDigitCount(int num){
         num %= 10;
     }
     return count;
+}
+
+int num = 0;
+
+char* GenerateId(){
+    num++;
+    char* s;
+    sprintf(s, "%d", num);
+    return s;
 }

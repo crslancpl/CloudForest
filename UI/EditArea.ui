@@ -16,6 +16,16 @@
             <property name="name">LocationBut</property>
           </object>
         </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="hexpand">true</property>
+          </object>
+        </child>
+        <child>
+          <object id="SaveBut" class="GtkButton">
+            <property name="name">SaveBut</property>
+          </object>
+        </child>
       </object>
     </child>
 

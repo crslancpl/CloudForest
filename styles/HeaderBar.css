@@ -6,8 +6,8 @@ headerbar {
 }
 
 #headerbarbuttonbox button {
-    border-radius: 20px;
     border-style: none;
+    background-image: none;
     background-color: transparent;
     color: skyblue;
 }
@@ -18,8 +18,8 @@ headerbar {
 }
 
 #SearchBox {
-    margin: 5px;
+    background-image: none;
+    color: white;
     background-color: rgb(10, 10, 10);
     box-shadow: 1px 1px 10px red;
-    border-radius: 30px;
 }

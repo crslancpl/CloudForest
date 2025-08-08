@@ -1,0 +1,14 @@
+#FilePanelBaseGrid {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#FileTree scrolledwindow {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.rootfolder {
+    border-radius: 5px;
+    margin: 5px 5px 0px 5px;
+}

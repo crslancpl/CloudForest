@@ -11,14 +11,10 @@
 }
 
 #FilePanelBaseGrid {
-    padding-top: 10px;
-    padding-bottom: 10px;
     background-color: rgba(50, 50, 50, 0.9);
 }
 
 #FileTree scrolledwindow {
-    padding-top: 10px;
-    padding-bottom: 10px;
     background-image: none;
 }
 
@@ -34,6 +30,4 @@
 
 .rootfolder {
     background-color: rgba(80, 80, 80, 0.7);
-    border-radius: 5px;
-    margin: 5px 5px 0px 5px;
 }
