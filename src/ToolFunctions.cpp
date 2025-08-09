@@ -19,9 +19,8 @@ int GetIntDigitCount(int num){
 
 int num = 0;
 
-char* GenerateId(){
+string GenerateId(){
     num++;
-    char* s;
-    sprintf(s, "%d", num);
+    string s = to_string(num);
     return s;
 }

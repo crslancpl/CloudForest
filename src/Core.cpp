@@ -1,7 +1,8 @@
-#include "SectionData.h"
+#include "Core.h"
 #include "Classes.h"
 #include "EditArea.h"
 #include "FilePanel.h"
+#include <memory>
 #include <vector>
 #include <algorithm>
 
@@ -27,6 +28,14 @@ shared_ptr<FPFolderButton> NewFolderButton(){
     AllFolderButtons.emplace_back(make_shared<FPFolderButton>());
     shared_ptr<FPFolderButton> p = AllFolderButtons[AllFolderButtons.size() -1];
     return p;// new Folder will by pushed to the last position
+}
+
+shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton){
+    /*
+     * Create a edit area in AllEditArea and return the reference
+     */
+    AllEditArea.emplace_back(make_shared<EditArea>(filetoedit, filebutton));
+    return AllEditArea[AllEditArea.size()-1];
 }
 
 void AddEditArea(shared_ptr<EditArea> &EditAreaPtr){

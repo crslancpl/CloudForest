@@ -14,7 +14,7 @@
 
 #include "FilePanel.h"
 #include "EditArea.h"
-#include "SectionData.h"
+#include "Core.h"
 
 GFile *RootFolder;
 int FilePanel::OffSet;

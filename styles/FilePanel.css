@@ -11,7 +11,7 @@
 }
 
 #FilePanelBaseGrid {
-    background-color: rgba(50, 50, 50, 0.9);
+    background-color: rgba(50, 50, 50, 0.4);
 }
 
 #FileTree scrolledwindow {
@@ -29,5 +29,5 @@
 }
 
 .rootfolder {
-    background-color: rgba(80, 80, 80, 0.7);
+    background-color: rgba(20, 20, 20, 0.5);
 }

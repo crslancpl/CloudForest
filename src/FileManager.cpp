@@ -8,7 +8,7 @@
 #include "Classes.h"
 #include "EditArea.h"
 #include "FilePanel.h"
-#include "SectionData.h"
+#include "Core.h"
 
 MainWindow *ParentWindow;
 GtkFileDialog *FileDia;
@@ -98,9 +98,7 @@ void OpenFile(GFile &file, FPFileButton* f){
 
     if(ea == NULL){
         // Not Opened
-        ea = make_shared<EditArea>(&file, f);
-        ea->CorreFileButton = f;
-        AddEditArea(ea);
+        ea = NewEditArea(&file, f);
 
         //gtk_stack_add_child(ParentWindow->EAHolder->Container, GTK_WIDGET(ea->BaseGrid));
     }else{

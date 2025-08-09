@@ -2,6 +2,10 @@
 #define TOOLFUNCTIONS_H_
 #pragma once
 
+#include <string>
+
+using namespace std;
+
 int GetIntDigitCount(int num);
-char* GenerateId();
+string GenerateId();
 #endif

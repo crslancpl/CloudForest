@@ -16,7 +16,7 @@ class EditArea{
 public:
     EditArea(GFile *file, FPFileButton* filebut);
     ~EditArea();
-    char* RandomId;
+    string RandomId;
     FPFileButton* CorreFileButton = nullptr;//Correspoding File Button
     EditAreaHolderTabBut* ParentSwitcher = nullptr;
     EditAreaHolder* ParentHolder = nullptr;

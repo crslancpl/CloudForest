@@ -19,7 +19,7 @@
 
 #include "FilePanel.h"
 #include "EditArea.h"
-#include "SectionData.h"
+#include "Core.h"
 
 
 void NewWindow (GtkApplication *app, gpointer user_data){
@@ -40,8 +40,7 @@ void NewWindow (GtkApplication *app, gpointer user_data){
 
     gtk_window_set_default_size(AppWindow.Window, 1200, 800);
     gtk_window_set_application (AppWindow.Window, app);
-    shared_ptr<EditArea> NewEa = make_shared<EditArea>((GFile*)NULL, nullptr);
-    AddEditArea(NewEa);
+    shared_ptr<EditArea>& NewEa = NewEditArea(nullptr, nullptr);
     AppWindow.EAHolder->Show(NewEa);
 
     LoadCssFromPath("styles/DefaultTheme.css");
