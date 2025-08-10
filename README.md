@@ -1,4 +1,4 @@
-# IDE Core
+# CloudForest
 This is the source code of application part of the ide.
 <br/><br/>
 
