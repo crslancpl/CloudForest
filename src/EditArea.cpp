@@ -136,11 +136,10 @@ void EditArea::ShowTip(char *Text){
     //
 }
 
-/*
 void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions){
     //
 }
-*/
+
 void EditArea::ChangeLanguage(){
     //
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
