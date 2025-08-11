@@ -7,5 +7,5 @@
 using namespace std;
 
 int GetIntDigitCount(int num);
-string GenerateId();
+void GenerateId(string& stringtogenerate);
 #endif

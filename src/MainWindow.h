@@ -4,6 +4,21 @@
 
 #include <gtk/gtk.h>
 
+#include "Classes.h"
+
+class MainWindow{
+public:
+    EditAreaHolder *EAHolder;
+    GtkApplication *App;
+    GtkWindow *Window;
+    FilePanel *FP;
+    GtkButton *AppBut;
+    GtkButton *FileBut;
+    GtkButton *CompileBut;
+    GtkSearchEntry *SearchBar;
+    GtkGrid *WindowGrid;
+};
+
 void NewWindow (GtkApplication *app,gpointer user_data);
 
 #endif

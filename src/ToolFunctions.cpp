@@ -19,8 +19,7 @@ int GetIntDigitCount(int num){
 
 int num = 0;
 
-string GenerateId(){
+void GenerateId(string& stringtogenerate){
     num++;
-    string s = to_string(num);
-    return s;
+    stringtogenerate = to_string(num);
 }

@@ -1,6 +1,5 @@
 #include "EditArea.h"
 
-// <gtk/gtk.h> is included in EditArea.h
 #include <cstddef>
 #include <gio/gmenu.h>
 #include <glib/gprintf.h>
@@ -18,18 +17,23 @@
 #include "FileManager.h"
 #include "Core.h"
 #include "ToolFunctions.h"
-#include "Classes.h"
+#include "TextTag.h"
 #include "EditArea.h"
 #include "FilePanel.h"
 
+
+
+
+/*
+ * EditArea class
+ */
 EditArea::EditArea(GFile *file, FPFileButton* filebut){
 
-    g_print("Loading EditArea from builder: UI/EditArea.ui\n");
+    /* Loading EditArea from UI/EditArea.ui */
     builder = gtk_builder_new_from_file("UI/EditArea.ui");
 
     /* Binding */
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
-
     // FileInfo panel(top)
     LocationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
     SaveBut = GTK_BUTTON(gtk_builder_get_object(builder, "SaveBut"));
@@ -45,55 +49,41 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     TextViewBuffer = gtk_text_view_get_buffer(TextView);
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
-
     // Dialog
     win = GTK_WINDOW(gtk_builder_get_object(builder, "dialog1"));
 
-
-
     /* Initialize variables */
-    g_print("Init variables and childs in EditArea\n");
     cacheTotalLine = 0;
     CursorPos = 0;
-    RandomId = GenerateId();
-
+    GenerateId(RandomId);
     CorreFileButton = filebut;
-
     IsCurMovedByKey = false;
-
     Cursoritr = new GtkTextIter();
     StartItr = new GtkTextIter();
     EndItr = new GtkTextIter();
 
     /* Set properties */
-    g_print("Set properties for EditArea\n");
     gtk_button_set_label(SaveBut, "Saved");
     gtk_scrolled_window_set_vadjustment(
         GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
         gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView))
     );
-
     gtk_text_view_set_bottom_margin (TextView, 80);
     gtk_text_view_set_bottom_margin (LineNoArea, 80);
-
     gtk_text_view_set_pixels_below_lines(TextView, 5);
     gtk_text_view_set_pixels_below_lines(LineNoArea, 5);
 
     /* Load file and other infos*/
-    g_print("EditArea load file and other infos\n");
     LoadFile(file);
-
     CountLine();
     CountError();
     LoadCursorPos();
 
     /* Connect signals */
-    g_print("Connect signals\n");
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButClicked), this);
-    //g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLang), this);
 }
 
 EditArea::~EditArea(){
@@ -146,10 +136,11 @@ void EditArea::ShowTip(char *Text){
     //
 }
 
+/*
 void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions){
     //
 }
-
+*/
 void EditArea::ChangeLanguage(){
     //
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
@@ -157,10 +148,10 @@ void EditArea::ChangeLanguage(){
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
     GtkTextTagTable *t = gtk_text_buffer_get_tag_table(TextViewBuffer);
     gtk_text_tag_table_foreach(t, GtkTextTagTableForeach(RemoveTagFromTable),t);
-    for(TagStyle style:TagTables::GetLangTagTable(Lang)->LangStyles){
+    for(const TagStyle& style:TagTables::GetLangTagTable(Lang)->LangStyles){
         g_print("%s\n", style.TagName.c_str());
         GtkTextTag *tag = gtk_text_tag_new(style.TagName.c_str());
-        for ( pair<string, string> s: style.Styles) {
+        for ( const pair<string, string>& s: style.Styles) {
             GValue *v = new GValue;
             *v = G_VALUE_INIT;
             g_value_init(v, G_TYPE_STRING);
@@ -175,7 +166,6 @@ void EditArea::ChangeLanguage(){
 void EditArea::LoadFile(GFile* newfile){
     if (newfile == nullptr) {
         // Don't open file
-        g_print("NULL gfile\n");
         gtk_button_set_label(LocationBut, "New File");
         FileName = "New File";
         AbsoPath = "New File";
@@ -209,7 +199,6 @@ void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
 }
 
 void EditArea::Destroy(){
-
     if (CorreFileButton != nullptr) {
         CorreFileButton->ea = nullptr;
         CorreFileButton = nullptr;
@@ -219,8 +208,7 @@ void EditArea::Destroy(){
     int pos = 0;
     RemoveEditArea(this);
 
-    for(shared_ptr<EditAreaHolderTabBut> t: ParentHolder->TabButtons){
-
+    for(shared_ptr<EditAreaHolderTabBut>& t: ParentHolder->TabButtons){
         if(t->EA.get() == this){
             gtk_box_remove(ParentHolder->Switcher, GTK_WIDGET(t->BaseBox));
             ParentHolder->TabButtons.erase(ParentHolder->TabButtons.begin()+pos);
@@ -228,7 +216,6 @@ void EditArea::Destroy(){
         }
         pos ++;
     }
-
 
     ParentSwitcher->ParentHolder = nullptr;
     ParentHolder = nullptr;
@@ -290,6 +277,11 @@ void SaveButClicked(GtkButton *self, EditArea* parent){
 }
 
 
+
+
+/*
+ * EditAreaHolderTabBut class
+ */
 void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHolder& parentholder){
     EA = editarea;
     ParentHolder = &parentholder;
@@ -322,7 +314,9 @@ void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
 
 
 
-
+/*
+ * EditAreaHolder class
+ */
 void EditAreaHolder::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
@@ -332,9 +326,9 @@ void EditAreaHolder::Init(){
 }
 
 void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
-    if(gtk_stack_get_child_by_name(Container, editarea->RandomId.c_str())==NULL){
+    if(gtk_stack_get_child_by_name(Container, editarea->RandomId.c_str())==nullptr){
         // Edit area is not listed in this EditAreaHolder
-        if(gtk_widget_get_parent(GTK_WIDGET(editarea->BaseGrid)) != NULL){
+        if(gtk_widget_get_parent(GTK_WIDGET(editarea->BaseGrid)) != nullptr){
             gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
         }
         gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->RandomId.c_str());

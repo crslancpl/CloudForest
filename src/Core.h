@@ -3,18 +3,23 @@
 #pragma once
 
 #include "Classes.h"
+#include <gio/gio.h>
+#include <memory>
+#include <string>
+
+
+using namespace std;
 
 MainWindow &GetAppWindow();
 
 
 
-shared_ptr<FPFileButton> NewFileButton();// The newly created file button will be pushed to AllFileButtons
-shared_ptr<FPFolderButton> NewFolderButton();// The newly created folder button will be pushed to AllFolderButtons
+shared_ptr<FPFileButton> &NewFileButton();// The newly created file button will be pushed to AllFileButtons
+shared_ptr<FPFolderButton> &NewFolderButton();// The newly created folder button will be pushed to AllFolderButtons
 
 shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton);
 void RemoveEditArea(EditArea* EditAreaPtr);
-void AddEditArea(shared_ptr<EditArea>& EditAreaPtr);
-shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsPath);
+shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsPath);
 
 void RemoveFolder(FPFolderButton& folder);// Not nullable
 

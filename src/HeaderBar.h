@@ -6,6 +6,13 @@
 
 #include "Classes.h"
 
+class HeaderBar{
+public:
+    GtkApplication *App;
+    GtkHeaderBar *HeaderBar;
+    GtkMenuButton *FileBut;
+};
+
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);
 
 

@@ -1,10 +1,12 @@
 #include "Core.h"
-#include "Classes.h"
 #include "EditArea.h"
 #include "FilePanel.h"
+#include "MainWindow.h"
+
 #include <memory>
 #include <vector>
 #include <algorithm>
+
 
 vector<shared_ptr<EditArea>> AllEditArea;
 vector<shared_ptr<FPFolderButton>> AllFolderButtons;
@@ -18,16 +20,20 @@ MainWindow &GetAppWindow(){
     return AppWindow;
 }
 
-shared_ptr<FPFileButton> NewFileButton(){
+shared_ptr<FPFileButton>& NewFileButton(){
+    /*
+     * Create a file button in AllFileButton and return the reference
+     */
     AllFileButtons.emplace_back(make_shared<FPFileButton>());
-    shared_ptr<FPFileButton> f = AllFileButtons[AllFileButtons.size() -1];
-    return f;
+    return AllFileButtons[AllFileButtons.size() -1];
 }
 
-shared_ptr<FPFolderButton> NewFolderButton(){
+shared_ptr<FPFolderButton>& NewFolderButton(){
+    /*
+     * Create a folder button in AllFolderButton and return the reference
+     */
     AllFolderButtons.emplace_back(make_shared<FPFolderButton>());
-    shared_ptr<FPFolderButton> p = AllFolderButtons[AllFolderButtons.size() -1];
-    return p;// new Folder will by pushed to the last position
+    return AllFolderButtons[AllFolderButtons.size() -1];// new Folder will by pushed to the last position
 }
 
 shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton){
@@ -36,11 +42,6 @@ shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton){
      */
     AllEditArea.emplace_back(make_shared<EditArea>(filetoedit, filebutton));
     return AllEditArea[AllEditArea.size()-1];
-}
-
-void AddEditArea(shared_ptr<EditArea> &EditAreaPtr){
-    AllEditArea.push_back(EditAreaPtr);
-    //g_print(" Editarea count %d\n", (int)AllEditArea.size());
 }
 
 void RemoveEditArea(EditArea* EditAreaPtr){
@@ -55,12 +56,11 @@ void RemoveEditArea(EditArea* EditAreaPtr){
     AllEditArea.erase(AllEditArea.begin() + Pos);
 }
 
-shared_ptr<EditArea> GetEditAreaFromFileAbsoPath(const string &AbsoPath){
-    for(shared_ptr<EditArea> ea: AllEditArea){
+shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsoPath){
+    for(shared_ptr<EditArea>& ea: AllEditArea){
         if(ea->AbsoPath == AbsoPath){
-            return ea;
+            return &ea;
         }
     }
-    //g_print("No edit area found with this file name ");
-    return NULL;
+    return nullptr;
 }

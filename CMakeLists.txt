@@ -13,7 +13,7 @@ add_executable(${PROJECT_NAME}
     src/FilePanel.cpp
     src/Entry.cpp src/MainWindow.cpp src/CssLoader.cpp
     src/EditArea.cpp src/ToolFunctions.cpp src/AssetManager.cpp
-    src/FileManager.cpp src/HeaderBar.cpp src/Classes.cpp
+    src/FileManager.cpp src/HeaderBar.cpp
     src/TextTag.cpp src/Core.cpp
     )
 

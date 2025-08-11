@@ -5,10 +5,10 @@
 #include <gtk/gtk.h>
 #include <memory>
 
-#include "Classes.h"
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "Core.h"
+#include "MainWindow.h"
 
 MainWindow *ParentWindow;
 GtkFileDialog *FileDia;
@@ -16,7 +16,6 @@ GtkFileDialog *FileDia;
 using namespace std;
 
 void InitFileManager(MainWindow *parent){
-    g_print("init File manager\n");
     ParentWindow = parent;
     FileDia = gtk_file_dialog_new();
 }
@@ -82,31 +81,32 @@ void ReadFolder(GFile &folder, FPFolderButton &F){
             return;
         }
 
-        GFile *fi = g_file_enumerator_get_child(FileEnum,info);
+        GFile *child = g_file_enumerator_get_child(FileEnum,info);
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-            FPFolderButton Child = ParentWindow->FP->NewFolder(fi, &folder, F);
+            shared_ptr<FPFolderButton> &childfolderbutton = NewFolderButton();
+            childfolderbutton->init(*child, &folder, F.Level+1);
+            F.AddChildFolder(*childfolderbutton.get());
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
-            FPFileButton file = ParentWindow->FP->NewFile(fi,F);
+            shared_ptr<FPFileButton> &childfilebutton = NewFileButton();
+            childfilebutton->init(child, F.Level+1);
+            F.AddChildFile(*childfilebutton.get());
         }
     }
 }
 
 void OpenFile(GFile &file, FPFileButton* f){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
-    shared_ptr<EditArea> ea;
-    ea = GetEditAreaFromFileAbsoPath(g_file_get_path(&file));
+    shared_ptr<EditArea> *ea = GetEditAreaFromFileAbsoPath(g_file_get_path(&file));
 
     if(ea == NULL){
-        // Not Opened
-        ea = NewEditArea(&file, f);
-
-        //gtk_stack_add_child(ParentWindow->EAHolder->Container, GTK_WIDGET(ea->BaseGrid));
+        // Not Opened before
+        ea = &NewEditArea(&file, f);
     }else{
-        // Opened
+        // Opened before
     }
-    ParentWindow->EAHolder->Show(ea);
+    ParentWindow->EAHolder->Show(*ea);
 
-    ea->UnrefBuilder();
+    (*ea)->UnrefBuilder();
 }
 
 void CreateFile(EditArea &ea){
@@ -119,5 +119,4 @@ void FileCreated(GObject *source, GAsyncResult *result, void *data){
     ea->EditingFile = file;
     ea->Save();
     ea->LoadFile(file);
-
 }

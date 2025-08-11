@@ -3,6 +3,19 @@
 #include <memory>
 #include "Classes.h"
 
+using namespace std;
+
+class FilePanel{
+public:
+    static int OffSet;
+    void init();
+    GtkGrid *BaseGrid;
+    GtkBox *FileTree;
+    FPFolderButton& NewFolder(GFile *file,GFile *ParentFolder,FPFolderButton& Parent);// Not nullable. The root folder will not be added with this function
+    FPFileButton& NewFile(GFile *file, FPFolderButton& Parent);// Not nullable. File has to be under a folder
+    void SetParent(GFile *file);
+};
+
 /* File panel file button */
 class FPFileButton {
 public:
@@ -17,17 +30,7 @@ public:
     void Open();
 };
 
-class FilePanel{
-public:
-    static int OffSet;
-    void init();
-    GtkGrid *BaseGrid;
-    GtkBox *FileTree;
-    FPFolderButton& NewFolder(GFile *file,GFile *ParentFolder,FPFolderButton& Parent);// Not nullable. The root folder will not be added with this function
-    FPFileButton& NewFile(GFile *file, FPFolderButton& Parent);// Not nullable. File has to be under a folder
-    void SetParent(GFile *file);
-};
-
+/* File panel folder button */
 class FPFolderButton {
 public:
     bool ChildLoaded = false;
@@ -37,8 +40,8 @@ public:
     GtkBox *BaseBox;
     GtkButton *FolderToggleBut;
     GtkBox *Content;
-    GFile *f;
-    void init(GFile &Folder,GFile *Parent,int level);
+    GFile *Folder;
+    void init(GFile &folder,GFile *parentfolder,int level);
     void AddChildFolder(FPFolderButton& Child);
     void AddChildFile(FPFileButton& Child);
     void SetAsRoot(GtkBox *Box);
