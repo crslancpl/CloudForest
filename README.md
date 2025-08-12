@@ -36,7 +36,7 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 * Embed webview (I am sure webkitgtk works for linux)
 * Move widgets to an individual window
 
-[!NOTE]
-We hope to create a basic and unified platform that can link extensions and the core ide
+>[!NOTE]
+>We hope to create a basic and unified platform that can link extensions and the core ide
 
 Repository created: 7/7
