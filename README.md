@@ -1,6 +1,6 @@
 # CloudForest
 
-[!warning] If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
+[!WARNING] If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
 
 This is the source code of the code editor.
 <br/><br/>
