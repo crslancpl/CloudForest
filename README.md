@@ -37,6 +37,6 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 * Move widgets to an individual window
 
 >[!NOTE]
->We hope to create a basic and unified platform that can link extensions and the core ide
+>We hope to create a basic and unified platform that links all features in the app (extensions, webview, settings, core app, lsp). Since C++ is not extensible, we may have to create a language that works like command line
 
 Repository created: 7/7
