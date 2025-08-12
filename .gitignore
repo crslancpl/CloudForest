@@ -17,6 +17,7 @@ CloudForest
 *.so
 *.o
 .vscode
+.zed
 .ninja_deps
 .ninja_log
 build.ninja
