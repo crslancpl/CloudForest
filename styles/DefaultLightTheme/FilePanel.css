@@ -1,0 +1,33 @@
+#FileTree button:hover {
+    border: solid 1px navajowhite;
+    background-color: transparent;
+}
+
+#FileTree button {
+    border: solid 1px transparent;
+    background-image: none;
+    background-color: transparent;
+    font-family: sans-serif;
+}
+
+#FilePanelBaseGrid {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+#FileTree scrolledwindow {
+    background-image: none;
+}
+
+.FolderButton {
+    border: none;
+    color: blue;
+}
+
+.FileButton {
+    border: none;
+    color: blueviolet;
+}
+
+.rootfolder {
+    background-color: rgba(230, 230, 230, 0.5);
+}

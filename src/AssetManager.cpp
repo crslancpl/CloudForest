@@ -7,7 +7,7 @@ GResource *UIResources;
 bool LoadUIRes(){
     GError *e;
     UIResources = g_resource_load("gresources/ui.gresource.xml", &e);
-    if(e != NULL){
+    if(e != nullptr){
 
         return false;
     }else{

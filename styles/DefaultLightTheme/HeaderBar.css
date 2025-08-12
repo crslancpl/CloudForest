@@ -1,0 +1,25 @@
+headerbar {
+    background-image: none;
+    background-color: white;
+    color: red;
+    border-bottom: 5px solid purple;
+}
+
+#headerbarbuttonbox button {
+    border-style: none;
+    background-image: none;
+    background-color: transparent;
+    color: purple;
+}
+
+#headerbarbuttonbox button:hover {
+    border: 1px solid red;
+    color: magenta;
+}
+
+#SearchBox {
+    background-image: none;
+    color: black;
+    background-color: rgb(240, 240, 240);
+    border-color: red;
+}

@@ -1,0 +1,77 @@
+#EditAreaBaseGrid {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: black;
+}
+#EditAreaBaseGrid button {
+    background-image: none;
+}
+#EditAreaBaseGrid textview,
+#EditAreaBaseGrid textview text {
+    background-color: transparent;
+}
+
+#EditAreaBaseGrid {
+    border-color: transparent;
+}
+
+#EAH {
+    padding: 10px;
+}
+
+#TextArea {
+    color: black;
+    font-family: monospace;
+    caret-color: black;
+}
+
+#LineNoArea {
+    border-right: solid 3px red;
+    color: red;
+    font-family: monospace;
+}
+
+#EditAreaBaseGrid button {
+    color: black;
+    border: none;
+    background-color: transparent;
+}
+
+#EditAreaBaseGrid button:hover {
+    border: rgba(255, 0, 100, 0.6) solid 1px;
+}
+
+.SwitcherBaseBox {
+    background-image: none;
+    background-color: white;
+}
+
+.SwitcherBaseBox:hover {
+    border: deepskyblue 1px solid;
+}
+
+.SwitcherButtonSaved {
+    color: black;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherButtonUnsaved {
+    color: red;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherCloseButton {
+    color: black;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.SwitcherCloseButton:hover {
+    color: red;
+    background-image: none;
+    background-color: transparent;
+}

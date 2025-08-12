@@ -32,7 +32,7 @@ TagTables* TagTables::GetLangTagTable(const string &Lang){
     auto result = LangTextTagsStyle.find(Lang);
     if(result == LangTextTagsStyle.end()){
         //unknown language
-        return NULL;
+        return nullptr;
     }else{
         return result->second;
     }

@@ -64,7 +64,7 @@ void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
 
-    if(parentfolder==NULL){
+    if(parentfolder==nullptr){
         FolderName = g_file_get_basename(&folder);
     }else {
         FolderName = g_file_get_relative_path(parentfolder,&folder);
@@ -131,7 +131,7 @@ void FPFileButton::init(GFile *FileGFile,int level){
 }
 
 void FPFileButton::Open(){
-    if(ea == NULL){
+    if(ea == nullptr){
         ea = NewEditArea(file, this);
     }
     GetAppWindow().EAHolder->Show(ea);

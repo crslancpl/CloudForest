@@ -123,7 +123,7 @@ void EditArea::CountError(){
 }
 
 void EditArea::LoadCursorPos(){
-    g_object_get(TextViewBuffer, "cursor-position", &CursorPos, NULL);
+    g_object_get(TextViewBuffer, "cursor-position", &CursorPos, nullptr);
 
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, Cursoritr, CursorPos);
     int LineNo = gtk_text_iter_get_line(Cursoritr) + 1;
@@ -181,7 +181,6 @@ void EditArea::LoadFile(GFile* newfile){
         if(ParentSwitcher != nullptr){
             gtk_button_set_label(ParentSwitcher->Button, FileName);
         }
-
     }
 }
 

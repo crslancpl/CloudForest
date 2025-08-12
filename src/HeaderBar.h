@@ -21,8 +21,8 @@ void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app)
 
 static GActionEntry app_entries[] =
 {
-  { "file.open", LoadFileClicked, NULL, NULL, NULL },
-  { "folder.open", LoadFolderClicked, NULL, NULL, NULL }
+  { "file.open", LoadFileClicked, nullptr, nullptr, nullptr },
+  { "folder.open", LoadFolderClicked, nullptr, nullptr, nullptr }
 };
 
 #endif

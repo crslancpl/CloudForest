@@ -25,7 +25,7 @@
 void NewWindow (GtkApplication *app, gpointer user_data){
     GtkBuilder *builder = gtk_builder_new ();
     /* Constructing MainWindow */
-    gtk_builder_add_from_file (builder, "UI/MainWindow.ui", NULL);
+    gtk_builder_add_from_file (builder, "UI/MainWindow.ui", nullptr);
     MainWindow &AppWindow = GetAppWindow();
 
     AppWindow.Window = GTK_WINDOW(gtk_builder_get_object (builder, "MainWindow"));
@@ -43,7 +43,7 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     shared_ptr<EditArea>& NewEa = NewEditArea(nullptr, nullptr);
     AppWindow.EAHolder->Show(NewEa);
 
-    LoadCssFromPath("styles/DefaultTheme.css");
+    LoadCssFromPath("styles/DefaultDarkTheme.css");
 
     // share a builder so it can be unref later at once
 

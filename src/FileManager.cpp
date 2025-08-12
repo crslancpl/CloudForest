@@ -22,7 +22,7 @@ void InitFileManager(MainWindow *parent){
 
 void OpenFileChooser(bool FileOrDir){
     // Pass True if select files. Pass False if select folder
-    if(ParentWindow->Window == NULL){
+    if(ParentWindow->Window == nullptr){
         g_print("Use 'SetParentWindow()' to set the parent first");
         return;
     }
@@ -30,19 +30,19 @@ void OpenFileChooser(bool FileOrDir){
     if(FileOrDir){
         // open one file
         gtk_file_dialog_set_title(FileDia, "Choose Files");
-        gtk_file_dialog_open (FileDia, ParentWindow->Window, NULL, FileSelected, NULL);
+        gtk_file_dialog_open (FileDia, ParentWindow->Window, nullptr, FileSelected, nullptr);
     }else{
         // open one folder
         gtk_file_dialog_set_title(FileDia, "Choose Folder");
-        gtk_file_dialog_select_folder(FileDia, ParentWindow->Window, NULL, FolderSelected, NULL);
+        gtk_file_dialog_select_folder(FileDia, ParentWindow->Window, nullptr, FolderSelected, nullptr);
     }
 }
 
 void FileSelected(GObject *source, GAsyncResult *result, void *data){
     GFile *File;
-    GError *err = NULL;
+    GError *err = nullptr;
     File = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
-    if(File == NULL) {
+    if(File == nullptr) {
         // cancelled
         g_print("Cancelled\n");
         return;
@@ -53,9 +53,9 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
 
 void FolderSelected(GObject *source, GAsyncResult *result, void *data){
     GFile *File;
-    GError *err = NULL;
+    GError *err = nullptr;
     File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
-    if(File == NULL) {
+    if(File == nullptr) {
         // cancelled
         g_print("Cancelled\n");
         return;
@@ -66,17 +66,17 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
 
 void ReadAsRootFoler(GFile &folder){
     shared_ptr<FPFolderButton> NewFolder = NewFolderButton();
-    NewFolder->init(folder, NULL ,0);
+    NewFolder->init(folder, nullptr ,0);
     NewFolder->SetAsRoot(ParentWindow->FP->FileTree);
 }
 
 void ReadFolder(GFile &folder, FPFolderButton &F){
 
-    GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, NULL, NULL);
+    GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
 
     while (true) {
-        GFileInfo *info = g_file_enumerator_next_file(FileEnum, NULL,NULL);
-        if(info == NULL){
+        GFileInfo *info = g_file_enumerator_next_file(FileEnum, nullptr,nullptr);
+        if(info == nullptr){
             // All file read
             return;
         }
@@ -98,7 +98,7 @@ void OpenFile(GFile &file, FPFileButton* f){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
     shared_ptr<EditArea> *ea = GetEditAreaFromFileAbsoPath(g_file_get_path(&file));
 
-    if(ea == NULL){
+    if(ea == nullptr){
         // Not Opened before
         ea = &NewEditArea(&file, f);
     }else{
@@ -110,12 +110,12 @@ void OpenFile(GFile &file, FPFileButton* f){
 }
 
 void CreateFile(EditArea &ea){
-    gtk_file_dialog_save(FileDia, GetAppWindow().Window, NULL, FileCreated, &ea);
+    gtk_file_dialog_save(FileDia, GetAppWindow().Window, nullptr, FileCreated, &ea);
 }
 
 void FileCreated(GObject *source, GAsyncResult *result, void *data){
     EditArea* ea = (EditArea*)data;
-    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, NULL);
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
     ea->EditingFile = file;
     ea->Save();
     ea->LoadFile(file);

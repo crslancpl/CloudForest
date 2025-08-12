@@ -6,7 +6,7 @@
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app){
     HeaderBar *NewHeaderBar = new HeaderBar();
-    gtk_builder_add_from_file(builder, "UI/HeaderBar.ui", NULL);
+    gtk_builder_add_from_file(builder, "UI/HeaderBar.ui", nullptr);
 
     NewHeaderBar->App = app;
     NewHeaderBar->HeaderBar = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
