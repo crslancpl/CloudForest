@@ -9,6 +9,7 @@
 
 
 vector<shared_ptr<EditArea>> AllEditArea;
+// The shared_ptr<EditArea> will be shared in 2 to 3 places: here, FPFileButton(If in folder), and EditAreaHolderTabBut
 vector<shared_ptr<FPFolderButton>> AllFolderButtons;
 vector<shared_ptr<FPFileButton>> AllFileButtons;
 
