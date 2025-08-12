@@ -83,12 +83,13 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
-    g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButClicked), this);
+    g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
 }
 
 EditArea::~EditArea(){
     delete [] Cursoritr;
-    Cursoritr = NULL;
+    delete [] StartItr;
+    delete [] EndItr;
 }
 
 void EditArea::UnrefBuilder(){
@@ -238,12 +239,15 @@ void EditArea::Save(){
     gtk_widget_add_css_class(GTK_WIDGET(ParentSwitcher->Button), "SwitcherButtonSaved");
 }
 
+
 void RemoveTagFromTable(GtkTextTag* tag,GtkTextTagTable* table){
+    // bugged
     g_print("removing tag\n");
     gtk_text_tag_table_remove(table, tag);
 }
 
 void ChooseLang(GtkButton *self, EditArea* Parent){
+    // not working now
     gtk_widget_set_visible(GTK_WIDGET(Parent->win), true);
 }
 
@@ -270,7 +274,7 @@ void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, E
     }
 }
 
-void SaveButClicked(GtkButton *self, EditArea* parent){
+void SaveButtonClicked(GtkButton *self, EditArea* parent){
     parent->Save();
 }
 

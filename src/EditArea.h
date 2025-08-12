@@ -37,17 +37,17 @@ public:
 
     GtkGrid *BaseGrid;
     GtkTextIter *Cursoritr;
-    GtkButton *LocationBut;
+    GtkButton *LocationBut;// showing path
     GtkButton *SaveBut;
     GtkButton *ErrorBut;
     GtkLabel *ErrorButLabel;
-    GtkButton *OutlineBut;
-    GtkMenuButton *LangBut;
-    GMenu *LangMenu;
-    GtkButton *CursorPosBut;
+    GtkButton *OutlineBut;// not working now
+    GtkMenuButton *LangBut;// not working now
+    GMenu *LangMenu;// not working now
+    GtkButton *CursorPosBut;// showing cursor's current line and offset
 
     GtkTextView *TextView;
-    GtkTextBuffer *TextViewBuffer;
+    GtkTextBuffer *TextViewBuffer;// contains file content
     GtkTextView *LineNoArea;
     GtkTextBuffer *LineNoAreaBuffer;
 
@@ -61,9 +61,9 @@ public:
     void CountLine();
     void CountError();
     void LoadCursorPos();
-    void ShowTip(char *Text);
+    void ShowTip(char *Text);// not working
     void ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions);// auto complete
-    void ChangeLanguage();
+    void ChangeLanguage();//not working
     void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
     void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
     void Destroy();
@@ -93,13 +93,13 @@ public:
     void NewTabButton();
 };
 
-static void RemoveTagFromTable(GtkTextTag* tag, GtkTextTagTable* table);
+static void RemoveTagFromTable(GtkTextTag* tag, GtkTextTagTable* table);// bugged
 static void AddTagToTable(GtkTextTag* tag,GtkTextTagTable* table);
-static void ChooseLang(GtkButton *self, EditArea* Parent);
+static void ChooseLang(GtkButton *self, EditArea* Parent);// not used now
 static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
 static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);
 static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent);
-static void SaveButClicked(GtkButton *self, EditArea* parent);
+static void SaveButtonClicked(GtkButton *self, EditArea* parent);
 static void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
 static void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
 

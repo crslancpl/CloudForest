@@ -11,6 +11,9 @@ public:
     GtkApplication *App;
     GtkHeaderBar *HeaderBar;
     GtkMenuButton *FileBut;
+    // Other buttons is not funtioning yet
+    GtkButton *CompileBut;
+    GtkSearchEntry *SearchBar;
 };
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);

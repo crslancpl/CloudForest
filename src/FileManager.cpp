@@ -65,13 +65,12 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
 }
 
 void ReadAsRootFoler(GFile &folder){
-    shared_ptr<FPFolderButton> NewFolder = NewFolderButton();
+    shared_ptr<FPFolderButton> &NewFolder = NewFolderButton();
     NewFolder->init(folder, nullptr ,0);
     NewFolder->SetAsRoot(ParentWindow->FP->FileTree);
 }
 
 void ReadFolder(GFile &folder, FPFolderButton &F){
-
     GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
 
     while (true) {

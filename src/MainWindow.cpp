@@ -24,7 +24,7 @@
 
 void NewWindow (GtkApplication *app, gpointer user_data){
     GtkBuilder *builder = gtk_builder_new ();
-    /* Constructing MainWindow */
+    /* Constructing MainWindow class */
     gtk_builder_add_from_file (builder, "UI/MainWindow.ui", nullptr);
     MainWindow &AppWindow = GetAppWindow();
 
@@ -40,14 +40,12 @@ void NewWindow (GtkApplication *app, gpointer user_data){
 
     gtk_window_set_default_size(AppWindow.Window, 1200, 800);
     gtk_window_set_application (AppWindow.Window, app);
+
+    /* Creates a EditArea that doesn't open any file */
     shared_ptr<EditArea>& NewEa = NewEditArea(nullptr, nullptr);
     AppWindow.EAHolder->Show(NewEa);
 
     LoadCssFromPath("styles/DefaultDarkTheme.css");
-
-    // share a builder so it can be unref later at once
-
-    gtk_widget_set_visible (GTK_WIDGET(AppWindow.Window), TRUE);
 
     /* Load Headerbar */
     HeaderBar *hb = LoadHeaderBar(builder, AppWindow.App);
@@ -55,8 +53,11 @@ void NewWindow (GtkApplication *app, gpointer user_data){
 
     InitFileManager(&AppWindow);
 
-    gtk_grid_attach(AppWindow.WindowGrid,GTK_WIDGET(AppWindow.FP->BaseGrid), 0, 0, 1,1 );
-    gtk_grid_attach(AppWindow.WindowGrid, GTK_WIDGET(AppWindow.EAHolder->BaseGrid), 1, 0, 1, 1);
+    gtk_grid_attach(AppWindow.WindowGrid,GTK_WIDGET(AppWindow.FP->BaseGrid), 0, 0, 1,1 );// FilePanel
+    gtk_grid_attach(AppWindow.WindowGrid, GTK_WIDGET(AppWindow.EAHolder->BaseGrid), 1, 0, 1, 1);// EditAreaHolder
 
+    gtk_widget_set_visible (GTK_WIDGET(AppWindow.Window), TRUE);
+
+    AppWindow.FP->UnrefBuilder();
     g_object_unref (builder);
 }

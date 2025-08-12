@@ -1,5 +1,5 @@
 # CloudForest
-This is the source code of application part of the ide.
+This is the source code of application part of the code editor.
 <br/><br/>
 
 ## Depenencies:
@@ -13,7 +13,6 @@ This is the source code of application part of the ide.
 1. Run `cmake .` again to make sure the make file is right.
 1. Run `make` if the cmake generates `Makefile` or `ninja` if generates `ninja build` depends on your system. Check for those files in the folder.
 1. Then run the app in File Explorer or run it in terminal `./CloudForest`.
-
 
 
 Repository created: 7/7

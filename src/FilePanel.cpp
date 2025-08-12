@@ -23,68 +23,66 @@ GFile *RootFolder;
 int FilePanel::OffSet;
 
 void FilePanel::init(){
-    GtkBuilder *builder = gtk_builder_new_from_file("UI/FilePanel.ui");
+    builder =  gtk_builder_new_from_file("UI/FilePanel.ui");
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
     FileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
-    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 270, 20);
+    gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 270, 20);// height is set to expand
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
     gtk_box_set_spacing(FileTree, 5);
 }
 
-void FilePanel::SetParent(GFile *file){
-    RootFolder = file;
-}
-
-FPFolderButton& FilePanel::NewFolder(GFile *file,GFile *ParentFolder,FPFolderButton& Parent){
-    shared_ptr<FPFolderButton> Child = NewFolderButton();
-    Child->init(*file, ParentFolder,Parent.Level+1);
+FPFolderButton& FilePanel::NewFolder(GFile *folder,GFile *ParentFolder,FPFolderButton& Parent){
+    shared_ptr<FPFolderButton>& Child = NewFolderButton();
+    Child->init(*folder, ParentFolder,Parent.Level+1);
     Parent.AddChildFolder(*Child.get());
     return *Child.get();
 }
 
 FPFileButton& FilePanel::NewFile(GFile *file, FPFolderButton& Parent){
-    shared_ptr<FPFileButton> childfile = NewFileButton();
+    shared_ptr<FPFileButton>& childfile = NewFileButton();
     childfile->init(file,Parent.Level+1);
     Parent.AddChildFile(*childfile.get());
     return *childfile.get();
 }
 
-
+void FilePanel::UnrefBuilder(){
+    g_object_unref(G_OBJECT(builder));
+}
 
 
 /*
  * FPFolderButton class
  */
 void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
-    builder = gtk_builder_new_from_file("UI/FilePanel.ui");
     Folder = &folder;
     Level=level;
+    /* binding */
+    builder = gtk_builder_new_from_file("UI/FilePanel.ui");
     BaseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     FolderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
+    FolderName = g_file_get_basename(&folder);// name of folder
 
-    if(parentfolder==nullptr){
-        FolderName = g_file_get_basename(&folder);
-    }else {
-        FolderName = g_file_get_relative_path(parentfolder,&folder);
-    }
-    gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
-
+    /* set styles */
+    gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     gtk_widget_set_margin_start(GTK_WIDGET(FileLab), FilePanel::OffSet * Level);
     gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
     gtk_widget_set_halign(GTK_WIDGET(FileLab), GTK_ALIGN_START);
     gtk_widget_set_valign(GTK_WIDGET(FileLab), GTK_ALIGN_CENTER);
     gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
     gtk_widget_set_visible(GTK_WIDGET(Content), false);
-    Inited = true;
 
-    g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);
+    g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);// expand and collapse folder
+
+    /* Since the program is not finished yet, we use Inited to reduce memory problems */
+    Inited = true;
 }
 
 void FPFolderButton::AddChildFolder(FPFolderButton& Child){
     if(!Inited){
+        /* Check if the Child is inited, or Child.BaseBox will be null and result segmentation fault */
         g_print("Folder::AddChildFolder: init folder first\n");
         return;
     }
@@ -98,6 +96,10 @@ void FPFolderButton::AddChildFile(FPFileButton& Child){
 void FPFolderButton::SetAsRoot(GtkBox *Box){
     gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
     gtk_box_append(Box, GTK_WIDGET(BaseBox));
+}
+
+void FPFolderButton::UnrefBuilder(){
+    g_object_unref(G_OBJECT(builder));
 }
 
 void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
@@ -132,8 +134,10 @@ void FPFileButton::init(GFile *FileGFile,int level){
 
 void FPFileButton::Open(){
     if(ea == nullptr){
+        // no corresponding EditArea so create a new one
         ea = NewEditArea(file, this);
     }
+    /* It can be shown on any EditAreaHolder, but now only AppWindow's EAHolder exist */
     GetAppWindow().EAHolder->Show(ea);
 }
 

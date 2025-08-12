@@ -13,9 +13,7 @@ public:
     GtkWindow *Window;
     FilePanel *FP;
     GtkButton *AppBut;
-    GtkButton *FileBut;
-    GtkButton *CompileBut;
-    GtkSearchEntry *SearchBar;
+
     GtkGrid *WindowGrid;
 };
 
