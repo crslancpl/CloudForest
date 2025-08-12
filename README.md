@@ -3,7 +3,7 @@
 >[!WARNING]
 >If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
 
-This is the source code of the code editor.
+This is the source code of the code editor, using GTK4 C library in C++. The source code is now messy.
 <br/><br/>
 
 ## Depenencies:
@@ -18,5 +18,25 @@ This is the source code of the code editor.
 1. Run `make` if the cmake generates `Makefile` or `ninja` if generates `ninja build` depends on your system. Check for those files in the folder.
 1. Then run the app in File Explorer or run it in terminal `./CloudForest`.
 
+## Available features:
+* Open file/folder
+* Save file
+* Create file
+
+## Planned features:
+* Drag to resize FilePanel
+* Syntax highlight
+* Language server support
+* Search
+* Settings
+* Extension
+* Create file in app
+* Blur
+* Compile setting
+* Embed webview (I am sure webkitgtk works for linux)
+* Move widgets to an individual window
+
+[!NOTE]
+We hope to create a basic and unified platform that can link extensions and the core ide
 
 Repository created: 7/7
