@@ -8,6 +8,7 @@
 
 #include "Classes.h"
 #include <gio/gio.h>
+#include <gtk/gtk.h>
 #include <memory>
 #include <string>
 
@@ -15,7 +16,8 @@
 using namespace std;
 
 MainWindow &GetAppWindow();
-
+GtkApplication &GetApp();
+void SetApp(GtkApplication* app);
 
 
 shared_ptr<FPFileButton> &NewFileButton();// The newly created file button will be pushed to AllFileButtons

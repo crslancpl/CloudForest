@@ -8,15 +8,14 @@
 
 class HeaderBar{
 public:
-    GtkApplication *App;
-    GtkHeaderBar *HeaderBar;
+    GtkHeaderBar *HeaderBarWidget;
     GtkMenuButton *FileBut;
     // Other buttons is not funtioning yet
     GtkButton *CompileBut;
     GtkSearchEntry *SearchBar;
 };
 
-HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app);
+HeaderBar* LoadHeaderBar(GtkBuilder *builder);//share builder with MainWindow
 
 
 void LoadFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app);

@@ -23,6 +23,8 @@
 
 
 void NewWindow (GtkApplication *app, gpointer user_data){
+    SetApp(app);
+
     GtkBuilder *builder = gtk_builder_new ();
     /* Constructing MainWindow class */
     gtk_builder_add_from_file (builder, "UI/MainWindow.ui", nullptr);
@@ -30,7 +32,6 @@ void NewWindow (GtkApplication *app, gpointer user_data){
 
     AppWindow.Window = GTK_WINDOW(gtk_builder_get_object (builder, "MainWindow"));
     AppWindow.WindowGrid = GTK_GRID(gtk_builder_get_object(builder,"WindowGrid"));
-    AppWindow.App = app;
     AppWindow.FP=new FilePanel();
     AppWindow.FP->init();
     AppWindow.EAHolder = new EditAreaHolder();
@@ -48,8 +49,8 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     LoadCssFromPath("styles/DefaultDarkTheme.css");
 
     /* Load Headerbar */
-    HeaderBar *hb = LoadHeaderBar(builder, AppWindow.App);
-    gtk_window_set_titlebar(GTK_WINDOW(AppWindow.Window), GTK_WIDGET(hb->HeaderBar));
+    AppWindow.Headerbar = LoadHeaderBar(builder);
+    gtk_window_set_titlebar(GTK_WINDOW(AppWindow.Window), GTK_WIDGET(AppWindow.Headerbar->HeaderBarWidget));
 
     InitFileManager(&AppWindow);
 

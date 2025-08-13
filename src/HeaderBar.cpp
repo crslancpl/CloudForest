@@ -2,17 +2,17 @@
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
 
+#include "Core.h"
 #include "FileManager.h"
+#include "MainWindow.h"
 
-HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app){
+HeaderBar* LoadHeaderBar(GtkBuilder *builder){
     HeaderBar *NewHeaderBar = new HeaderBar();
     gtk_builder_add_from_file(builder, "UI/HeaderBar.ui", nullptr);
 
-    NewHeaderBar->App = app;
-    NewHeaderBar->HeaderBar = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
+    NewHeaderBar->HeaderBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
     NewHeaderBar->FileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "FileBut"));
-
-    g_action_map_add_action_entries (G_ACTION_MAP (NewHeaderBar->App), app_entries, G_N_ELEMENTS (app_entries), NewHeaderBar->App);
+    g_action_map_add_action_entries (G_ACTION_MAP (&GetApp()), app_entries, G_N_ELEMENTS (app_entries), &GetApp());
 
     return NewHeaderBar;
 }

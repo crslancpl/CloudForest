@@ -14,11 +14,20 @@ vector<shared_ptr<FPFolderButton>> AllFolderButtons;
 vector<shared_ptr<FPFileButton>> AllFileButtons;
 
 int EditAreaNum;
+GtkApplication *App;
 MainWindow AppWindow;
 
 
 MainWindow &GetAppWindow(){
     return AppWindow;
+}
+
+GtkApplication &GetApp(){
+    return *App;
+}
+
+void SetApp(GtkApplication* app){
+    App = app;
 }
 
 shared_ptr<FPFileButton>& NewFileButton(){

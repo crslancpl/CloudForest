@@ -32,6 +32,10 @@ void FilePanel::init(){
     gtk_box_set_spacing(FileTree, 5);
 }
 
+void FilePanel::AddNewRootFolder(FPFolderButton& folderbutton){
+    gtk_box_append(FileTree,GTK_WIDGET(folderbutton.BaseBox));
+}
+
 FPFolderButton& FilePanel::NewFolder(GFile *folder,GFile *ParentFolder,FPFolderButton& Parent){
     shared_ptr<FPFolderButton>& Child = NewFolderButton();
     Child->init(*folder, ParentFolder,Parent.Level+1);
@@ -66,6 +70,9 @@ void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
 
     GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
     /* set styles */
+    if(parentfolder == nullptr){
+        gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
+    }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
     gtk_widget_set_margin_start(GTK_WIDGET(FileLab), FilePanel::OffSet * Level);
     gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
@@ -91,11 +98,6 @@ void FPFolderButton::AddChildFolder(FPFolderButton& Child){
 
 void FPFolderButton::AddChildFile(FPFileButton& Child){
     gtk_box_append(Content, GTK_WIDGET(Child.Button));
-}
-
-void FPFolderButton::SetAsRoot(GtkBox *Box){
-    gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
-    gtk_box_append(Box, GTK_WIDGET(BaseBox));
 }
 
 void FPFolderButton::UnrefBuilder(){

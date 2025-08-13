@@ -10,19 +10,17 @@
 #include "Core.h"
 #include "MainWindow.h"
 
-MainWindow *ParentWindow;
 GtkFileDialog *FileDia;
 
 using namespace std;
 
 void InitFileManager(MainWindow *parent){
-    ParentWindow = parent;
     FileDia = gtk_file_dialog_new();
 }
 
 void OpenFileChooser(bool FileOrDir){
     // Pass True if select files. Pass False if select folder
-    if(ParentWindow->Window == nullptr){
+    if(GetAppWindow().Window == nullptr){
         g_print("Use 'SetParentWindow()' to set the parent first");
         return;
     }
@@ -30,11 +28,11 @@ void OpenFileChooser(bool FileOrDir){
     if(FileOrDir){
         // open one file
         gtk_file_dialog_set_title(FileDia, "Choose Files");
-        gtk_file_dialog_open (FileDia, ParentWindow->Window, nullptr, FileSelected, nullptr);
+        gtk_file_dialog_open (FileDia, GetAppWindow().Window, nullptr, FileSelected, nullptr);
     }else{
         // open one folder
         gtk_file_dialog_set_title(FileDia, "Choose Folder");
-        gtk_file_dialog_select_folder(FileDia, ParentWindow->Window, nullptr, FolderSelected, nullptr);
+        gtk_file_dialog_select_folder(FileDia, GetAppWindow().Window, nullptr, FolderSelected, nullptr);
     }
 }
 
@@ -61,19 +59,20 @@ void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
 
-    ReadAsRootFoler(*File);
+    ReadAsRootFolder(*File);
 }
 
-void ReadAsRootFoler(GFile &folder){
+void ReadAsRootFolder(GFile &folder){
     shared_ptr<FPFolderButton> &NewFolder = NewFolderButton();
     NewFolder->init(folder, nullptr ,0);
-    NewFolder->SetAsRoot(ParentWindow->FP->FileTree);
+    GetAppWindow().FP->AddNewRootFolder(*NewFolder.get());
 }
 
-void ReadFolder(GFile &folder, FPFolderButton &F){
+void ReadFolder(GFile &folder, FPFolderButton &folderbutton){
     GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
 
     while (true) {
+        //Go through every child file and folder and
         GFileInfo *info = g_file_enumerator_next_file(FileEnum, nullptr,nullptr);
         if(info == nullptr){
             // All file read
@@ -83,12 +82,12 @@ void ReadFolder(GFile &folder, FPFolderButton &F){
         GFile *child = g_file_enumerator_get_child(FileEnum,info);
         if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
             shared_ptr<FPFolderButton> &childfolderbutton = NewFolderButton();
-            childfolderbutton->init(*child, &folder, F.Level+1);
-            F.AddChildFolder(*childfolderbutton.get());
+            childfolderbutton->init(*child, &folder, folderbutton.Level+1);
+            folderbutton.AddChildFolder(*childfolderbutton.get());
         }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
             shared_ptr<FPFileButton> &childfilebutton = NewFileButton();
-            childfilebutton->init(child, F.Level+1);
-            F.AddChildFile(*childfilebutton.get());
+            childfilebutton->init(child, folderbutton.Level+1);
+            folderbutton.AddChildFile(*childfilebutton.get());
         }
     }
 }
@@ -103,7 +102,7 @@ void OpenFile(GFile &file, FPFileButton* f){
     }else{
         // Opened before
     }
-    ParentWindow->EAHolder->Show(*ea);
+    GetAppWindow().EAHolder->Show(*ea);
 
     (*ea)->UnrefBuilder();
 }

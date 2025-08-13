@@ -13,6 +13,8 @@ public:
     GtkGrid *BaseGrid;
     GtkBox *FileTree;
 
+    void AddNewRootFolder(FPFolderButton& folderbutton);
+
     FPFolderButton& NewFolder(GFile *file,GFile *ParentFolder,FPFolderButton& Parent);
     // Parent not nullable. The root folder will not be added with this function. See FPFolderButton::SetAsRoot()
 
@@ -52,7 +54,6 @@ public:
     void init(GFile &folder,GFile *parentfolder,int level);
     void AddChildFolder(FPFolderButton& Child);
     void AddChildFile(FPFileButton& Child);
-    void SetAsRoot(GtkBox *Box);//
     void UnrefBuilder();
 };
 

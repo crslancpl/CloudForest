@@ -9,11 +9,9 @@
 class MainWindow{
 public:
     EditAreaHolder *EAHolder;
-    GtkApplication *App;
     GtkWindow *Window;
     FilePanel *FP;
-    GtkButton *AppBut;
-
+    HeaderBar *Headerbar;
     GtkGrid *WindowGrid;
 };
 
