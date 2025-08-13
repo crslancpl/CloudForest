@@ -5,7 +5,7 @@
 
 This is the source code of the code editor, using GTK4 C library in C++. The source code is now messy.
 <br/><br/>
->[!INFO]
+>[!NOTE]
 >Read the documentation in doc folder even though it is not finished yet. The doc is written with [obsidian](https://obsidian.md). If you have obsidian installed you can open the doc folder in obsidian
 
 ## Depenencies:
