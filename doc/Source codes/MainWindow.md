@@ -9,8 +9,9 @@ public:
     EditAreaHolder *EAHolder;
     GtkWindow *Window;
     FilePanel *FP;
-	HeaderBar *Headerbar;
+    HeaderBar *Headerbar;
     GtkGrid *WindowGrid;
+    GtkSeparator *Separator;
 };
 ```
 
@@ -20,17 +21,22 @@ MainWindow class is not a gtk widget. The window you see is `GtkWindow *Window` 
 
 A `MainWindow` consist a `HeaderBar *Headerbar` at the top. and `GtkGrid *WindowGrid` in the middle. `WindowGrid` has a `EditAreaHolder *EAHolder` and `FilePanel *FP`. 
 
+When the user drags `Separator`. `SeparatorDragUpdate()` will be called and resize the basegrid of file panel.
+
 ### UI content:
 Window
      Headerbar (top)
      WindowGrid (middle)
 	     FP (Left)
+	     Separator (Middle)
 	     EAHolder (Right)
 
 
 ### CSS:
 ```css
 #MainWindow
+
+.Separator
 ```
 
 
@@ -38,5 +44,9 @@ Window
 
 ```C++
 void NewWindow (GtkApplication *app, gpointer user_data);
+
+void SeparatorDragUpdate(GtkGestureDrag* self, gdouble x, gdouble y, gpointer user_data);
 ```
-It is called by Entry.cpp. It will get the `AppWindow` from `Core.cpp` with `GetAppWindow()`. And set the variables of `AppWindow`. 
+`NewWindow()`is called by Entry.cpp. It will get the `AppWindow` from `Core.cpp` with `GetAppWindow()`. And set the variables of `AppWindow`. 
+
+`SeparatorDragUpdate()` is the callback function for drag gesture of `Separator`. See [GTK4 doc](https://docs.gtk.org/gtk4/signal.GestureDrag.drag-update.html) for more. It will set the width of `BaseGrid` of the file panel in the window.

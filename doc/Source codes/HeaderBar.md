@@ -7,6 +7,7 @@ class HeaderBar{
 public:
     GtkHeaderBar *HeaderBarWidget;
     GtkMenuButton *FileBut;
+    GtkButton *IdeBut;
     // Other buttons is not funtioning yet
     GtkButton *CompileBut;
     GtkSearchEntry *SearchBar;
@@ -17,9 +18,11 @@ HeaderBar class is not a gtk widget. The headerbar you see is `GtkHeaderBar *Hea
 
 Only one HeaderBar is needed so call `HeaderBar* LoadHeaderBar(GtkBuilder *builder, GtkApplication *app)` to create a HeaderBar
 
-Currently, only `FileBut` is working.
+Currently, only `FileBut` and `IdeBut` are working.
 
-If you see the UI file, buttons and search entry are placed inside a GtkBox.
+Click the IDE button will call the `IdeButtonClicked()` which shows the [[SettingPanel]]
+
+If you read the UI file, you will see that buttons and search entry are placed inside a GtkBox.
 
 ### CSS:
 ```css
@@ -35,12 +38,16 @@ headerbar
 ```c++
 HeaderBar* LoadHeaderBar(GtkBuilder *builder);
 
+void IdeButtonClicked(GtkButton *self, void* userdata);
+
 void LoadFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app);
 
 void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app);
 ```
 
-`LoadHeaderBar()` uses the same builder with `NewWindow()` to reduce memory usage. It wll load the widget from ui file and assign it to a new `HeaderBar` object. And then return the pointer
+`LoadHeaderBar()` uses the same builder with `NewWindow()` to reduce memory usage. It will load the widget from the UI file and assign it to a new `HeaderBar` object. And then return the pointer.
+
+`IdeButtonClicked` is the callback for IDE button. It opens [[SettingPanel]].
 
 `LoadFileClicked()` is a g_callback function triggered when the "Open File" button under "File" menu is clicked,  `LoadFolderClicked()` is also a callback function.
 

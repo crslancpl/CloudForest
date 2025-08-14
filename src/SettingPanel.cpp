@@ -9,7 +9,7 @@ GtkButton *CloseButton;
 GtkWindow *appwindow;// MainWindow
 GtkBox *BaseBox;// Saperates TabButtonBox and Stack
 GtkBox *TabButtonBox;// left-hand side
-GtkGrid *TabButtonBoxSaperator;
+GtkGrid *TabButtonBoxSeparator;
 GtkStack *Stack;// right-hand side
 
 void InitSettingPanel(){
@@ -18,23 +18,24 @@ void InitSettingPanel(){
     CloseButton = GTK_BUTTON(gtk_button_new_with_label("close"));
     BaseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     TabButtonBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-    TabButtonBoxSaperator = GTK_GRID(gtk_grid_new());
+    TabButtonBoxSeparator = GTK_GRID(gtk_grid_new());
     Stack = GTK_STACK(gtk_stack_new());
 
     gtk_box_append(BaseBox, GTK_WIDGET(TabButtonBox));
     gtk_box_append(BaseBox, GTK_WIDGET(Stack));
-    gtk_box_append(TabButtonBox, GTK_WIDGET(TabButtonBoxSaperator));
+    gtk_box_append(TabButtonBox, GTK_WIDGET(TabButtonBoxSeparator));
     gtk_box_append(TabButtonBox, GTK_WIDGET(CloseButton));
 
     gtk_widget_add_css_class(GTK_WIDGET(SettingWindow), "SettingPanel");
     gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
     gtk_widget_add_css_class(GTK_WIDGET(CloseButton), "CloseButton");
     gtk_widget_set_hexpand(GTK_WIDGET(CloseButton),true);
-    gtk_widget_set_vexpand(GTK_WIDGET(TabButtonBoxSaperator),true);
+    gtk_widget_set_vexpand(GTK_WIDGET(TabButtonBoxSeparator),true);
 
     gtk_window_set_decorated(SettingWindow, false);
     gtk_window_set_transient_for(SettingWindow, appwindow);
     gtk_window_set_child(SettingWindow, GTK_WIDGET(BaseBox));
+
     g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseSettingPanel), nullptr);
 }
 
