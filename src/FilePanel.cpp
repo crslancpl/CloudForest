@@ -166,5 +166,6 @@ void FPFileButton::Open(){
 }
 
 void FileButtonClick(GtkButton *self,FPFileButton &Parent){
-    Parent.Open();
+    // Parent.Open();
+    g_print("File clicked: %s\n", Parent.FileName); // To check if the click is working and avoid segfault till the open logic is implemented
 }
