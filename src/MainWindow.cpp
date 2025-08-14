@@ -19,6 +19,7 @@
 
 #include "FilePanel.h"
 #include "EditArea.h"
+#include "SettingPanel.h"
 #include "Core.h"
 
 
@@ -58,6 +59,8 @@ void NewWindow (GtkApplication *app, gpointer user_data){
     gtk_grid_attach(AppWindow.WindowGrid, GTK_WIDGET(AppWindow.EAHolder->BaseGrid), 1, 0, 1, 1);// EditAreaHolder
 
     gtk_widget_set_visible (GTK_WIDGET(AppWindow.Window), TRUE);
+
+    InitSettingPanel();
 
     AppWindow.FP->UnrefBuilder();
     g_object_unref (builder);

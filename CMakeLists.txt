@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}
     src/Entry.cpp src/MainWindow.cpp src/CssLoader.cpp
     src/EditArea.cpp src/ToolFunctions.cpp src/AssetManager.cpp
     src/FileManager.cpp src/HeaderBar.cpp
-    src/TextTag.cpp src/Core.cpp
+    src/TextTag.cpp src/Core.cpp src/SettingPanel.cpp
     )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4)

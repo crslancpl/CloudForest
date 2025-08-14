@@ -203,12 +203,12 @@ void EditArea::Destroy(){
         CorreFileButton = nullptr;
     }
 
-    gtk_stack_remove(ParentSwitcher->ParentHolder->Container, GTK_WIDGET(BaseGrid));
+    gtk_stack_remove(ParentHolder->Container, GTK_WIDGET(BaseGrid));
     int pos = 0;
     RemoveEditArea(this);
 
     for(shared_ptr<EditAreaHolderTabBut>& t: ParentHolder->TabButtons){
-        if(t->EA.get() == this){
+        if(t.get() == ParentSwitcher){
             gtk_box_remove(ParentHolder->Switcher, GTK_WIDGET(t->BaseBox));
             ParentHolder->TabButtons.erase(ParentHolder->TabButtons.begin()+pos);
             break;
@@ -216,7 +216,7 @@ void EditArea::Destroy(){
         pos ++;
     }
 
-    ParentSwitcher->ParentHolder = nullptr;
+    ParentSwitcher = nullptr;
     ParentHolder = nullptr;
 }
 
