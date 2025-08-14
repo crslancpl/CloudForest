@@ -97,6 +97,8 @@ EditArea::~EditArea(){
     delete [] Cursoritr;
     delete [] StartItr;
     delete [] EndItr;
+    free(FileName);
+    free(AbsoPath);
 }
 
 void EditArea::UnrefBuilder(){
@@ -174,8 +176,8 @@ void EditArea::LoadFile(GFile* newfile){
     if (newfile == nullptr) {
         // Don't open file
         gtk_button_set_label(LocationBut, "New File");
-        FileName = "New File";
-        AbsoPath = "New File";
+        FileName = strdup("New File");
+        AbsoPath = strdup("New File");
     }else{
         char *content;
         FileName = g_file_get_basename(newfile);
