@@ -84,6 +84,13 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
+
+    gtk_widget_set_has_tooltip(GTK_WIDGET(SaveBut), TRUE);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(SaveBut), "Save");
+
+    gtk_widget_set_has_tooltip(GTK_WIDGET(LocationBut), TRUE);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(LocationBut), 
+        file ? g_file_get_path(file) : "New file");
 }
 
 EditArea::~EditArea(){
