@@ -31,3 +31,32 @@
 .rootfolder {
     background-color: rgba(0, 0, 0, 0.2);
 }
+
+.file-tree {
+    background-color: #2d2d2d;
+    padding: 5px;
+}
+
+.FolderButton {
+    color: #8ab4f8;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 3px;
+}
+
+.FolderButton:hover {
+    background-color: #3d3d3d;
+}
+
+.FileButton {
+    color: #e0e0e0;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 3px;
+}
+
+.FileButton:hover {
+    background-color: #3d3d3d;
+}

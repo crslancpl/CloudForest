@@ -30,6 +30,7 @@ void FilePanel::init(){
     gtk_widget_set_size_request(GTK_WIDGET(BaseGrid), 270, 20);// height is set to expand
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), false);
     gtk_box_set_spacing(FileTree, 5);
+    gtk_widget_add_css_class(GTK_WIDGET(FileTree), "file-tree");
 }
 
 void FilePanel::AddNewRootFolder(FPFolderButton& folderbutton){
@@ -120,18 +121,39 @@ void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
 /*
  * FPFileButton class
  */
-void FPFileButton::init(GFile *FileGFile,int level){
-    Button = GTK_BUTTON(gtk_button_new());
 
+void FPFileButton::init(GFile *FileGFile, int level) {
+    Button = GTK_BUTTON(gtk_button_new());
     file = FileGFile;
+
+    // Icons for files in left-panel (The program can segfault if you click on a file)
+    GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+    GIcon *icon = g_file_query_info(file, 
+        "standard::icon", 
+        G_FILE_QUERY_INFO_NONE, 
+        nullptr, 
+        nullptr) ? 
+        g_file_info_get_icon(g_file_query_info(file, 
+            "standard::icon", 
+            G_FILE_QUERY_INFO_NONE, 
+            nullptr, 
+            nullptr)) : 
+        g_content_type_get_icon("text/plain");
+    GtkWidget *image = gtk_image_new_from_gicon(icon);
+    gtk_image_set_pixel_size(GTK_IMAGE(image), 16);
+    GtkWidget *label = gtk_label_new(g_file_get_basename(file));
+    
+    gtk_box_append(box, image);
+    gtk_box_append(box, label);
+    gtk_button_set_child(Button, GTK_WIDGET(box));
+
     FileAbsoPath = g_file_get_path(file);
     FileName = g_file_get_basename(file);
-    GtkLabel *L = GTK_LABEL(gtk_label_new(FileName));
-    gtk_button_set_child(Button,GTK_WIDGET(L));
-    gtk_widget_set_margin_start(GTK_WIDGET(L), FilePanel::OffSet * level);
-    gtk_widget_set_halign(GTK_WIDGET(L), GTK_ALIGN_START);
-    gtk_widget_add_css_class(GTK_WIDGET(L), string("FileButton").c_str());
-    g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick),this);
+    
+    gtk_widget_set_margin_start(label, FilePanel::OffSet * level);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_widget_add_css_class(GTK_WIDGET(Button), "FileButton");
+    g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick), this);
 }
 
 void FPFileButton::Open(){
