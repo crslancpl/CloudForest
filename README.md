@@ -24,9 +24,9 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 * Open file/folder
 * Save file
 * Create file
+* Drag to resize FilePanel
 
 ## Planned features:
-* Drag to resize FilePanel
 * Syntax highlight
 * Language server support
 * Search
