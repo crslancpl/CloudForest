@@ -109,7 +109,7 @@ void ReadFolder(GFile &folder, FPFolderButton &folderbutton){
             folderbutton.AddChildFile(*childfilebutton.get());
         }
 
-        g_object_unref(child);
+        //g_object_unref(child);=> child (pointer) will be given to FPFolderButton and FPFileButton so it is moved to destructor of the Buttons
         g_object_unref(info);
     }
 

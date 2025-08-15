@@ -25,6 +25,7 @@ public:
 /* File panel file button */
 class FPFileButton {
 public:
+    ~FPFileButton();
     GFile *file;
     shared_ptr<EditArea> ea;
     GtkButton *Button;
@@ -39,6 +40,7 @@ public:
 /* File panel folder button */
 class FPFolderButton {
 public:
+    ~FPFolderButton();
     GtkBuilder *builder;// unref by UnrefBuilder();
     bool ChildLoaded = false;
     // To save memory, child files and folders will only be loaded when the Content got expanded for the first time.

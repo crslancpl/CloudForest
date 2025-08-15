@@ -59,6 +59,10 @@ void FilePanel::UnrefBuilder(){
 /*
  * FPFolderButton class
  */
+FPFolderButton::~FPFolderButton(){
+    g_object_unref(Folder);// g_object_unref(child); moved here
+}
+
 void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
     Folder = &folder;
     Level=level;
@@ -122,35 +126,40 @@ void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
  * FPFileButton class
  */
 
+ FPFileButton::~FPFileButton(){
+     g_object_unref(file);// g_object_unref(child); moved here
+ }
+
 void FPFileButton::init(GFile *FileGFile, int level) {
     Button = GTK_BUTTON(gtk_button_new());
     file = FileGFile;
 
     // Icons for files in left-panel (The program can segfault if you click on a file)
     GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-    GIcon *icon = g_file_query_info(file, 
-        "standard::icon", 
-        G_FILE_QUERY_INFO_NONE, 
-        nullptr, 
-        nullptr) ? 
-        g_file_info_get_icon(g_file_query_info(file, 
-            "standard::icon", 
-            G_FILE_QUERY_INFO_NONE, 
-            nullptr, 
-            nullptr)) : 
+    GIcon *icon = g_file_query_info(file,
+        "standard::icon",
+        G_FILE_QUERY_INFO_NONE,
+        nullptr,
+        nullptr) ?
+        g_file_info_get_icon(g_file_query_info(file,
+            "standard::icon",
+            G_FILE_QUERY_INFO_NONE,
+            nullptr,
+            nullptr)) :
         g_content_type_get_icon("text/plain");
     GtkWidget *image = gtk_image_new_from_gicon(icon);
     gtk_image_set_pixel_size(GTK_IMAGE(image), 16);
     GtkWidget *label = gtk_label_new(g_file_get_basename(file));
-    
+
     gtk_box_append(box, image);
     gtk_box_append(box, label);
     gtk_button_set_child(Button, GTK_WIDGET(box));
 
     FileAbsoPath = g_file_get_path(file);
     FileName = g_file_get_basename(file);
-    
-    gtk_widget_set_margin_start(label, FilePanel::OffSet * level);
+
+    gtk_widget_set_margin_start(image, FilePanel::OffSet * level);// Now the image will be pushed backward instead of label
+    // original: gtk_widget_set_margin_start(label, FilePanel::OffSet * level);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     gtk_widget_add_css_class(GTK_WIDGET(Button), "FileButton");
     g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick), this);
@@ -166,6 +175,6 @@ void FPFileButton::Open(){
 }
 
 void FileButtonClick(GtkButton *self,FPFileButton &Parent){
-    // Parent.Open();
+    Parent.Open();// now gfile will not be dangling
     g_print("File clicked: %s\n", Parent.FileName); // To check if the click is working and avoid segfault till the open logic is implemented
 }

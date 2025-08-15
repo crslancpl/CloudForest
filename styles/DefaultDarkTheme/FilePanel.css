@@ -41,7 +41,7 @@
     color: #8ab4f8;
     background: none;
     border: none;
-    text-align: left;
+    /*text-align: left; it is now done with c code in init()*/
     padding: 3px;
 }
 
@@ -53,7 +53,7 @@
     color: #e0e0e0;
     background: none;
     border: none;
-    text-align: left;
+    /*text-align: left; it is now done with c code in init()*/
     padding: 3px;
 }
 
