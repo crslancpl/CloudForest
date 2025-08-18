@@ -2,6 +2,7 @@
 
 #include <gtk/gtk.h>
 
+//UI (not implemented)
 GResource *UIResources;
 
 bool LoadUIRes(){
@@ -15,4 +16,13 @@ bool LoadUIRes(){
         g_resources_register(UIResources);
         return true;
     }
+}
+
+//Settings
+GSettings *Settings;
+void LoadSettings(){
+    Settings = g_settings_new_with_path("ide.cf", "gres/gschemas.compiled");
+    char* c = nullptr;
+    g_settings_get(Settings, "editor-tab-type", "%s", c);
+    g_print("%s", c);
 }

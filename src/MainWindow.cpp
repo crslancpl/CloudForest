@@ -14,13 +14,15 @@
 #include "CssLoader.h"
 #include "FileManager.h"
 #include "HeaderBar.h"
-#include <memory>
-#include <type_traits>
-
+#include "AssetManager.h"
 #include "FilePanel.h"
 #include "EditArea.h"
 #include "SettingPanel.h"
 #include "Core.h"
+
+#include <memory>
+#include <type_traits>
+
 
 
 void NewWindow (GtkApplication *app, gpointer user_data){

@@ -8,27 +8,30 @@
 #include <algorithm>
 
 
-vector<shared_ptr<EditArea>> AllEditArea;
-// The shared_ptr<EditArea> will be shared in 2 to 3 places: here, FPFileButton(If in folder), and EditAreaHolderTabBut
-vector<shared_ptr<FPFolderButton>> AllFolderButtons;
-vector<shared_ptr<FPFileButton>> AllFileButtons;
-
-int EditAreaNum;
+//App
 GtkApplication *App;
-MainWindow AppWindow;
 
-
-MainWindow &GetAppWindow(){
-    return AppWindow;
+void SetApp(GtkApplication* app){
+    App = app;
 }
 
 GtkApplication &GetApp(){
     return *App;
 }
 
-void SetApp(GtkApplication* app){
-    App = app;
+//Settings
+void LoadSettings();
+
+//Window
+MainWindow AppWindow;
+
+MainWindow &GetAppWindow(){
+    return AppWindow;
 }
+
+// FilePanel
+vector<shared_ptr<FPFolderButton>> AllFolderButtons;
+vector<shared_ptr<FPFileButton>> AllFileButtons;
 
 shared_ptr<FPFileButton>& NewFileButton(){
     /*
@@ -45,6 +48,10 @@ shared_ptr<FPFolderButton>& NewFolderButton(){
     AllFolderButtons.emplace_back(make_shared<FPFolderButton>());
     return AllFolderButtons[AllFolderButtons.size() -1];// new Folder will by pushed to the last position
 }
+
+
+//EditArea
+vector<shared_ptr<EditArea>> AllEditArea;
 
 shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton){
     /*

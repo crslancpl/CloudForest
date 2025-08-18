@@ -1,0 +1,14 @@
+<schemalist>
+    <schema id="ide.cf">
+        <key name="editor-tab-type" type="s">
+            <choices>
+                <choice value='Tab symbol' />
+                <choice value='Space' />
+            </choices>
+            <default>'Space'</default>
+        </key>
+        <key name="char" type="i">
+            <default>4</default>
+        </key>
+    </schema>
+</schemalist>

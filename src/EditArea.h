@@ -93,14 +93,14 @@ public:
     void NewTabButton();
 };
 
-static void RemoveTagFromTable(GtkTextTag* tag, GtkTextTagTable* table);// bugged
-static void AddTagToTable(GtkTextTag* tag,GtkTextTagTable* table);
-static void ChooseLang(GtkButton *self, EditArea* Parent);// not used now
-static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
-static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);
-static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent);
-static void SaveButtonClicked(GtkButton *self, EditArea* parent);
-static void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
-static void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
+void RemoveTagFromTable(GtkTextTag* tag, GtkTextTagTable* table);// bugged
+void AddTagToTable(GtkTextTag* tag,GtkTextTagTable* table);
+void ChooseLang(GtkButton *self, EditArea* Parent);// not used now
+void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
+void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);
+void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent);
+void SaveButtonClicked(GtkButton *self, EditArea* parent);
+void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
+void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent);
 
 #endif

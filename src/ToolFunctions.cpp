@@ -17,7 +17,7 @@ int GetIntDigitCount(int num){
     return count;
 }
 
-int num = 0;
+unsigned int num = 0;
 
 void GenerateId(string& stringtogenerate){
     num++;

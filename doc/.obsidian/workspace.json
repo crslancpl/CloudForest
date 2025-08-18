@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Source codes/EditArea.md",
+                "file": "Source codes/FilePanel.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "EditArea"
+              "title": "FilePanel"
             }
           }
         ]
@@ -190,11 +190,11 @@
   },
   "active": "06572b3f8fb86e2e",
   "lastOpenFiles": [
+    "Source codes/EditArea.md",
     "Source codes/FilePanel.md",
     "Source codes/MainWindow.md",
     "Source codes/SettingPanel.md",
     "Source codes/HeaderBar.md",
-    "Source codes/EditArea.md",
     "CloudForest introduction.md",
     "Code.md",
     "Screenshot from 2025-08-13 08-49-20.png",
