@@ -8,7 +8,7 @@ pkg_check_modules(GTK4 REQUIRED IMPORTED_TARGET gtk4)
 #pkg_check_modules(WEBKIT REQUIRED IMPORTED_TARGET webkitgtk-6.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/src/cf/libCFEmbed.so)
 
 add_executable(${PROJECT_NAME}
     src/FilePanel.cpp
@@ -18,4 +18,4 @@ add_executable(${PROJECT_NAME}
     src/TextTag.cpp src/Core.cpp src/SettingPanel.cpp
     )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 ${CFLIBPATH})

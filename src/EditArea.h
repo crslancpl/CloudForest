@@ -1,5 +1,6 @@
 #ifndef EDITAREA_H_
 #define EDITAREA_H_
+#include "cf/CFEmbed.h"
 #pragma once
 
 #include <gtk/gtk.h>
@@ -23,7 +24,7 @@ public:
     bool IsSaved = true;
 
     GFile* EditingFile = nullptr;
-    string Lang;
+    string Language;
 
     GtkBuilder *builder;
 
@@ -57,6 +58,7 @@ public:
     GtkTextIter *StartItr;
     GtkTextIter *EndItr;
 
+    void cfbridge(Message* m);
     void UnrefBuilder();
     void CountLine();
     void CountError();

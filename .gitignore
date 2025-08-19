@@ -13,8 +13,6 @@ CMakeUserPresets.json
 *.gresource
 CloudForest
 *.exe
-*.dll
-*.so
 *.o
 .vscode
 .zed

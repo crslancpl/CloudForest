@@ -1,6 +1,8 @@
 #include "EditArea.h"
 
+#include <cerrno>
 #include <cstddef>
+#include <cstring>
 #include <gio/gmenu.h>
 #include <glib/gprintf.h>
 #include <glib.h>
@@ -12,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "FileManager.h"
@@ -20,8 +23,53 @@
 #include "TextTag.h"
 #include "EditArea.h"
 #include "FilePanel.h"
+#include "cf/CFEmbed.h"
 
+Message *message;
 
+void fun(Message* m){
+    if(m->Type == MessageType::FILEREQ){
+        FileRequest *req = (FileRequest*)m->Data;
+
+        g_print("%s\n",req->FilePath);
+        FileRespond *fresp = new FileRespond();
+        fresp->FilePath = req->FilePath;
+
+        if (strcmp(req->FilePath, "LangTemp/lang/Template.txt") == 0) {
+            fresp->IsPath = false;
+            fresp->Content = "#Keyword if else return while true false static public private for #Type int char class void enum bool";
+        }else{
+            fresp->IsPath = false;
+            EditArea *ea = GetEditAreaFromFileAbsoPath(req->FilePath)->get();
+            if(ea == nullptr){
+                g_print("null filename\n");
+            }
+            gtk_text_buffer_get_start_iter(ea->TextViewBuffer, ea->StartItr);
+            gtk_text_buffer_get_end_iter(ea->TextViewBuffer, ea->EndItr);
+            fresp->Content = gtk_text_buffer_get_text(ea->TextViewBuffer, ea->StartItr, ea->EndItr, true);
+        }
+
+        message = new Message();
+        message->Data = fresp;
+        message->Type = MessageType::FILERESP;
+        emb_Send_Message_To_CF(message);
+
+    }else if(m->Type == MessageType::DRAW){
+        Highlight *h = (Highlight*) m->Data;
+        EditArea *ea = GetEditAreaFromFileAbsoPath(h->file)->get();
+        switch (h->type) {
+        case CF_TYPE:
+        ea->ApplyTagByPos(h->startpos, h->endpos, "type");
+        break;
+        case CF_KEYWORD:
+        ea->ApplyTagByPos(h->startpos, h->endpos, "keyword");
+        break;
+        default:
+        ea->ApplyTagByPos(h->startpos, h->endpos, "none");
+        break;
+        }
+    }
+}
 
 
 /*
@@ -89,8 +137,25 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     gtk_widget_set_tooltip_text(GTK_WIDGET(SaveBut), "Save");
 
     gtk_widget_set_has_tooltip(GTK_WIDGET(LocationBut), TRUE);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(LocationBut), 
+    gtk_widget_set_tooltip_text(GTK_WIDGET(LocationBut),
         file ? g_file_get_path(file) : "New file");
+
+
+    gtk_text_buffer_create_tag(TextViewBuffer, "type", "foreground","lime", nullptr);
+    gtk_text_buffer_create_tag(TextViewBuffer, "keyword", "foreground","cyan", nullptr);
+    gtk_text_buffer_create_tag(TextViewBuffer, "none", "foreground","white", nullptr);
+
+    emb_Connect(fun);
+    Lang *L = new Lang();
+    message = new Message();
+    message->Data = L;
+    L->LangName = strdup("lang");
+    message->Type = MessageType::LANG;
+    emb_Send_Message_To_CF(message);
+
+    message->Type =MessageType::RELOAD;
+    message->Data = nullptr;
+    emb_Send_Message_To_CF(message);
 }
 
 EditArea::~EditArea(){
@@ -157,7 +222,7 @@ void EditArea::ChangeLanguage(){
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
     GtkTextTagTable *t = gtk_text_buffer_get_tag_table(TextViewBuffer);
     gtk_text_tag_table_foreach(t, GtkTextTagTableForeach(RemoveTagFromTable),t);
-    for(const TagStyle& style:TagTables::GetLangTagTable(Lang)->LangStyles){
+    for(const TagStyle& style:TagTables::GetLangTagTable(Language)->LangStyles){
         g_print("%s\n", style.TagName.c_str());
         GtkTextTag *tag = gtk_text_tag_new(style.TagName.c_str());
         for ( const pair<string, string>& s: style.Styles) {
@@ -201,6 +266,7 @@ void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName)
 }
 
 void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
+    TextStartPos --;
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, EndItr, TextEndPos);
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
@@ -271,8 +337,23 @@ void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
         gtk_widget_add_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonUnsaved");
         gtk_button_set_label(Parent->SaveBut, "Save");
     }
+
+
+
     Parent->IsCurMovedByKey = true;
     Parent->CountLine();
+
+    gtk_text_buffer_get_start_iter(Parent->TextViewBuffer, Parent->StartItr);
+    gtk_text_buffer_get_end_iter(Parent->TextViewBuffer, Parent->EndItr);
+    gtk_text_buffer_remove_all_tags(Parent->TextViewBuffer, Parent->StartItr, Parent->EndItr);
+
+    message->Type =MessageType::RELOAD;
+    emb_Send_Message_To_CF(message);
+    Entry *ent = new Entry();
+    ent->FileName = Parent->AbsoPath;
+    message->Type = MessageType::ENTRYFILE;
+    message->Data = ent;
+    emb_Send_Message_To_CF(message);
 }
 
 void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){

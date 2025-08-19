@@ -81,3 +81,12 @@ shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsoPath){
     }
     return nullptr;
 }
+
+shared_ptr<EditArea>* GetEditAreaFromFileRelePath(const string &RelePath){
+    for(shared_ptr<EditArea>& ea: AllEditArea){
+        if(ea->RelePath == RelePath){
+            return &ea;
+        }
+    }
+    return nullptr;
+}
