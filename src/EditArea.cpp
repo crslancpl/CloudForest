@@ -25,19 +25,21 @@
 #include "FilePanel.h"
 #include "cf/CFEmbed.h"
 
-Message *message;
+Message message;
 
 void fun(Message* m){
     if(m->Type == MessageType::FILEREQ){
         FileRequest *req = (FileRequest*)m->Data;
 
-        g_print("%s\n",req->FilePath);
         FileRespond *fresp = new FileRespond();
         fresp->FilePath = req->FilePath;
 
         if (strcmp(req->FilePath, "LangTemp/lang/Template.txt") == 0) {
             fresp->IsPath = false;
-            fresp->Content = "#Keyword if else return while true false static public private for #Type int char class void enum bool";
+            fresp->Content =
+                "#Keyword if else return while true false static public private for "
+                "#Type int char class void enum bool "
+                "#SLCmt // #MLCmtS /* #MLCmtE */ ";
         }else{
             fresp->IsPath = false;
             EditArea *ea = GetEditAreaFromFileAbsoPath(req->FilePath)->get();
@@ -49,10 +51,9 @@ void fun(Message* m){
             fresp->Content = gtk_text_buffer_get_text(ea->TextViewBuffer, ea->StartItr, ea->EndItr, true);
         }
 
-        message = new Message();
-        message->Data = fresp;
-        message->Type = MessageType::FILERESP;
-        emb_Send_Message_To_CF(message);
+        message.Data = fresp;
+        message.Type = MessageType::FILERESP;
+        emb_Send_Message_To_CF(&message);
 
     }else if(m->Type == MessageType::DRAW){
         Highlight *h = (Highlight*) m->Data;
@@ -63,6 +64,12 @@ void fun(Message* m){
         break;
         case CF_KEYWORD:
         ea->ApplyTagByPos(h->startpos, h->endpos, "keyword");
+        break;
+        case CF_MULTCMT:
+        ea->ApplyTagByPos(h->startpos, h->endpos, "cmt");
+        break;
+        case CF_SINGCMT:
+        ea->ApplyTagByPos(h->startpos, h->endpos, "scmt");
         break;
         default:
         ea->ApplyTagByPos(h->startpos, h->endpos, "none");
@@ -144,18 +151,21 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     gtk_text_buffer_create_tag(TextViewBuffer, "type", "foreground","lime", nullptr);
     gtk_text_buffer_create_tag(TextViewBuffer, "keyword", "foreground","cyan", nullptr);
     gtk_text_buffer_create_tag(TextViewBuffer, "none", "foreground","white", nullptr);
+    gtk_text_buffer_create_tag(TextViewBuffer, "cmt", "foreground","green", nullptr);
+    gtk_text_buffer_create_tag(TextViewBuffer, "scmt", "foreground","orange", nullptr);
 
     emb_Connect(fun);
     Lang *L = new Lang();
-    message = new Message();
-    message->Data = L;
+    message.Data = L;
     L->LangName = strdup("lang");
-    message->Type = MessageType::LANG;
-    emb_Send_Message_To_CF(message);
+    message.Type = MessageType::LANG;
+    emb_Send_Message_To_CF(&message);
 
-    message->Type =MessageType::RELOAD;
-    message->Data = nullptr;
-    emb_Send_Message_To_CF(message);
+    message.Type =MessageType::RELOAD;
+    message.Data = nullptr;
+    emb_Send_Message_To_CF(&message);
+
+    //HighlightSyntax();
 }
 
 EditArea::~EditArea(){
@@ -259,6 +269,20 @@ void EditArea::LoadFile(GFile* newfile){
     }
 }
 
+void EditArea::HighlightSyntax(){
+    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
+    gtk_text_buffer_get_end_iter(TextViewBuffer,EndItr);
+    gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
+
+    message.Type =MessageType::RELOAD;
+    emb_Send_Message_To_CF(&message);
+    Entry *ent = new Entry();
+    ent->FileName = AbsoPath;
+    message.Type = MessageType::ENTRYFILE;
+    message.Data = ent;
+    emb_Send_Message_To_CF(&message);
+}
+
 void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos + TextLength);
@@ -342,18 +366,7 @@ void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
 
     Parent->IsCurMovedByKey = true;
     Parent->CountLine();
-
-    gtk_text_buffer_get_start_iter(Parent->TextViewBuffer, Parent->StartItr);
-    gtk_text_buffer_get_end_iter(Parent->TextViewBuffer, Parent->EndItr);
-    gtk_text_buffer_remove_all_tags(Parent->TextViewBuffer, Parent->StartItr, Parent->EndItr);
-
-    message->Type =MessageType::RELOAD;
-    emb_Send_Message_To_CF(message);
-    Entry *ent = new Entry();
-    ent->FileName = Parent->AbsoPath;
-    message->Type = MessageType::ENTRYFILE;
-    message->Data = ent;
-    emb_Send_Message_To_CF(message);
+    Parent->HighlightSyntax();
 }
 
 void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
