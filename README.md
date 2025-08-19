@@ -6,7 +6,7 @@
 This is the source code of the code editor, using GTK4 C library in C++. The source code is now messy.
 <br/><br/>
 >[!NOTE]
->Read the documentation in doc folder even though it is not finished yet. The doc is written with [obsidian](https://obsidian.md). If you have obsidian installed you can open the doc folder in obsidian
+>Read the documentation in [Notion](https://branch-sand-75d.notion.site/2538420fb7f28032ab16d8be325ff0b2?v=2538420fb7f2804bb28a000c6ac5fdd1) even though it is not finished yet.
 
 ## Depenencies:
 1. [CMake](https://cmake.org/download/)   **The minimum version is 3.5**
