@@ -25,59 +25,6 @@
 #include "FilePanel.h"
 #include "cf/CFEmbed.h"
 
-Message message;
-
-void fun(Message* m){
-    if(m->Type == MessageType::FILEREQ){
-        FileRequest *req = (FileRequest*)m->Data;
-
-        FileRespond *fresp = new FileRespond();
-        fresp->FilePath = req->FilePath;
-
-        if (strcmp(req->FilePath, "LangTemp/lang/Template.txt") == 0) {
-            fresp->IsPath = false;
-            fresp->Content =
-                "#Keyword if else return while true false static public private for "
-                "#Type int char class void enum bool "
-                "#SLCmt // #MLCmtS /* #MLCmtE */ ";
-        }else{
-            fresp->IsPath = false;
-            EditArea *ea = GetEditAreaFromFileAbsoPath(req->FilePath)->get();
-            if(ea == nullptr){
-                g_print("null filename\n");
-            }
-            gtk_text_buffer_get_start_iter(ea->TextViewBuffer, ea->StartItr);
-            gtk_text_buffer_get_end_iter(ea->TextViewBuffer, ea->EndItr);
-            fresp->Content = gtk_text_buffer_get_text(ea->TextViewBuffer, ea->StartItr, ea->EndItr, true);
-        }
-
-        message.Data = fresp;
-        message.Type = MessageType::FILERESP;
-        emb_Send_Message_To_CF(&message);
-
-    }else if(m->Type == MessageType::DRAW){
-        Highlight *h = (Highlight*) m->Data;
-        EditArea *ea = GetEditAreaFromFileAbsoPath(h->file)->get();
-        switch (h->type) {
-        case CF_TYPE:
-        ea->ApplyTagByPos(h->startpos, h->endpos, "type");
-        break;
-        case CF_KEYWORD:
-        ea->ApplyTagByPos(h->startpos, h->endpos, "keyword");
-        break;
-        case CF_MULTCMT:
-        ea->ApplyTagByPos(h->startpos, h->endpos, "cmt");
-        break;
-        case CF_SINGCMT:
-        ea->ApplyTagByPos(h->startpos, h->endpos, "scmt");
-        break;
-        default:
-        ea->ApplyTagByPos(h->startpos, h->endpos, "none");
-        break;
-        }
-    }
-}
-
 
 /*
  * EditArea class
@@ -148,24 +95,16 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
         file ? g_file_get_path(file) : "New file");
 
 
-    gtk_text_buffer_create_tag(TextViewBuffer, "type", "foreground","lime", nullptr);
-    gtk_text_buffer_create_tag(TextViewBuffer, "keyword", "foreground","cyan", nullptr);
-    gtk_text_buffer_create_tag(TextViewBuffer, "none", "foreground","white", nullptr);
-    gtk_text_buffer_create_tag(TextViewBuffer, "cmt", "foreground","green", nullptr);
-    gtk_text_buffer_create_tag(TextViewBuffer, "scmt", "foreground","orange", nullptr);
+    LoadDefaultTag(TextViewBuffer);
 
-    emb_Connect(fun);
+
     Lang *L = new Lang();
-    message.Data = L;
     L->LangName = strdup("lang");
-    message.Type = MessageType::LANG;
-    emb_Send_Message_To_CF(&message);
+    CfSendMessage(MessageType::LANG, L);
 
-    message.Type =MessageType::RELOAD;
-    message.Data = nullptr;
-    emb_Send_Message_To_CF(&message);
+    CfSendMessage(MessageType::RELOAD, nullptr);
 
-    //HighlightSyntax();
+    //HighlightSyntax(); bugged here
 }
 
 EditArea::~EditArea(){
@@ -274,13 +213,11 @@ void EditArea::HighlightSyntax(){
     gtk_text_buffer_get_end_iter(TextViewBuffer,EndItr);
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
 
-    message.Type =MessageType::RELOAD;
-    emb_Send_Message_To_CF(&message);
+    CfSendMessage(MessageType::RELOAD, nullptr);
+
     Entry *ent = new Entry();
     ent->FileName = AbsoPath;
-    message.Type = MessageType::ENTRYFILE;
-    message.Data = ent;
-    emb_Send_Message_To_CF(&message);
+    CfSendMessage(MessageType::ENTRYFILE, ent);
 }
 
 void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){

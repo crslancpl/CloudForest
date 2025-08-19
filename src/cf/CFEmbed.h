@@ -7,9 +7,6 @@ enum MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD
 };
 
-/*
- * Remember to free the message after receive it in you app
- */
 
 typedef struct Message{
     MessageType Type;

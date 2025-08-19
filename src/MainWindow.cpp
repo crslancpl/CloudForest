@@ -28,6 +28,7 @@
 void NewWindow (GtkApplication *app, gpointer user_data){
     SetApp(app);
     GtkBuilder *builder = gtk_builder_new ();
+    InitCfEmbed();
 
     /* Build window by builder */
     gtk_builder_add_from_file (builder, "UI/MainWindow.ui", nullptr);

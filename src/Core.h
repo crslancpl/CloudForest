@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Classes.h"
+#include "cf/CFEmbed.h"
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
@@ -14,6 +15,11 @@
 
 
 using namespace std;
+
+//CloudyForest callback function
+void CfCallbackFunc(Message *message);
+void InitCfEmbed();
+void CfSendMessage(MessageType type, void* content);
 
 //App
 GtkApplication &GetApp();

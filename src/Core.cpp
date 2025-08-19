@@ -2,11 +2,73 @@
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "MainWindow.h"
+#include "cf/CFEmbed.h"
 
+#include <cstring>
 #include <memory>
 #include <vector>
 #include <algorithm>
 
+
+//Cf callback function
+FileRequest *req;
+Message oMessage;// from here to cloudyforest (out)
+
+void CfCallbackFunc(Message *iMessage){
+    if(iMessage->Type == MessageType::FILEREQ){
+        req = (FileRequest*)iMessage->Data;
+
+        FileRespond *fresp = new FileRespond();
+        fresp->FilePath = req->FilePath;
+
+        if (strcmp(req->FilePath, "LangTemp/lang/Template.txt") == 0) {
+            fresp->IsPath = true;
+            fresp->Content = "syntaxhighlight/cpp.txt";
+        }else{
+            fresp->IsPath = false;
+            EditArea *ea = GetEditAreaFromFileAbsoPath(req->FilePath)->get();
+            if(ea == nullptr){
+                g_print("null filename\n");
+            }
+            gtk_text_buffer_get_start_iter(ea->TextViewBuffer, ea->StartItr);
+            gtk_text_buffer_get_end_iter(ea->TextViewBuffer, ea->EndItr);
+            fresp->Content = gtk_text_buffer_get_text(ea->TextViewBuffer, ea->StartItr, ea->EndItr, true);
+        }
+
+        CfSendMessage(MessageType::FILERESP, fresp);
+
+    }else if(iMessage->Type == MessageType::DRAW){
+        Highlight *h = (Highlight*) iMessage->Data;
+        EditArea *ea = GetEditAreaFromFileAbsoPath(h->file)->get();
+        switch (h->type) {
+        case CF_TYPE:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("type"));
+        break;
+        case CF_KEYWORD:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("keyword"));
+        break;
+        case CF_MULTCMT:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("cmt"));
+        break;
+        case CF_SINGCMT:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("scmt"));
+        break;
+        default:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("none"));
+        break;
+        }
+    }
+}
+
+void InitCfEmbed(){
+    emb_Connect(CfCallbackFunc);
+}
+
+void CfSendMessage(MessageType type, void* content){
+    oMessage.Data = content;
+    oMessage.Type = type;
+    emb_Send_Message_To_CF(&oMessage);
+}
 
 //App
 GtkApplication *App;
