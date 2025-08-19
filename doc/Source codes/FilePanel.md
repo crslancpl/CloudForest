@@ -32,7 +32,7 @@ To create a `FPFolderButton` or `FPFileButton`, use `NewFolder()` and `NewFile()
 >[!IMPORTANT]
 >We will move `NewFolder()` and `NewFile()` out of the class in the future.
 
-## FPFolderButton class
+## FPFileButton class
 ```cpp
 class FPFileButton {
 public:
@@ -52,7 +52,7 @@ public:
 
 `GtkButton *Button` is the button you see in the panel. If the button is clicked,  `FileButtonClick()`**(the function is not in the class, see Function section below.)** will be called, and run the `Open()` . 
 
-## FPFileButton class
+## FPFolderButton class
 
 ```cpp
 class FPFolderButton {

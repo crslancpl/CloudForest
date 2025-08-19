@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <gtk/gtk.h>
 
 using namespace std;
 
@@ -25,5 +26,7 @@ public:
     static void AddToLang(const string &Lang, TagStyle *Tag);
     static TagTables *GetLangTagTable(const string &Lang);
 };
+
+void LoadDefaultTag(GtkTextBuffer*buffer);
 
 #endif

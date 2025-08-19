@@ -37,3 +37,11 @@ TagTables* TagTables::GetLangTagTable(const string &Lang){
         return result->second;
     }
 }
+
+void LoadDefaultTag(GtkTextBuffer*buffer){
+    gtk_text_buffer_create_tag(buffer, "type", "foreground","lime", nullptr);
+    gtk_text_buffer_create_tag(buffer, "keyword", "foreground","cyan", nullptr);
+    gtk_text_buffer_create_tag(buffer, "none", "foreground","white", nullptr);
+    gtk_text_buffer_create_tag(buffer, "cmt", "foreground","rgb(58,193,114)", nullptr);
+    gtk_text_buffer_create_tag(buffer, "scmt", "foreground","orange", nullptr);
+}

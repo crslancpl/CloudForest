@@ -1,5 +1,6 @@
 #ifndef EDITAREA_H_
 #define EDITAREA_H_
+#include "cf/CFEmbed.h"
 #pragma once
 
 #include <gtk/gtk.h>
@@ -23,7 +24,7 @@ public:
     bool IsSaved = true;
 
     GFile* EditingFile = nullptr;
-    string Lang;
+    string Language;
 
     GtkBuilder *builder;
 
@@ -64,6 +65,7 @@ public:
     void ShowTip(char *Text);// not working
     void ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions);// auto complete
     void ChangeLanguage();//not working
+    void HighlightSyntax();
     void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
     void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
     void Destroy();

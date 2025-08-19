@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Classes.h"
+#include "cf/CFEmbed.h"
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
@@ -15,12 +16,14 @@
 
 using namespace std;
 
+//CloudyForest callback function
+void CfCallbackFunc(Message *message);
+void InitCfEmbed();
+void CfSendMessage(MessageType type, void* content);
+
 //App
 GtkApplication &GetApp();
 void SetApp(GtkApplication* app);
-
-//Settings
-void LoadSettings();
 
 //Window
 MainWindow &GetAppWindow();
@@ -34,5 +37,5 @@ void RemoveFolder(FPFolderButton& folder);// Not working now
 shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton);
 void RemoveEditArea(EditArea* EditAreaPtr);
 shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsPath);// Null if no EditArea for this file path exist
-
+shared_ptr<EditArea>* GetEditAreaFromFileRelePath(const string &RelePath);
 #endif
