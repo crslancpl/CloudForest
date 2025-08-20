@@ -1,0 +1,10 @@
+#Keyword
+if else return while true false for const
+#Type
+function var const
+#SLCmt
+//
+#MLCmtS
+/*
+#MLCmtE
+*/

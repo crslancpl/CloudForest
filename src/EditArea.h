@@ -12,6 +12,8 @@
 
 using namespace std;
 
+
+
 /* EdiaArea class is defined in DataTypes.h */
 class EditArea{
 public:

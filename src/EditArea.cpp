@@ -101,10 +101,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     Lang *L = new Lang();
     L->LangName = strdup("lang");
     CfSendMessage(MessageType::LANG, L);
-
     CfSendMessage(MessageType::RELOAD, nullptr);
-
-    //HighlightSyntax(); bugged here
 }
 
 EditArea::~EditArea(){
@@ -165,7 +162,7 @@ void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions)
 }
 
 void EditArea::ChangeLanguage(){
-    //
+    /*
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
     gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
@@ -184,6 +181,13 @@ void EditArea::ChangeLanguage(){
         gtk_text_tag_table_add(t, tag);
     }
     g_print("Tags count %d", gtk_text_tag_table_get_size(t));
+    */
+
+    Lang *L = new Lang();
+    L->LangName = strdup(Language.c_str());
+    CfSendMessage(MessageType::LANG, L);
+    CfSendMessage(MessageType::RELOAD, nullptr);
+    HighlightSyntax();
 }
 
 void EditArea::LoadFile(GFile* newfile){
@@ -381,4 +385,5 @@ void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
         gtk_box_append(Switcher, GTK_WIDGET(b->BaseBox));//Switcher
     }
     gtk_stack_set_visible_child_name(Container, editarea->RandomId.c_str());
+    editarea->HighlightSyntax();
 }

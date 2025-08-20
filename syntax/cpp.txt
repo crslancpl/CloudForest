@@ -1,0 +1,11 @@
+#Keyword
+if else return while true false static public private for new auto const
+inline friend
+#Type
+int char class void enum bool
+#SLCmt
+//
+#MLCmtS
+/*
+#MLCmtE
+*/

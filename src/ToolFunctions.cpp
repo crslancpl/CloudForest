@@ -23,3 +23,19 @@ void GenerateId(string& stringtogenerate){
     num++;
     stringtogenerate = to_string(num);
 }
+
+bool StartWith(const string &Text, const string &Pattern){
+    if(Text.length() < Pattern.length()) return false;
+    for(int i = 0; i < Pattern.length(); i++){
+        if(Text[i] != Pattern[i])return false;
+    }
+    return true;
+}
+
+bool EndWith(const string &Text, const string &Pattern){
+    if(Text.length() < Pattern.length()) return false;
+    for(int i = 0; i < Pattern.length(); i++){
+        if(Text[Text.length()-1 - i] != Pattern[Pattern.length()-1 - i])return false;
+    }
+    return true;
+}

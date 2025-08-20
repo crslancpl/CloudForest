@@ -3,6 +3,7 @@
 #include "FilePanel.h"
 #include "MainWindow.h"
 #include "cf/CFEmbed.h"
+#include "ToolFunctions.h"
 
 #include <cstring>
 #include <memory>
@@ -21,9 +22,9 @@ void CfCallbackFunc(Message *iMessage){
         FileRespond *fresp = new FileRespond();
         fresp->FilePath = req->FilePath;
 
-        if (strcmp(req->FilePath, "LangTemp/lang/Template.txt") == 0) {
+        if (StartWith(req->FilePath, "syntax")) {
             fresp->IsPath = true;
-            fresp->Content = "syntaxhighlight/cpp.txt";
+            fresp->Content = req->FilePath;
         }else{
             fresp->IsPath = false;
             EditArea *ea = GetEditAreaFromFileAbsoPath(req->FilePath)->get();
@@ -52,6 +53,9 @@ void CfCallbackFunc(Message *iMessage){
         break;
         case CF_SINGCMT:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("scmt"));
+        break;
+        case CF_TEXT:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("text"));
         break;
         default:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("none"));
