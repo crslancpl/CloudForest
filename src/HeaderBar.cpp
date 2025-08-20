@@ -6,6 +6,7 @@
 #include "FileManager.h"
 #include "MainWindow.h"
 #include "SettingPanel.h"
+#include "EditArea.h"
 
 HeaderBar* LoadHeaderBar(GtkBuilder *builder){
     HeaderBar *NewHeaderBar = new HeaderBar();
@@ -31,4 +32,10 @@ void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app)
 
 void IdeButtonClicked(GtkButton *self, void* userdata){
     ShowSettingPanel();
+}
+
+void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
+    shared_ptr<EditArea> &newEditArea = NewEditArea(nullptr, nullptr);
+    GetAppWindow().EAHolder->Show(newEditArea);
+    gtk_widget_grab_focus(GTK_WIDGET(newEditArea->TextView));
 }

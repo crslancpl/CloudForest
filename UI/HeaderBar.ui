@@ -51,6 +51,11 @@
         <attribute name="label">Open Recent</attribute>
         <attribute name="action">app.paste</attribute>
       </item>
+      <item>
+        <attribute name="label">New File</attribute>
+        <attribute name="action">app.file.new</attribute>
+        <attribute name="accel">&lt;Control&gt;n</attribute>
+      </item>
     </section>
   </menu>
 
