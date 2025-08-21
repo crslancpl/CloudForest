@@ -45,7 +45,7 @@ void FileSelected(GObject *source, GAsyncResult *result, void *data){
         g_print("Cancelled\n");
         return;
     }
-    OpenFile(*File, nullptr);
+    OpenFile(File, nullptr);
 }
 
 
@@ -68,32 +68,15 @@ void ReadAsRootFolder(GFile &folder){
     GetAppWindow().FP->AddNewRootFolder(*NewFolder.get());
 }
 
-void ReadFolder(GFile &folder, FPFolderButton &folderbutton){
-    GFileEnumerator *FileEnum = g_file_enumerate_children(&folder, "standard::name,standard::type", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+void ReadFolder(GFile *folder, FPFolderButton &folderbutton){
+    GFileEnumerator *FileEnum = g_file_enumerate_children(folder, "standard::name,standard::type", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
 
     if (FileEnum == nullptr) {
         g_print("Failed to enumerate folder contents\n");
         return;
     }
-    // while (true) {
-    //     //Go through every child file and folder and
-    //     GFileInfo *info = g_file_enumerator_next_file(FileEnum, nullptr,nullptr);
-    //     if(info == nullptr){
-    //         // All file read
-    //         return;
-    //     }
 
-    //     GFile *child = g_file_enumerator_get_child(FileEnum,info);
-    //     if(g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY){
-    //         shared_ptr<FPFolderButton> &childfolderbutton = NewFolderButton();
-    //         childfolderbutton->init(*child, &folder, folderbutton.Level+1);
-    //         folderbutton.AddChildFolder(*childfolderbutton.get());
-    //     }else if(g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR){
-    //         shared_ptr<FPFileButton> &childfilebutton = NewFileButton();
-    //         childfilebutton->init(child, folderbutton.Level+1);
-    //         folderbutton.AddChildFile(*childfilebutton.get());
-    //     }
-    // }
+
     GFileInfo *info;
     while ((info = g_file_enumerator_next_file(FileEnum, nullptr, nullptr)) != nullptr) {
         GFile *child = g_file_enumerator_get_child(FileEnum, info);
@@ -101,7 +84,7 @@ void ReadFolder(GFile &folder, FPFolderButton &folderbutton){
 
         if (g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY) {
             shared_ptr<FPFolderButton> &childfolderbutton = NewFolderButton();
-            childfolderbutton->init(*child, &folder, folderbutton.Level + 1);
+            childfolderbutton->init(*child, folder, folderbutton.Level + 1);
             folderbutton.AddChildFolder(*childfolderbutton.get());
         } else if (g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR) {
             shared_ptr<FPFileButton> &childfilebutton = NewFileButton();
@@ -116,13 +99,13 @@ void ReadFolder(GFile &folder, FPFolderButton &folderbutton){
     g_object_unref(FileEnum);
 }
 
-void OpenFile(GFile &file, FPFileButton* f){
+void OpenFile(GFile *file, FPFileButton* f){
     GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
-    shared_ptr<EditArea> *ea = GetEditAreaFromFileAbsoPath(g_file_get_path(&file));
+    shared_ptr<EditArea> *ea = GetEditAreaFromFileAbsoPath(g_file_get_path(file));
 
     if(ea == nullptr){
         // Not Opened before
-        ea = &NewEditArea(&file, f);
+        ea = &NewEditArea(file, f);
     }else{
         // Opened before
     }

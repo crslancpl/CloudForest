@@ -9,3 +9,7 @@ int char class void enum bool
 /*
 #MLCmtE
 */
+#TagSymbol
+#
+#Tags
+include pragma ifndef define endif

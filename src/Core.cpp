@@ -57,6 +57,12 @@ void CfCallbackFunc(Message *iMessage){
         case CF_TEXT:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("text"));
         break;
+        case CF_TAG:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("tag"));
+        break;
+        case CF_FUNCTIONNAME:
+        ea->ApplyTagByPos(h->startpos, h->endpos, strdup("func"));
+        break;
         default:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("none"));
         break;

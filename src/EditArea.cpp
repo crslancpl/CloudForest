@@ -99,7 +99,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
 
 
     Lang *L = new Lang();
-    L->LangName = strdup("lang");
+    L->LangName = strdup("cpp");
     CfSendMessage(MessageType::LANG, L);
     CfSendMessage(MessageType::RELOAD, nullptr);
 }

@@ -7,7 +7,6 @@ enum MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD
 };
 
-
 typedef struct Message{
     MessageType Type;
     void *Data;
@@ -18,12 +17,12 @@ typedef struct Connect{
 }Connect ;
 
 typedef struct FileRequest{
-    const char* FilePath;//reletive
+    const char* FilePath;//relative
 }FileRequest;
 
 typedef struct FileRespond{
     bool IsPath;
-    const char* FilePath;// reletive, telling which file is this
+    const char* FilePath;// relative, telling which file is this
     const char* Content;// can be path or whole file
 }FileRespond;
 
@@ -36,7 +35,7 @@ typedef struct Entry{
 }Entry;
 
 enum t{
-    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT
+    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG
 };
 
 typedef struct Highlight{

@@ -111,7 +111,7 @@ void FPFolderButton::UnrefBuilder(){
 
 void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
     if(!filefolderbut->ChildLoaded){
-        ReadFolder(*filefolderbut->Folder, *filefolderbut);
+        ReadFolder(filefolderbut->Folder, *filefolderbut);
         filefolderbut->ChildLoaded = true;
     }
 

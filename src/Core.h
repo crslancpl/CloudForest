@@ -1,5 +1,6 @@
 /*
- * Core.h and Core.cpp is holding all EditAreas, FPFileButton, FPFolderButton, and other global datas in the app
+ * Core.h and Core.cpp is holding all EditAreas, FPFileButton, 
+ * FPFolderButton, and other global datas in the app
  */
 
 #ifndef CORE_H_
