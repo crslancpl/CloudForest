@@ -1,6 +1,6 @@
 ---
 name: Bug with unknown reason
-about: Descirbe the bug
+about: you don't know where is the code that caused the problem
 title: "[unknown reaseon bug]"
 labels: bug, unknown reason
 assignees: ericNen
