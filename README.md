@@ -3,10 +3,20 @@
 >[!WARNING]
 >If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
 
+
 This is the source code of the code editor, using GTK4 C library in C++. The source code is now messy.
-<br/><br/>
+<br/>
+
 >[!NOTE]
 >Read the documentation in [Notion](https://branch-sand-75d.notion.site/2538420fb7f28032ab16d8be325ff0b2?v=2538420fb7f2804bb28a000c6ac5fdd1) even though it is not finished yet.
+<br/>
+
+>[!NOTE]
+>For libCFEmbed (syntax highlighter):
+>* It only supports cpp now and it is not finished. Check out the source code in CloudyForest repo
+>* Linux version libCFEmbed.so is always the latest.
+>* Windows version libCFEmbed.dll is not updated regularly.
+>* Mac version is not available, but you can build it and modify the cmake file to find it.
 
 ## Depenencies:
 1. [CMake](https://cmake.org/download/)   **The minimum version is 3.5**
