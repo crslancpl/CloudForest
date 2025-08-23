@@ -8,6 +8,8 @@
 >* [Website version](https://branch-sand-75d.notion.site/2538420fb7f28032ab16d8be325ff0b2?v=2538420fb7f2804bb28a000c6ac5fdd1)
 >* [Edit version](https://www.notion.so/2538420fb7f28032ab16d8be325ff0b2?v=2538420fb7f2804bb28a000c6ac5fdd1&source=copy_link)
 
+## You don't have to complete you work or fix all the bugs before pull requests. Since the app is under development, people will fix the segmentation fault and complete your work
+
 ---
 
 ## How to Contribute
