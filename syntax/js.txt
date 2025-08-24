@@ -1,10 +1,12 @@
 #Keyword
-if else return while true false for const
+if else return while true false for async break continue import from
 #Type
-function var const
+function var const let
 #SLCmt
 //
 #MLCmtS
 /*
 #MLCmtE
 */
+#TextSymbol
+' " `

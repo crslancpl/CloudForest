@@ -32,10 +32,11 @@ typedef struct Lang{
 
 typedef struct Entry{
     char* FileName;
+    char* language;
 }Entry;
 
 enum t{
-    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG
+    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_NUM
 };
 
 typedef struct Highlight{

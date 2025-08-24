@@ -45,7 +45,7 @@ public:
     GtkButton *ErrorBut;
     GtkLabel *ErrorButLabel;
     GtkButton *OutlineBut;// not working now
-    GtkMenuButton *LangBut;// not working now
+    GtkButton *LangBut;// not working now
     GMenu *LangMenu;// not working now
     GtkButton *CursorPosBut;// showing cursor's current line and offset
 
@@ -66,7 +66,7 @@ public:
     void LoadCursorPos();
     void ShowTip(char *Text);// not working
     void ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions);// auto complete
-    void ChangeLanguage();//not working
+    void ChangeLanguage(const string& lang, bool highlight);//pass false to highlight if you don't want to highlight now
     void HighlightSyntax();
     void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
     void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);

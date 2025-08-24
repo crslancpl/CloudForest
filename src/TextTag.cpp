@@ -46,5 +46,6 @@ void LoadDefaultTag(GtkTextBuffer*buffer){
     gtk_text_buffer_create_tag(buffer, "scmt", "foreground","orange", nullptr);
     gtk_text_buffer_create_tag(buffer, "text", "foreground","magenta", nullptr);
     gtk_text_buffer_create_tag(buffer, "tag", "foreground","cyan", nullptr);
-    gtk_text_buffer_create_tag(buffer, "func", "foreground","rgb(249, 255, 173)", nullptr);
+    gtk_text_buffer_create_tag(buffer, "func", "foreground","rgb(199,176,252)", nullptr);
+    gtk_text_buffer_create_tag(buffer, "num", "foreground","rgb(128,188,237)", nullptr);
 }

@@ -5,6 +5,7 @@
 #include "cf/CFEmbed.h"
 #include "ToolFunctions.h"
 
+#include <cstdio>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -63,6 +64,10 @@ void CfCallbackFunc(Message *iMessage){
         case CF_FUNCTIONNAME:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("func"));
         break;
+        /* bugged
+        case CF_NUM:
+        ea->ApplyTagByLength(h->startpos, h->endpos, strdup("num"));
+        break;*/
         default:
         ea->ApplyTagByPos(h->startpos, h->endpos, strdup("none"));
         break;
@@ -154,9 +159,9 @@ shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsoPath){
     return nullptr;
 }
 
-shared_ptr<EditArea>* GetEditAreaFromFileRelePath(const string &RelePath){
+shared_ptr<EditArea>* GetEditAreaFromFileRelaPath(const string &RelaPath){
     for(shared_ptr<EditArea>& ea: AllEditArea){
-        if(ea->RelePath == RelePath){
+        if(ea->RelePath == RelaPath){
             return &ea;
         }
     }

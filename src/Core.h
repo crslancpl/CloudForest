@@ -1,5 +1,5 @@
 /*
- * Core.h and Core.cpp is holding all EditAreas, FPFileButton, 
+ * Core.h and Core.cpp is holding all EditAreas, FPFileButton,
  * FPFolderButton, and other global datas in the app
  */
 
@@ -38,5 +38,5 @@ void RemoveFolder(FPFolderButton& folder);// Not working now
 shared_ptr<EditArea>& NewEditArea(GFile* filetoedit, FPFileButton* filebutton);
 void RemoveEditArea(EditArea* EditAreaPtr);
 shared_ptr<EditArea>* GetEditAreaFromFileAbsoPath(const string &AbsPath);// Null if no EditArea for this file path exist
-shared_ptr<EditArea>* GetEditAreaFromFileRelePath(const string &RelePath);
+shared_ptr<EditArea>* GetEditAreaFromFileRelaPath(const string &RelaPath);
 #endif

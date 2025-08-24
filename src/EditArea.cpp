@@ -23,7 +23,45 @@
 #include "TextTag.h"
 #include "EditArea.h"
 #include "FilePanel.h"
+#include "MainWindow.h"
 #include "cf/CFEmbed.h"
+
+
+/*
+ * Language choosing panel
+ */
+GtkWindow *LangChoosingWindow = nullptr;
+EditArea *EditAreaToChongeLang;//
+
+void LangChoosen(GtkButton* self, gpointer data){
+    EditAreaToChongeLang ->ChangeLanguage(gtk_button_get_label(self),true);
+}
+
+void ChooseLangButClicked(GtkButton *self, EditArea* ea){
+
+    if(LangChoosingWindow == nullptr){
+        LangChoosingWindow = GTK_WINDOW(gtk_window_new());
+        gtk_window_set_hide_on_close(LangChoosingWindow, true);
+        gtk_window_set_transient_for(LangChoosingWindow, GetAppWindow().Window);
+        gtk_window_set_title(GTK_WINDOW(LangChoosingWindow), "Choose a language");
+        gtk_window_set_default_size(LangChoosingWindow, 200, 100);
+
+        GtkButton *cpp = GTK_BUTTON(gtk_button_new_with_label("cpp"));
+        GtkButton *js = GTK_BUTTON(gtk_button_new_with_label("js"));
+        GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
+
+        gtk_window_set_child(LangChoosingWindow, GTK_WIDGET(box));
+        gtk_box_append(box, GTK_WIDGET(cpp));
+        gtk_box_append(box, GTK_WIDGET(js));
+
+
+        g_signal_connect(cpp, "clicked", G_CALLBACK(LangChoosen), nullptr);
+        g_signal_connect(js, "clicked", G_CALLBACK(LangChoosen), nullptr);
+    }
+
+    EditAreaToChongeLang = ea;
+    gtk_widget_set_visible(GTK_WIDGET(LangChoosingWindow), true);
+}
 
 
 /*
@@ -43,7 +81,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     OutlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
     ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
     ErrorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
-    LangBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "LangBut"));
+    LangBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
     LangMenu = G_MENU(gtk_builder_get_object(builder, "LangMenu"));
     CursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
     // TextView
@@ -52,6 +90,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
     // Dialog
+
     win = GTK_WINDOW(gtk_builder_get_object(builder, "dialog1"));
 
     /* Initialize variables */
@@ -86,6 +125,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
+    g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLangButClicked), this);
 
     gtk_widget_set_has_tooltip(GTK_WIDGET(SaveBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(SaveBut), "Save");
@@ -97,11 +137,16 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
 
     LoadDefaultTag(TextViewBuffer);
 
+    ChangeLanguage("cpp", false);
+
+    /*
+    Language = "cpp";
+
 
     Lang *L = new Lang();
-    L->LangName = strdup("cpp");
+    L->LangName = strdup(Language.c_str());
     CfSendMessage(MessageType::LANG, L);
-    CfSendMessage(MessageType::RELOAD, nullptr);
+    CfSendMessage(MessageType::RELOAD, nullptr);*/
 }
 
 EditArea::~EditArea(){
@@ -161,33 +206,16 @@ void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions)
     //
 }
 
-void EditArea::ChangeLanguage(){
-    /*
-    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
-    gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
-    gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
-    GtkTextTagTable *t = gtk_text_buffer_get_tag_table(TextViewBuffer);
-    gtk_text_tag_table_foreach(t, GtkTextTagTableForeach(RemoveTagFromTable),t);
-    for(const TagStyle& style:TagTables::GetLangTagTable(Language)->LangStyles){
-        g_print("%s\n", style.TagName.c_str());
-        GtkTextTag *tag = gtk_text_tag_new(style.TagName.c_str());
-        for ( const pair<string, string>& s: style.Styles) {
-            GValue *v = new GValue;
-            *v = G_VALUE_INIT;
-            g_value_init(v, G_TYPE_STRING);
-            g_value_set_string(v, s.second.c_str());
-            g_object_set_property(G_OBJECT(tag), s.first.c_str(), v);
-        }
-        gtk_text_tag_table_add(t, tag);
-    }
-    g_print("Tags count %d", gtk_text_tag_table_get_size(t));
-    */
-
+void EditArea::ChangeLanguage(const string &lang, bool highlight){
+    Language = lang;
     Lang *L = new Lang();
     L->LangName = strdup(Language.c_str());
     CfSendMessage(MessageType::LANG, L);
     CfSendMessage(MessageType::RELOAD, nullptr);
-    HighlightSyntax();
+    if(highlight){
+        HighlightSyntax();
+    }
+    gtk_button_set_label(LangBut, lang.c_str());
 }
 
 void EditArea::LoadFile(GFile* newfile){
@@ -221,6 +249,7 @@ void EditArea::HighlightSyntax(){
 
     Entry *ent = new Entry();
     ent->FileName = AbsoPath;
+    ent->language = strdup(Language.c_str());
     CfSendMessage(MessageType::ENTRYFILE, ent);
 }
 

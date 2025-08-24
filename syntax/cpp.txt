@@ -1,6 +1,7 @@
+#TrimSpecialCharacter
 #Keyword
 if else return while true false static public private for new auto const
-inline friend
+inline friend continue break
 #Type
 int char class void enum bool
 #SLCmt
@@ -13,3 +14,5 @@ int char class void enum bool
 #
 #Tags
 include pragma ifndef define endif
+#TextSymbol
+' "
