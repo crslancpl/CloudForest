@@ -1,0 +1,16 @@
+.normalbutton {
+    background-image: none;
+    background-color: transparent;
+    border-width: 2px;
+    border-radius: 10px;
+    border-color: transparent;
+    color: white;
+}
+
+.normalbutton:hover {
+    background-image: none;
+    background-color: transparent;
+    border-style: solid;
+    border-color: skyblue;
+    color: white;
+}

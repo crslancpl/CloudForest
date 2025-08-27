@@ -4,9 +4,11 @@
 
 #include "Classes.h"
 #include <memory>
-
+#include <string>
 
 #include <gtk/gtk.h>
+
+using namespace std;
 
 void InitFileManager(MainWindow *parent);
 void OpenFileChooser(bool FileOrDir);

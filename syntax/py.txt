@@ -1,0 +1,11 @@
+#TrimSpecialCharacter
+
+#Keyword
+if else and or not is in True False None elif for while break
+continue pass try import from
+#Type
+def class
+#SLCmt
+#
+#TextSymbol
+'

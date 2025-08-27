@@ -99,7 +99,7 @@ public:
 
 void RemoveTagFromTable(GtkTextTag* tag, GtkTextTagTable* table);// bugged
 void AddTagToTable(GtkTextTag* tag,GtkTextTagTable* table);
-void ChooseLang(GtkButton *self, EditArea* Parent);// not used now
+//void ChooseLang(GtkButton *self, EditArea* Parent);// not used now
 void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent);
 void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent);
 void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent);

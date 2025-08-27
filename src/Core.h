@@ -18,9 +18,9 @@
 using namespace std;
 
 //CloudyForest callback function
-void CfCallbackFunc(Message *message);
+void CfCallbackFunc(MessageType type, void* data);
 void InitCfEmbed();
-void CfSendMessage(MessageType type, void* content);
+//void CfSendMessage(MessageType type, void* content);
 
 //App
 GtkApplication &GetApp();

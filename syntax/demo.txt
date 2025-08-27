@@ -1,0 +1,17 @@
+#TrimSpecialCharacter
+
+#Keyword
+
+#Type
+
+#SLCmt
+
+#MLCmtS
+
+#MLCmtE
+
+#TagSymbol
+
+#Tags
+
+#TextSymbol

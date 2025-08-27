@@ -1,14 +1,18 @@
 #include "FileManager.h"
 
 #include <cstddef>
+#include <cstdio>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "Core.h"
 #include "MainWindow.h"
+#include "ToolFunctions.h"
 
 GtkFileDialog *FileDia;
 

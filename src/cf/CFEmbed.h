@@ -6,14 +6,14 @@ extern "C" {
 enum MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD
 };
-
+/*
 typedef struct Message{
     MessageType Type;
     void *Data;
 }Message;
-
+*/
 typedef struct Connect{
-    void (*bridge)(Message* m);
+    void (*bridge)(MessageType type,void* data);
 }Connect ;
 
 typedef struct FileRequest{
@@ -46,11 +46,11 @@ typedef struct Highlight{
     t type;
 }Highlight;
 
-void emb_Send_Message_To_CF(Message* mes);
+void emb_Send_Message_To_CF(MessageType type, void* data);
 
-void emb_Connect(void (*func)(Message*));
+void emb_Connect(void (*func)(MessageType, void*));
 
-void emb_Send_Message(Message *m);
+void emb_Send_Message(MessageType type, void *data);
 
 void emb_Request_File(const char* filepath);
 

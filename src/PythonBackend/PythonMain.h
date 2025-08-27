@@ -7,8 +7,7 @@
 
 using namespace std;
 
-class PyBackend{
-public:
+namespace PyBackend{
     void Start();
     void Execute(const string &code);
     void ExecuteFile(const string &path);

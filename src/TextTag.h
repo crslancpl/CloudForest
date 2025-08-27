@@ -7,6 +7,9 @@
 #include <vector>
 #include <gtk/gtk.h>
 
+#include "EditArea.h"
+
+
 using namespace std;
 
 class TagStyle{
@@ -28,5 +31,6 @@ public:
 };
 
 void LoadDefaultTag(GtkTextBuffer*buffer);
+void ChooseLangButClicked(GtkButton *self, EditArea* ea);
 
 #endif

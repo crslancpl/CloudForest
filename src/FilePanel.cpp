@@ -56,6 +56,31 @@ void FilePanel::UnrefBuilder(){
 }
 
 
+void ButtonLoadFileNameAndIcon(GtkButton *button,GFile *file, int level){
+    GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+    GIcon *icon = g_file_query_info(file,
+        "standard::icon",
+        G_FILE_QUERY_INFO_NONE,
+        nullptr,
+        nullptr) ?
+        g_file_info_get_icon(g_file_query_info(file,
+            "standard::icon",
+            G_FILE_QUERY_INFO_NONE,
+            nullptr,
+            nullptr)) :
+        g_content_type_get_icon("text/plain");
+    GtkWidget *image = gtk_image_new_from_gicon(icon);
+    gtk_image_set_pixel_size(GTK_IMAGE(image), 16);
+    GtkWidget *label = gtk_label_new(g_file_get_basename(file));
+
+    gtk_box_append(box, image);
+    gtk_box_append(box, label);
+    gtk_button_set_child(button, GTK_WIDGET(box));
+
+    gtk_widget_set_margin_start(image, FilePanel::OffSet * level);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+}
+
 /*
  * FPFolderButton class
  */
@@ -73,17 +98,17 @@ void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
     Content = GTK_BOX(gtk_builder_get_object(builder, "Content"));
     FolderName = g_file_get_basename(&folder);// name of folder
 
-    GtkLabel *FileLab = GTK_LABEL(gtk_label_new(FolderName));
+    ButtonLoadFileNameAndIcon(FolderToggleBut, Folder, level);
     /* set styles */
     if(parentfolder == nullptr){
         gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
     }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
-    gtk_widget_set_margin_start(GTK_WIDGET(FileLab), FilePanel::OffSet * Level);
-    gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
-    gtk_widget_set_halign(GTK_WIDGET(FileLab), GTK_ALIGN_START);
-    gtk_widget_set_valign(GTK_WIDGET(FileLab), GTK_ALIGN_CENTER);
-    gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
+    //gtk_widget_set_margin_start(GTK_WIDGET(FileLab), FilePanel::OffSet * Level);
+    //gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
+    //gtk_widget_set_halign(GTK_WIDGET(FileLab), GTK_ALIGN_START);
+    //gtk_widget_set_valign(GTK_WIDGET(FileLab), GTK_ALIGN_CENTER);
+    //gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
     gtk_widget_set_visible(GTK_WIDGET(Content), false);
 
     g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);// expand and collapse folder
@@ -134,33 +159,14 @@ void FPFileButton::init(GFile *FileGFile, int level) {
     Button = GTK_BUTTON(gtk_button_new());
     file = FileGFile;
 
-    // Icons for files in left-panel (The program can segfault if you click on a file)
-    GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-    GIcon *icon = g_file_query_info(file,
-        "standard::icon",
-        G_FILE_QUERY_INFO_NONE,
-        nullptr,
-        nullptr) ?
-        g_file_info_get_icon(g_file_query_info(file,
-            "standard::icon",
-            G_FILE_QUERY_INFO_NONE,
-            nullptr,
-            nullptr)) :
-        g_content_type_get_icon("text/plain");
-    GtkWidget *image = gtk_image_new_from_gicon(icon);
-    gtk_image_set_pixel_size(GTK_IMAGE(image), 16);
-    GtkWidget *label = gtk_label_new(g_file_get_basename(file));
-
-    gtk_box_append(box, image);
-    gtk_box_append(box, label);
-    gtk_button_set_child(Button, GTK_WIDGET(box));
+    ButtonLoadFileNameAndIcon(Button, file, level);
 
     FileAbsoPath = g_file_get_path(file);
     FileName = g_file_get_basename(file);
 
-    gtk_widget_set_margin_start(image, FilePanel::OffSet * level);// Now the image will be pushed backward instead of label
+    // Now the image will be pushed backward instead of label
     // original: gtk_widget_set_margin_start(label, FilePanel::OffSet * level);
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
+
     gtk_widget_add_css_class(GTK_WIDGET(Button), "FileButton");
     g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick), this);
 }

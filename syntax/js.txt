@@ -1,3 +1,4 @@
+#TrimSpeicalCharacter
 #Keyword
 if else return while true false for async break continue import from
 #Type

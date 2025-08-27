@@ -2,6 +2,7 @@
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "MainWindow.h"
+#include "PythonBackend/PythonMain.h"
 #include "cf/CFEmbed.h"
 #include "ToolFunctions.h"
 
@@ -10,15 +11,15 @@
 #include <memory>
 #include <vector>
 #include <algorithm>
-
+#include <node/node.h>
 
 //Cf callback function
 FileRequest *req;
-Message oMessage;// from here to cloudyforest (out)
+//Message oMessage;// from here to cloudyforest (out)
 
-void CfCallbackFunc(Message *iMessage){
-    if(iMessage->Type == MessageType::FILEREQ){
-        req = (FileRequest*)iMessage->Data;
+void CfCallbackFunc(MessageType type, void *data){
+    if(type == MessageType::FILEREQ){
+        req = (FileRequest*)data;
 
         FileRespond *fresp = new FileRespond();
         fresp->FilePath = req->FilePath;
@@ -37,10 +38,11 @@ void CfCallbackFunc(Message *iMessage){
             fresp->Content = gtk_text_buffer_get_text(ea->TextViewBuffer, ea->StartItr, ea->EndItr, true);
         }
 
-        CfSendMessage(MessageType::FILERESP, fresp);
+        emb_Send_Message_To_CF(MessageType::FILERESP, fresp);
+        //CfSendMessage(MessageType::FILERESP, fresp);
 
-    }else if(iMessage->Type == MessageType::DRAW){
-        Highlight *h = (Highlight*) iMessage->Data;
+    }else if(type == MessageType::DRAW){
+        Highlight *h = (Highlight*) data;
         EditArea *ea = GetEditAreaFromFileAbsoPath(h->file)->get();
         switch (h->type) {
         case CF_TYPE:
@@ -79,17 +81,12 @@ void InitCfEmbed(){
     emb_Connect(CfCallbackFunc);
 }
 
-void CfSendMessage(MessageType type, void* content){
-    oMessage.Data = content;
-    oMessage.Type = type;
-    emb_Send_Message_To_CF(&oMessage);
-}
-
 //App
 GtkApplication *App;
 
 void SetApp(GtkApplication* app){
     App = app;
+    PyBackend::Start();
 }
 
 GtkApplication &GetApp(){
