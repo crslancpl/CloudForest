@@ -21,7 +21,7 @@ endif()
 add_executable(${PROJECT_NAME}
     src/FilePanel.cpp
     src/Entry.cpp src/MainWindow.cpp src/CssLoader.cpp
-    src/EditArea.cpp src/ToolFunctions.cpp src/AssetManager.cpp
+    src/EditArea.cpp src/ToolFunctions.cpp
     src/FileManager.cpp src/HeaderBar.cpp
     src/TextTag.cpp src/Core.cpp src/SettingPanel.cpp
     src/PythonBackend/PythonMain.cpp

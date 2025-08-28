@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<interface>
+<requires lib="gtk" version="4.0" />
+<requires lib="webkitgtk" version="6.0" />
+  <object id="SettingWindow" class="GtkWindow">
+    <property name="name">SettingWindow</property>
+    <child>
+        <object class="GtkBox" id="BaseBox">
+            <property name="spacing">8</property>
+            <child>
+                <object class="GtkBox" id="TabButtonBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">10</property>
+                    <child>
+                        <object class="GtkButton" id="EditAreaButton">
+                            <property name="hexpand">true</property>
+                            <property name="label">Edit Area</property>
+                        </object>
+                    </child>
+                    <child>
+                        <object class="GtkButton" id="ExtensionButton">
+                            <property name="hexpand">true</property>
+                            <property name="label">Extensions</property>
+                        </object>
+                    </child>
+                    <child>
+                        <object class="GtkButton" id="LanguageButton">
+                            <property name="hexpand">true</property>
+                            <property name="label">Languages</property>
+                        </object>
+                    </child>
+                    <child>
+                        <object class="GtkGrid">
+                            <property name="vexpand">true</property>
+                            <property name="hexpand">true</property>
+                        </object>
+                    </child>
+                    <child>
+                        <object class="GtkButton" id="CloseButton">
+                            <property name="hexpand">true</property>
+                            <property name="label">Close</property>
+                        </object>
+                    </child>
+                </object>
+            </child>
+            <child>
+                <object class="GtkStack" id="stack">
+                </object>
+            </child>
+        </object>
+    </child>
+  </object>
+
+  <object class="GtkBox" id="EditAreaSettingPage">
+    <property name="orientation">vertical</property>
+    <child>
+        <object class="GtkLabel">
+            <property name="wrap">true</property>
+            <property name="halign">start</property>
+            <property name="name">PageName</property>
+            <property name="label">Edit Area Settings</property>
+        </object>
+    </child>
+    <child>
+        <object class="GtkGrid">
+            <property name="vexpand">true</property>
+        </object>
+    </child>
+  </object>
+  <object class="GtkBox" id="ExtensionsPage">
+    <property name="orientation">vertical</property>
+    <child>
+        <object class="GtkLabel">
+            <property name="wrap">true</property>
+            <property name="halign">start</property>
+            <property name="name">PageName</property>
+            <property name="label">Extension Settings</property>
+        </object>
+    </child>
+    <child>
+        <object class="GtkGrid">
+            <property name="vexpand">true</property>
+        </object>
+    </child>
+  </object>
+</interface>

@@ -3,7 +3,7 @@
 #pragma once
 
 #include <string>
-#include <python3.10/Python.h>
+#include <Python.h>
 
 using namespace std;
 

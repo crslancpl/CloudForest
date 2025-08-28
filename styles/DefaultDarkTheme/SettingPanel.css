@@ -9,14 +9,23 @@
     background-image: none;
     background-color: transparent;
     border-radius: 15px;
+    border: solid 2px transparent;
 }
 
 .SettingTabButtonBox button:hover {
     background-image: none;
-    border: solid 2px red;
+    border: solid 2px skyblue;
 }
 
 .CloseButton {
     color: red;
     font-weight: bolder;
+}
+
+#PageName {
+    font-size: 25px;
+}
+
+#SectionName {
+    font-size: 17px;
 }

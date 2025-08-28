@@ -5,41 +5,68 @@
 #include <gtk/gtk.h>
 
 GtkWindow *SettingWindow;
-GtkButton *CloseButton;
 GtkWindow *appwindow;// MainWindow
 GtkBox *BaseBox;// Saperates TabButtonBox and Stack
+
 GtkBox *TabButtonBox;// left-hand side
+GtkButton *EditAreaSettingButton;
+GtkButton *ExtensionsButton;
 GtkGrid *TabButtonBoxSeparator;
+GtkButton *CloseButton;
+
 GtkStack *Stack;// right-hand side
+GtkBox *EditAreaSettingPage;
+GtkBox *ExtensionsPage;
 
 void InitSettingPanel(){
+    /*
+     * The ui is constructed from UI/SettingPanel.ui
+     *
+     * SettingWindow is used as the flyout. It contains a BaseBox, which
+     * separates the TabButtonBox and the Stack.
+     *
+     * Buttons inside TabButtonBox let you switch between different setting pages or close the setting window.
+     *
+     * Stack is the place you can adjust the settings. All setting pages were currently a GtkBox as we expect
+     * the setting to look like a list.
+     */
+    GtkBuilder *builder = gtk_builder_new_from_file("UI/SettingPanel.ui");
     appwindow = GetAppWindow().Window;
-    SettingWindow = GTK_WINDOW(gtk_window_new());
-    CloseButton = GTK_BUTTON(gtk_button_new_with_label("close"));
-    BaseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-    TabButtonBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-    TabButtonBoxSeparator = GTK_GRID(gtk_grid_new());
-    Stack = GTK_STACK(gtk_stack_new());
 
-    gtk_box_append(BaseBox, GTK_WIDGET(TabButtonBox));
-    gtk_box_append(BaseBox, GTK_WIDGET(Stack));
-    gtk_box_append(TabButtonBox, GTK_WIDGET(TabButtonBoxSeparator));
-    gtk_box_append(TabButtonBox, GTK_WIDGET(CloseButton));
+    SettingWindow = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
+    BaseBox = GTK_BOX(gtk_builder_get_object(builder, "BaseBox"));
+
+    TabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
+    EditAreaSettingButton = GTK_BUTTON(gtk_builder_get_object(builder, "EditAreaButton"));
+    ExtensionsButton = GTK_BUTTON(gtk_builder_get_object(builder, "ExtensionButton"));
+    CloseButton = GTK_BUTTON(gtk_builder_get_object(builder,"CloseButton"));
+
+    Stack = GTK_STACK(gtk_builder_get_object(builder, "stack"));
+    EditAreaSettingPage = GTK_BOX(gtk_builder_get_object(builder, "EditAreaSettingPage"));
+    ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
+
 
     gtk_widget_add_css_class(GTK_WIDGET(SettingWindow), "SettingPanel");
     gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
     gtk_widget_add_css_class(GTK_WIDGET(CloseButton), "CloseButton");
-    gtk_widget_set_hexpand(GTK_WIDGET(CloseButton),true);
-    gtk_widget_set_vexpand(GTK_WIDGET(TabButtonBoxSeparator),true);
 
     gtk_window_set_decorated(SettingWindow, false);
     gtk_window_set_transient_for(SettingWindow, appwindow);
-    gtk_window_set_child(SettingWindow, GTK_WIDGET(BaseBox));
 
+    gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
+    gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
+
+    g_signal_connect(EditAreaSettingButton, "clicked", G_CALLBACK(SwitchSettingTab), EditAreaSettingPage);
+    g_signal_connect(ExtensionsButton, "clicked", G_CALLBACK(SwitchSettingTab), ExtensionsPage);
     g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseSettingPanel), nullptr);
 }
 
 void ShowSettingPanel(){
+    /*
+     * Everytime the setting window is opened, we will resize the setting window to 2/3 in
+     * both width and height of the main window. And the Stack will take 70% of the area
+     * of the setting panel.
+     */
     int w = gtk_widget_get_width(GTK_WIDGET(appwindow))/1.5;
     int h = gtk_widget_get_height(GTK_WIDGET(appwindow))/1.5;
 
@@ -50,4 +77,8 @@ void ShowSettingPanel(){
 
 void CloseSettingPanel(){
     gtk_widget_set_visible(GTK_WIDGET(SettingWindow), false);
+}
+
+void SwitchSettingTab(GtkButton *self, GtkBox* page){
+    gtk_stack_set_visible_child(Stack, GTK_WIDGET(page));
 }

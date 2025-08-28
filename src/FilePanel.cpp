@@ -56,6 +56,11 @@ void FilePanel::UnrefBuilder(){
 }
 
 
+/*
+ * For FPFileButton and FPFolderButton. It will load the icon and the file name of
+ * the GFile *file and place it into GtkButton *button.
+ */
+
 void ButtonLoadFileNameAndIcon(GtkButton *button,GFile *file, int level){
     GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     GIcon *icon = g_file_query_info(file,
@@ -104,11 +109,7 @@ void FPFolderButton::init(GFile &folder,GFile *parentfolder,int level){
         gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("rootfolder").c_str());
     }
     gtk_widget_add_css_class(GTK_WIDGET(FolderToggleBut), string("FolderButton").c_str());
-    //gtk_widget_set_margin_start(GTK_WIDGET(FileLab), FilePanel::OffSet * Level);
-    //gtk_label_set_justify(FileLab, GTK_JUSTIFY_LEFT);
-    //gtk_widget_set_halign(GTK_WIDGET(FileLab), GTK_ALIGN_START);
-    //gtk_widget_set_valign(GTK_WIDGET(FileLab), GTK_ALIGN_CENTER);
-    //gtk_button_set_child(FolderToggleBut, GTK_WIDGET(FileLab));
+
     gtk_widget_set_visible(GTK_WIDGET(Content), false);
 
     g_signal_connect(FolderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);// expand and collapse folder
@@ -163,9 +164,6 @@ void FPFileButton::init(GFile *FileGFile, int level) {
 
     FileAbsoPath = g_file_get_path(file);
     FileName = g_file_get_basename(file);
-
-    // Now the image will be pushed backward instead of label
-    // original: gtk_widget_set_margin_start(label, FilePanel::OffSet * level);
 
     gtk_widget_add_css_class(GTK_WIDGET(Button), "FileButton");
     g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick), this);

@@ -6,5 +6,6 @@ void InitSettingPanel();
 void AddTabButton(GtkButton* button, void (*clickedcallback)(GtkButton*, gpointer));
 void ShowSettingPanel();
 void CloseSettingPanel();
+void SwitchSettingTab(GtkButton *self, GtkBox* page);
 
 #endif

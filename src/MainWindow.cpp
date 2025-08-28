@@ -14,7 +14,6 @@
 #include "CssLoader.h"
 #include "FileManager.h"
 #include "HeaderBar.h"
-#include "AssetManager.h"
 #include "FilePanel.h"
 #include "EditArea.h"
 #include "SettingPanel.h"
@@ -26,6 +25,13 @@
 
 
 void NewWindow (GtkApplication *app, gpointer user_data){
+    /*
+     * NewWindow funtion does not create a new MainWindow object. Instead, it retrieve the
+     * AppWindow (MainWindow object) from Core.h and bind the properties to it from ui file
+     * UI/MainWindow.ui. This function will set the current GtkApp and initialize other crucial
+     * Items of the app.
+     */
+
     SetApp(app);
     GtkBuilder *builder = gtk_builder_new ();
     InitCfEmbed();
