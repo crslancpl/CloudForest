@@ -22,3 +22,5 @@ build.ninja
 .settings
 build
 .cache
+*.a
+*.lib

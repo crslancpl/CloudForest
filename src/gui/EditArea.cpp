@@ -17,15 +17,11 @@
 #include <type_traits>
 #include <utility>
 
-#include "FileManager.h"
-#include "Core.h"
-#include "ToolFunctions.h"
-#include "TextTag.h"
+#include "../ToolFunctions.h"
+#include "Style.h"
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "MainWindow.h"
-#include "cf/CFEmbed.h"
-
 
 /*
  * EditArea class
@@ -88,7 +84,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
-    g_signal_connect(LangBut, "clicked", G_CALLBACK(ChooseLangButClicked), this);//Choose language is done by TextTag.cpp
+    g_signal_connect(LangBut, "clicked", G_CALLBACK(style::OpenLangChooser), this);//Choose language is done by TextTag.cpp
 
     gtk_widget_set_has_tooltip(GTK_WIDGET(SaveBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(SaveBut), "Save");
@@ -98,7 +94,7 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
         file ? g_file_get_path(file) : "New file");
 
 
-    LoadDefaultTag(TextViewBuffer);
+    style::LoadTextTag(TextViewBuffer);
 
     ChangeLanguage("cpp", false);
 }
@@ -107,8 +103,6 @@ EditArea::~EditArea(){
     delete [] Cursoritr;
     delete [] StartItr;
     delete [] EndItr;
-    free(FileName);
-    free(AbsoPath);
 }
 
 void EditArea::UnrefBuilder(){
@@ -160,7 +154,9 @@ void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions)
     //
 }
 
+
 void EditArea::ChangeLanguage(const string &lang, bool highlight){
+    /*
     Language = lang;
     Lang *L = new Lang();
     L->LangName = strdup(Language.c_str());
@@ -170,6 +166,7 @@ void EditArea::ChangeLanguage(const string &lang, bool highlight){
         HighlightSyntax();
     }
     gtk_button_set_label(LangBut, lang.c_str());
+    */
 }
 
 void EditArea::LoadFile(GFile* newfile){
@@ -182,20 +179,22 @@ void EditArea::LoadFile(GFile* newfile){
         char *content;
         FileName = g_file_get_basename(newfile);
         AbsoPath = g_file_get_path(newfile);
-        gtk_button_set_label(LocationBut, FileName);
+        gtk_button_set_label(LocationBut, FileName.c_str());
         g_file_load_contents(newfile,nullptr,&content, nullptr, nullptr,nullptr);
         gtk_text_buffer_set_text(TextViewBuffer, content, -1);
         g_free(content);
         content = nullptr;
         EditingFile = newfile;
         if(ParentSwitcher != nullptr){
-            gtk_button_set_label(ParentSwitcher->Button, FileName);
+            gtk_button_set_label(ParentSwitcher->Button, FileName.c_str());
         }
     }
 }
 
-Entry ent;
+
+//Entry ent;
 void EditArea::HighlightSyntax(){
+    /*
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
     gtk_text_buffer_get_end_iter(TextViewBuffer,EndItr);
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
@@ -205,6 +204,7 @@ void EditArea::HighlightSyntax(){
     ent.FileName = AbsoPath;
     ent.language = strdup(Language.c_str());
     emb_Send_Message_To_CF(MessageType::ENTRYFILE, &ent);
+    */
 }
 
 void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
@@ -221,14 +221,9 @@ void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
 }
 
 void EditArea::Destroy(){
-    if (CorreFileButton != nullptr) {
-        CorreFileButton->ea = nullptr;
-        CorreFileButton = nullptr;
-    }
-
     gtk_stack_remove(ParentHolder->Container, GTK_WIDGET(BaseGrid));
     int pos = 0;
-    RemoveEditArea(this);
+    ParentHolder->Remove(this);
 
     for(shared_ptr<EditAreaHolderTabBut>& t: ParentHolder->TabButtons){
         if(t.get() == ParentSwitcher){
@@ -246,7 +241,7 @@ void EditArea::Destroy(){
 void EditArea::Save(){
     if(EditingFile == nullptr){
         g_print("NULL\n");
-        CreateFile(*this);
+        //CreateFile(*this);
     }else{
         gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
         gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
@@ -315,7 +310,7 @@ void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHo
     EA = editarea;
     ParentHolder = &parentholder;
     BaseBox = GTK_BOX(gtk_box_new(GtkOrientation::GTK_ORIENTATION_HORIZONTAL, 0));
-    Button = GTK_BUTTON(gtk_button_new_with_label(editarea->FileName));
+    Button = GTK_BUTTON(gtk_button_new_with_label(editarea->FileName.c_str()));
     CloseButton = GTK_BUTTON(gtk_button_new_with_label("⛌"));
     gtk_widget_add_css_class(GTK_WIDGET(BaseBox), string("SwitcherBaseBox").c_str());
     gtk_widget_add_css_class(GTK_WIDGET(Button), string("SwitcherButtonSaved").c_str());
@@ -346,8 +341,20 @@ void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
 /*
  * EditAreaHolder class
  */
+
+static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
+
+EditAreaHolder* EditAreaHolder::GetHolder(int number){
+    return EAHolders[number].get();
+}
+
+EditAreaHolder* EditAreaHolder::NewHolder(){
+    EAHolders.emplace_back(make_unique<EditAreaHolder>());
+    return EAHolders.back().get();
+}
+
 void EditAreaHolder::Init(){
-    GtkBuilder *builder = gtk_builder_new_from_file("UI/EditArea.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("UI/EditAreaHolder.ui");
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
     Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
     Container = GTK_STACK(gtk_builder_get_object(builder, "Container"));
@@ -369,4 +376,15 @@ void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
     }
     gtk_stack_set_visible_child_name(Container, editarea->RandomId.c_str());
     editarea->HighlightSyntax();
+}
+
+void EditAreaHolder::Remove(EditArea *editarea){
+    unsigned int offset = 0;
+    for(std::shared_ptr<EditArea> ea : EditAreas){
+        if(editarea->AbsoPath == ea->AbsoPath){
+            EditAreas.erase(EditAreas.begin() +  offset);
+            return;
+        }
+        offset ++;
+    }
 }

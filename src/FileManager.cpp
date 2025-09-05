@@ -8,124 +8,94 @@
 #include <string>
 #include <vector>
 
-#include "EditArea.h"
-#include "FilePanel.h"
 #include "Core.h"
-#include "MainWindow.h"
+#include "gui/guiCore.h"
 #include "ToolFunctions.h"
 
-GtkFileDialog *FileDia;
+static GtkFileDialog *FileDia;
 
-using namespace std;
+static void (*Callback)(GFile *file, GFileInfo *fileinfo);
 
-void InitFileManager(MainWindow *parent){
+static void FileSelected(GObject *source, GAsyncResult *result, void *data){
+    GFile *file;
+    GFileInfo *fileinfo;
+    GError *err = nullptr;
+    file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
+    if(file == nullptr) {
+        // cancelled
+        g_print("Cancelled\n");
+        return;
+    }
+    fileinfo = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
+    Callback(file, fileinfo);
+}
+
+static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
+    GFile *file;
+    GFileInfo *fileinfo;
+    GError *err = nullptr;
+    file = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
+    if(file == nullptr) {
+        // cancelled
+        g_print("Cancelled\n");
+        return;
+    }
+    fileinfo = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
+    Callback(file, fileinfo);
+}
+
+void filemanag::Init(){
     FileDia = gtk_file_dialog_new();
 }
 
-void OpenFileChooser(bool FileOrDir){
-    // Pass True if select files. Pass False if select folder
-    if(GetAppWindow().Window == nullptr){
-        g_print("Use 'SetParentWindow()' to set the parent first");
-        return;
+void filemanag::Process(FileAction* action){
+    Callback = action->callback;
+    if(action->actiontype == FileAction::OPENFILE){
+        OpenFileChooser(true);
+    }else if(action->actiontype == FileAction::OPENFOLDER){
+        OpenFileChooser(false);
+    }else if(action->actiontype == FileAction::ENUMERATE){
+        EnumerateFolderChild((GFile*)action->data);
     }
+}
+
+void filemanag::OpenFileChooser(bool FileOrDir){
+    // Pass True if select files. Pass False if select folder
 
     if(FileOrDir){
         // open one file
         gtk_file_dialog_set_title(FileDia, "Choose Files");
-        gtk_file_dialog_open (FileDia, GetAppWindow().Window, nullptr, FileSelected, nullptr);
+        gtk_file_dialog_open (FileDia, gui::AppWindow.Window, nullptr, FileSelected, nullptr);
     }else{
         // open one folder
         gtk_file_dialog_set_title(FileDia, "Choose Folder");
-        gtk_file_dialog_select_folder(FileDia, GetAppWindow().Window, nullptr, FolderSelected, nullptr);
+        gtk_file_dialog_select_folder(FileDia, gui::AppWindow.Window, nullptr, FolderSelected, nullptr);
     }
 }
 
-void FileSelected(GObject *source, GAsyncResult *result, void *data){
-    GFile *File;
-    GError *err = nullptr;
-    File = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
-    if(File == nullptr) {
-        // cancelled
-        g_print("Cancelled\n");
-        return;
-    }
-    OpenFile(File, nullptr);
+void filemanag::LoadText(GFile* file,char* &textoutput){
+    /*
+     * load the content to textoutput
+     */
+     g_file_load_contents(file, nullptr, &textoutput, nullptr, nullptr, nullptr);
 }
 
+void filemanag::EnumerateFolderChild(GFile* folder){
+    /*
+     * Enumerate children in folder and call the callback function
+     * every child file/folder. Callback nullptr and nullptr when the
+     * children are all enumerated.
+     */
 
-void FolderSelected(GObject *source, GAsyncResult *result, void *data){
-    GFile *File;
-    GError *err = nullptr;
-    File = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
-    if(File == nullptr) {
-        // cancelled
-        g_print("Cancelled\n");
-        return;
-    }
-
-    ReadAsRootFolder(*File);
-}
-
-void ReadAsRootFolder(GFile &folder){
-    shared_ptr<FPFolderButton> &NewFolder = NewFolderButton();
-    NewFolder->init(folder, nullptr ,0);
-    GetAppWindow().FP->AddNewRootFolder(*NewFolder.get());
-}
-
-void ReadFolder(GFile *folder, FPFolderButton &folderbutton){
-    GFileEnumerator *FileEnum = g_file_enumerate_children(folder, "standard::name,standard::type", GFileQueryInfoFlags::G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
-
-    if (FileEnum == nullptr) {
-        g_print("Failed to enumerate folder contents\n");
-        return;
-    }
-
+    GFileEnumerator *enumerator = g_file_enumerate_children(folder, "*", G_FILE_QUERY_INFO_NONE,
+        nullptr, nullptr);
 
     GFileInfo *info;
-    while ((info = g_file_enumerator_next_file(FileEnum, nullptr, nullptr)) != nullptr) {
-        GFile *child = g_file_enumerator_get_child(FileEnum, info);
+    while ((info = g_file_enumerator_next_file(enumerator, nullptr, nullptr)) != nullptr) {
+        GFile *child = g_file_enumerator_get_child(enumerator, info);
         if (child == nullptr) continue;
-
-        if (g_file_info_get_file_type(info) == G_FILE_TYPE_DIRECTORY) {
-            shared_ptr<FPFolderButton> &childfolderbutton = NewFolderButton();
-            childfolderbutton->init(*child, folder, folderbutton.Level + 1);
-            folderbutton.AddChildFolder(*childfolderbutton.get());
-        } else if (g_file_info_get_file_type(info) == G_FILE_TYPE_REGULAR) {
-            shared_ptr<FPFileButton> &childfilebutton = NewFileButton();
-            childfilebutton->init(child, folderbutton.Level + 1);
-            folderbutton.AddChildFile(*childfilebutton.get());
-        }
-
-        //g_object_unref(child);=> child (pointer) will be given to FPFolderButton and FPFileButton so it is moved to destructor of the Buttons
-        g_object_unref(info);
+        Callback(child, info);
     }
 
-    g_object_unref(FileEnum);
-}
-
-void OpenFile(GFile *file, FPFileButton* f){
-    GtkBuilder *b = gtk_builder_new_from_file("UI/FilePanel.ui");
-    shared_ptr<EditArea> *ea = GetEditAreaFromFileAbsoPath(g_file_get_path(file));
-
-    if(ea == nullptr){
-        // Not Opened before
-        ea = &NewEditArea(file, f);
-    }else{
-        // Opened before
-    }
-    GetAppWindow().EAHolder->Show(*ea);
-
-    (*ea)->UnrefBuilder();
-}
-
-void CreateFile(EditArea &ea){
-    gtk_file_dialog_save(FileDia, GetAppWindow().Window, nullptr, FileCreated, &ea);
-}
-
-void FileCreated(GObject *source, GAsyncResult *result, void *data){
-    EditArea* ea = (EditArea*)data;
-    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
-    ea->EditingFile = file;
-    ea->Save();
-    ea->LoadFile(file);
+    Callback(nullptr, nullptr);
 }

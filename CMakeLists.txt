@@ -16,15 +16,22 @@ elseif(WIN32)
     set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/libCFEmbed.dll)
 endif()
 
-
-
-add_executable(${PROJECT_NAME}
-    src/FilePanel.cpp
-    src/Entry.cpp src/MainWindow.cpp src/CssLoader.cpp
-    src/EditArea.cpp src/ToolFunctions.cpp
-    src/FileManager.cpp src/HeaderBar.cpp
-    src/TextTag.cpp src/Core.cpp src/SettingPanel.cpp
-    src/PythonBackend/PythonMain.cpp
+add_library(PyBackend STATIC
+    src/PythonBackend/PythonMain.cpp src/PythonBackend/cfModule.cpp
     )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 ${CFLIBPATH} Python::Python)
+target_link_libraries(PyBackend Python::Python)
+
+add_library(Gui STATIC
+    src/gui/guiCore.cpp src/gui/MainWindow.cpp src/gui/HeaderBar.cpp
+    src/gui/SettingPanel.cpp src/gui/FilePanel.cpp src/gui/EditArea.cpp
+    src/gui/Style.cpp
+    )
+
+target_link_libraries(Gui PkgConfig::GTK4)
+
+add_executable(${PROJECT_NAME}
+    src/Core.cpp src/Global.cpp src/FileManager.cpp src/ToolFunctions.cpp
+    )
+
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 ${CFLIBPATH} PyBackend Gui)

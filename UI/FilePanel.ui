@@ -16,18 +16,4 @@
       </object>
     </child>
   </object>
-  <object class="GtkBox" id="FolderBaseBox">
-    <property name="orientation">vertical</property>
-    <property name="hexpand">true</property>
-    <child>
-        <object class="GtkButton" id="FolderToggleBut">
-            <property name="hexpand">true</property>
-        </object>
-    </child>
-    <child>
-        <object class="GtkBox" id="Content">
-            <property name="orientation">vertical</property>
-        </object>
-    </child>
-  </object>
 </interface>

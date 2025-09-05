@@ -2,41 +2,10 @@
 #define PY_SSIZE_T_CLEAN
 
 #include "PythonMain.h"
-#include <import.h>
-#include <modsupport.h>
-#include <moduleobject.h>
-#include <object.h>
-#include <pyport.h>
-#include <python3.10/cpython/initconfig.h>
+#include "cfModule.h"
 
 
-static int cf_module_exec(PyObject *m){
-    return 0;
-}
-
-static PyModuleDef_Slot cf_module_slots[] ={
-    {Py_mod_exec, (void*)cf_module_exec},
-    {0,nullptr}
-};
-
-static struct PyModuleDef cloudforestmodule = {
-    .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "CloudForest",
-    .m_size = 0,
-    .m_slots = cf_module_slots,
-};
-
-static PyObject *cloudforestobj(PyObject *self, PyObject *args){
-    const char* message;
-    printf("asdad\n");
-    return 0;
-}
-
-PyMODINIT_FUNC initcloudforestmodule(void){
-    return PyModule_Create(&cloudforestmodule);
-}
-
-void PyBackend::Start(){
+void pybackend::Start(){
     PyImport_AppendInittab("CloudForest", initcloudforestmodule);
 
     PyStatus status;
@@ -59,9 +28,6 @@ void PyBackend::Start(){
 
     PyRun_SimpleString("import CloudForest\n"
                        "print('import')\n");
-    if (Py_FinalizeEx() < 0) {
-        exit(120);
-    }
     return;
 
   exception:
@@ -69,10 +35,17 @@ void PyBackend::Start(){
      Py_ExitStatusException(status);
 }
 
-void PyBackend::Execute(const string &code){
+void pybackend::End(){
+    if (Py_FinalizeEx() < 0) {
+        exit(120);
+    }
+}
+
+void pybackend::Execute(const string &code){
     PyRun_SimpleString(code.c_str());
 }
 
-void PyBackend::ExecuteFile(const string &path){
-    //PyRun_SimpleFile(FILE *f, const char *p);
+void pybackend::ExecuteFile(const string &path){
+    FILE *f = fopen(path.c_str(),"r");
+    PyRun_SimpleFile(f, path.c_str());
 }

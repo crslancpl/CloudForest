@@ -1,5 +1,6 @@
 #ifndef FILEMANAGER_H_
 #define FILEMANAGER_H_
+#include "Core.h"
 #pragma once
 
 #include "Classes.h"
@@ -8,12 +9,16 @@
 
 #include <gtk/gtk.h>
 
-using namespace std;
 
-void InitFileManager(MainWindow *parent);
+namespace filemanag{
+void Init();
+void Process(FileAction* action);
 void OpenFileChooser(bool FileOrDir);
-void FileSelected(GObject *source, GAsyncResult *result, void *data);// Open file and create a EditArea
-void FolderSelected(GObject *source, GAsyncResult *result, void *data);// Show folder in FilePanel
+void LoadText(GFile* file,char* &textoutput);//load the content to textoutput
+void EnumerateFolderChild(GFile* folder);
+}
+
+
 void OpenFile(GFile *file, FPFileButton* f);// Open file and create a EditArea
 void ReadAsRootFolder(GFile &folder);
 void ReadFolder(GFile *folder,FPFolderButton &folderbutton);// ReadFolder() is called when user expand the folder in FilePanel

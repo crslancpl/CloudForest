@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<interface>
+  <object class="GtkGrid" id="EditAreaHolder">
+    <property name="name">EAH</property>
+    <property name="vexpand">true</property>
+    <property name="hexpand">true</property>
+    <child>
+      <object class="GtkScrolledWindow">
+        <layout>
+          <property name="row">0</property>
+          <property name="column">0</property>
+        </layout>
+        <child>
+        <object class="GtkBox" id="Switcher">
+            <property name="name">Switcher</property>
+        </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkStack" id="Container">
+        <layout>
+          <property name="row">1</property>
+          <property name="column">0</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+</interface>

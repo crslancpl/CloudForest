@@ -1,24 +1,18 @@
 #include "SettingPanel.h"
-#include "Core.h"
+#include "guiCore.h"
 #include "MainWindow.h"
-#include "FilePanel.h"
+//#include "FilePanel.h"
 #include <gtk/gtk.h>
 
-GtkWindow *SettingWindow;
-GtkWindow *appwindow;// MainWindow
-GtkBox *BaseBox;// Saperates TabButtonBox and Stack
+static void CloseClicked(GtkButton *self, gpointer data){
+    gtk_widget_set_visible(GTK_WIDGET(gui::AppSettingPanel.Window), false);
+}
 
-GtkBox *TabButtonBox;// left-hand side
-GtkButton *EditAreaSettingButton;
-GtkButton *ExtensionsButton;
-GtkGrid *TabButtonBoxSeparator;
-GtkButton *CloseButton;
+static void SwitchTab(GtkButton *self, GtkBox* page){
+    gtk_stack_set_visible_child(gui::AppSettingPanel.Stack, GTK_WIDGET(page));
+}
 
-GtkStack *Stack;// right-hand side
-GtkBox *EditAreaSettingPage;
-GtkBox *ExtensionsPage;
-
-void InitSettingPanel(){
+void SettingPanel::Init(){
     /*
      * The ui is constructed from UI/SettingPanel.ui
      *
@@ -30,10 +24,10 @@ void InitSettingPanel(){
      * Stack is the place you can adjust the settings. All setting pages were currently a GtkBox as we expect
      * the setting to look like a list.
      */
-    GtkBuilder *builder = gtk_builder_new_from_file("UI/SettingPanel.ui");
-    appwindow = GetAppWindow().Window;
 
-    SettingWindow = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
+    GtkBuilder *builder = gtk_builder_new_from_file("UI/SettingPanel.ui");
+
+    Window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
     BaseBox = GTK_BOX(gtk_builder_get_object(builder, "BaseBox"));
 
     TabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
@@ -46,39 +40,31 @@ void InitSettingPanel(){
     ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
 
 
-    gtk_widget_add_css_class(GTK_WIDGET(SettingWindow), "SettingPanel");
+    gtk_widget_add_css_class(GTK_WIDGET(Window), "SettingPanel");
     gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
     gtk_widget_add_css_class(GTK_WIDGET(CloseButton), "CloseButton");
 
-    gtk_window_set_decorated(SettingWindow, false);
-    gtk_window_set_transient_for(SettingWindow, appwindow);
+    gtk_window_set_decorated(Window, false);
+    gtk_window_set_transient_for(Window, gui::AppWindow.Window);
 
     gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
     gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
 
-    g_signal_connect(EditAreaSettingButton, "clicked", G_CALLBACK(SwitchSettingTab), EditAreaSettingPage);
-    g_signal_connect(ExtensionsButton, "clicked", G_CALLBACK(SwitchSettingTab), ExtensionsPage);
-    g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseSettingPanel), nullptr);
+    g_signal_connect(EditAreaSettingButton, "clicked", G_CALLBACK(SwitchTab), EditAreaSettingPage);
+    g_signal_connect(ExtensionsButton, "clicked", G_CALLBACK(SwitchTab), ExtensionsPage);
+    g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseClicked), nullptr);
 }
 
-void ShowSettingPanel(){
+void SettingPanel::Show(){
     /*
      * Everytime the setting window is opened, we will resize the setting window to 2/3 in
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    int w = gtk_widget_get_width(GTK_WIDGET(appwindow))/1.5;
-    int h = gtk_widget_get_height(GTK_WIDGET(appwindow))/1.5;
+    int w = gtk_widget_get_width(GTK_WIDGET(Window))/1.5;
+    int h = gtk_widget_get_height(GTK_WIDGET(Window))/1.5;
 
-    gtk_widget_set_size_request(GTK_WIDGET(Stack), w*0.7, 0);
-    gtk_window_set_default_size(SettingWindow, w,h);
-    gtk_widget_set_visible(GTK_WIDGET(SettingWindow), true);
-}
-
-void CloseSettingPanel(){
-    gtk_widget_set_visible(GTK_WIDGET(SettingWindow), false);
-}
-
-void SwitchSettingTab(GtkButton *self, GtkBox* page){
-    gtk_stack_set_visible_child(Stack, GTK_WIDGET(page));
+    gtk_widget_set_size_request(GTK_WIDGET(Window), w*0.7, 0);
+    gtk_window_set_default_size(Window, w,h);
+    gtk_widget_set_visible(GTK_WIDGET(Window), true);
 }

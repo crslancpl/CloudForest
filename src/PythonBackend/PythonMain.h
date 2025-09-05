@@ -7,10 +7,11 @@
 
 using namespace std;
 
-namespace PyBackend{
-    void Start();
-    void Execute(const string &code);
-    void ExecuteFile(const string &path);
+namespace pybackend{
+void Start();
+void End();
+void Execute(const string &code);
+void ExecuteFile(const string &path);
 };
 
 #endif

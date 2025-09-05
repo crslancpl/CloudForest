@@ -6,12 +6,7 @@ extern "C" {
 enum MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD
 };
-/*
-typedef struct Message{
-    MessageType Type;
-    void *Data;
-}Message;
-*/
+
 typedef struct Connect{
     void (*bridge)(MessageType type,void* data);
 }Connect ;
