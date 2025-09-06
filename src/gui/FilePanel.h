@@ -28,7 +28,6 @@ public:
 private:
     void AddNewRoot(FPFolderButton& folderbutton);
     void AddNewRoot(FPFileButton& filebutton);
-    // Not nullable. File has to be under a folder
 };
 
 

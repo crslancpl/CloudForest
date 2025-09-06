@@ -12,9 +12,6 @@ public:
     void Show();
     void SetHeaderBar(GtkWidget *headerbar);
     GtkWindow *Window;
-    FilePanel *FP;
-    GtkGrid *WindowGrid;
-    GtkSeparator *Separator;
 };
 
 #endif

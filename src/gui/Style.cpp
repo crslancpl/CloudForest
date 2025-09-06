@@ -12,15 +12,15 @@ void style::LoadCssFromPath(const std::string &path){
 
 
 void style::LoadTextTag(GtkTextBuffer *buffer){
-    gtk_text_buffer_create_tag(buffer, "type", "foreground","lime", nullptr);
+    gtk_text_buffer_create_tag(buffer, "type", "foreground","rgb(165,229,112)", nullptr);
     gtk_text_buffer_create_tag(buffer, "keyword", "foreground","cyan", nullptr);
     gtk_text_buffer_create_tag(buffer, "none", "foreground","white", nullptr);
     gtk_text_buffer_create_tag(buffer, "cmt", "foreground","rgb(58,193,114)", nullptr);
     gtk_text_buffer_create_tag(buffer, "scmt", "foreground","orange", nullptr);
     gtk_text_buffer_create_tag(buffer, "text", "foreground","magenta", nullptr);
-    gtk_text_buffer_create_tag(buffer, "tag", "foreground","cyan", nullptr);
+    gtk_text_buffer_create_tag(buffer, "tag", "foreground","rgb(176,112,229)", nullptr);
     gtk_text_buffer_create_tag(buffer, "func", "foreground","rgb(199,176,252)", nullptr);
-    gtk_text_buffer_create_tag(buffer, "num", "foreground","rgb(128,188,237)", nullptr);
+    gtk_text_buffer_create_tag(buffer, "value", "foreground","rgb(128,188,237)", nullptr);
 }
 
 

@@ -20,7 +20,7 @@ add_library(PyBackend STATIC
     src/PythonBackend/PythonMain.cpp src/PythonBackend/cfModule.cpp
     )
 
-target_link_libraries(PyBackend Python::Python)
+target_link_libraries(PyBackend Python::Python PkgConfig::GTK4)
 
 add_library(Gui STATIC
     src/gui/guiCore.cpp src/gui/MainWindow.cpp src/gui/HeaderBar.cpp
@@ -30,8 +30,15 @@ add_library(Gui STATIC
 
 target_link_libraries(Gui PkgConfig::GTK4)
 
+add_library(CloudyForest STATIC
+    src/cf/CFCore.cpp
+    )
+
+target_link_libraries(CloudyForest ${CFLIBPATH} PkgConfig::GTK4)
+
 add_executable(${PROJECT_NAME}
     src/Core.cpp src/Global.cpp src/FileManager.cpp src/ToolFunctions.cpp
     )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK4 ${CFLIBPATH} PyBackend Gui)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    PkgConfig::GTK4 ${CFLIBPATH} PyBackend Gui CloudyForest)

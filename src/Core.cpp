@@ -9,6 +9,7 @@
 #include <map>
 
 #include "FileManager.h"
+#include "cf/CFCore.h"
 #include "gui/guiCore.h"
 #include "PythonBackend/PythonMain.h"
 #include "Global.h"
@@ -21,7 +22,7 @@
  * local functions
  */
 int main(int argc, char *argv[]);
-void AppActivated (GtkApplication *app, gpointer user_data);
+static void AppActivated (GtkApplication *app, gpointer user_data);
 
 
 int main (int argc,char *argv[]){
@@ -37,9 +38,10 @@ int main (int argc,char *argv[]){
   return status;
 }
 
-void AppActivated (GtkApplication *app, gpointer user_data){
+static void AppActivated (GtkApplication *app, gpointer user_data){
     global::GtkApp = app;
     pybackend::Start();
+    cf::Init();
     gui::Init();
     filemanag::Init();
 }
@@ -56,10 +58,12 @@ void *core::Interact(Action *action){
     filemanag::Process((FileAction*)action);
     break;
     case Parts::GUI:
+    gui::Process((GUIAction*)action);
     break;
     case Parts::PYTHON:
     break;
     case Parts::CLOUDYFOREST:
+    cf::Process((CFAction*)action);
     break;
     default:
     g_print("unknown action\n");

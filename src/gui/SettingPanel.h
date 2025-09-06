@@ -7,8 +7,8 @@ class SettingPanel{
 public:
     void Init();
     void Show();
-    GtkWindow *Window;
 
+    GtkWindow *Window;
     GtkBox *BaseBox;// Saperates TabButtonBox and Stack
 
     GtkBox *TabButtonBox;// left-hand side
@@ -21,7 +21,5 @@ public:
     GtkBox *EditAreaSettingPage;
     GtkBox *ExtensionsPage;
 };
-
-//void AddTabButton(GtkButton* button, void (*clickedcallback)(GtkButton*, gpointer));
 
 #endif

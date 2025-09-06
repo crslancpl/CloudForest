@@ -9,6 +9,7 @@
 #include <glibconfig.h>
 
 #include <gtk/gtk.h>
+#include <iterator>
 #include <memory>
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,15 +19,68 @@
 #include <utility>
 
 #include "../ToolFunctions.h"
+#include "../cf/CFEmbed.h"
 #include "Style.h"
 #include "EditArea.h"
 #include "FilePanel.h"
 #include "MainWindow.h"
+#include "guiCore.h"
 
 /*
  * EditArea class
  */
-EditArea::EditArea(GFile *file, FPFileButton* filebut){
+
+static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent){
+    Parent->IsCurMovedByKey = true;
+}
+
+static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
+    if(Parent->IsSaved == true){
+        Parent->IsSaved = false;
+        gtk_widget_remove_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonSaved");
+        gtk_widget_add_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonUnsaved");
+        gtk_button_set_label(Parent->SaveBut, "Save");
+    }
+
+    Parent->IsCurMovedByKey = true;
+    Parent->CountLine();
+    Parent->HighlightSyntax();
+}
+
+static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
+    Parent->LoadCursorPos();
+    if(Parent->IsCurMovedByKey == true){
+        gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
+        Parent->IsCurMovedByKey = false;
+    }
+}
+
+static void SaveButtonClicked(GtkButton *self, EditArea* parent){
+    parent->Save();
+}
+
+
+
+static std::vector<std::shared_ptr<EditArea>> EditAreas = {};
+
+std::shared_ptr<EditArea>& EditArea::New(GFile *file){
+    EditAreas.emplace_back(make_shared<EditArea>(file));
+    return EditAreas.back();
+}
+
+std::shared_ptr<EditArea>* EditArea::Get(const std::string &filepath){
+    /*
+     * Return nullptr if not found
+     */
+    for (std::shared_ptr<EditArea>& ea: EditAreas) {
+        if(ea->AbsoPath == filepath){
+            return &ea;
+        }
+    }
+    return nullptr;
+}
+
+EditArea::EditArea(GFile *file){
 
     /* Loading EditArea from UI/EditArea.ui */
     builder = gtk_builder_new_from_file("UI/EditArea.ui");
@@ -41,22 +95,17 @@ EditArea::EditArea(GFile *file, FPFileButton* filebut){
     ErrorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
     ErrorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
     LangBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
-    LangMenu = G_MENU(gtk_builder_get_object(builder, "LangMenu"));
     CursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
     // TextView
     TextView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));
     TextViewBuffer = gtk_text_view_get_buffer(TextView);
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
-    // Dialog
-
-    win = GTK_WINDOW(gtk_builder_get_object(builder, "dialog1"));
 
     /* Initialize variables */
     cacheTotalLine = 0;
     CursorPos = 0;
     GenerateId(RandomId);
-    CorreFileButton = filebut;
     IsCurMovedByKey = false;
     Cursoritr = new GtkTextIter();
     StartItr = new GtkTextIter();
@@ -146,6 +195,12 @@ void EditArea::LoadCursorPos(){
     gtk_button_set_label(CursorPosBut, Pos.c_str());
 }
 
+char* EditArea::GetContent(){
+    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
+    gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
+    return gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
+}
+
 void EditArea::ShowTip(char *Text){
     //
 }
@@ -156,17 +211,15 @@ void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions)
 
 
 void EditArea::ChangeLanguage(const string &lang, bool highlight){
-    /*
+    gui::cfLoadLanguage(lang);
     Language = lang;
-    Lang *L = new Lang();
-    L->LangName = strdup(Language.c_str());
-    emb_Send_Message_To_CF(MessageType::LANG, L);
+
     emb_Send_Message_To_CF(MessageType::RELOAD, nullptr);
     if(highlight){
         HighlightSyntax();
     }
     gtk_button_set_label(LangBut, lang.c_str());
-    */
+
 }
 
 void EditArea::LoadFile(GFile* newfile){
@@ -191,20 +244,12 @@ void EditArea::LoadFile(GFile* newfile){
     }
 }
 
-
-//Entry ent;
 void EditArea::HighlightSyntax(){
-    /*
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
     gtk_text_buffer_get_end_iter(TextViewBuffer,EndItr);
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
 
-    emb_Send_Message_To_CF(MessageType::RELOAD, nullptr);
-
-    ent.FileName = AbsoPath;
-    ent.language = strdup(Language.c_str());
-    emb_Send_Message_To_CF(MessageType::ENTRYFILE, &ent);
-    */
+    gui::cfProcessFile(AbsoPath, Language);
 }
 
 void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
@@ -238,67 +283,33 @@ void EditArea::Destroy(){
     ParentHolder = nullptr;
 }
 
+static EditArea *EditAreacache;// cache the edit area that is waiting for saving
+static void FileSaved(GFile* file, GFileInfo* info){
+    //callback for gui::SaveFile()
+    if(file == nullptr){
+        //saving cancelled
+        EditAreacache = nullptr;
+    }
+
+    EditAreacache->LoadFile(file);
+    EditAreacache->IsSaved = true;
+    gtk_button_set_label(EditAreacache->SaveBut, "Saved");
+    gtk_widget_remove_css_class(GTK_WIDGET(EditAreacache->ParentSwitcher->Button), "SwitcherButtonUnsaved");
+    gtk_widget_add_css_class(GTK_WIDGET(EditAreacache->ParentSwitcher->Button), "SwitcherButtonSaved");
+    EditAreacache = nullptr;
+}
+
 void EditArea::Save(){
-    if(EditingFile == nullptr){
-        g_print("NULL\n");
-        //CreateFile(*this);
-    }else{
-        gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
-        gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
-        char* content = gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
-        g_file_replace_contents(
-            EditingFile, content, gtk_text_buffer_get_char_count(TextViewBuffer),
-            nullptr, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, nullptr, nullptr, nullptr);
-    }
+    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
+    gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
+    char* content = gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
 
-    IsSaved = true;
-    gtk_button_set_label(SaveBut, "Saved");
-    gtk_widget_remove_css_class(GTK_WIDGET(ParentSwitcher->Button), "SwitcherButtonUnsaved");
-    gtk_widget_add_css_class(GTK_WIDGET(ParentSwitcher->Button), "SwitcherButtonSaved");
+    EditAreacache = this;
+    //async
+    gui::SaveFile(EditingFile, content, FileSaved);
 }
 
 
-void RemoveTagFromTable(GtkTextTag* tag,GtkTextTagTable* table){
-    // bugged
-    g_print("removing tag\n");
-    gtk_text_tag_table_remove(table, tag);
-}
-
-void ChooseLang(GtkButton *self, EditArea* Parent){
-    // not working now
-    gtk_widget_set_visible(GTK_WIDGET(Parent->win), true);
-}
-
-void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent){
-    Parent->IsCurMovedByKey = true;
-}
-
-void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
-    if(Parent->IsSaved == true){
-        Parent->IsSaved = false;
-        gtk_widget_remove_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonSaved");
-        gtk_widget_add_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonUnsaved");
-        gtk_button_set_label(Parent->SaveBut, "Save");
-    }
-
-
-
-    Parent->IsCurMovedByKey = true;
-    Parent->CountLine();
-    Parent->HighlightSyntax();
-}
-
-void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
-    Parent->LoadCursorPos();
-    if(Parent->IsCurMovedByKey == true){
-        gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
-        Parent->IsCurMovedByKey = false;
-    }
-}
-
-void SaveButtonClicked(GtkButton *self, EditArea* parent){
-    parent->Save();
-}
 
 
 
@@ -306,6 +317,17 @@ void SaveButtonClicked(GtkButton *self, EditArea* parent){
 /*
  * EditAreaHolderTabBut class
  */
+
+static void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
+    if (Parent->EA != nullptr) {
+        Parent->ParentHolder->Show(Parent->EA);
+    }
+}
+
+static void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
+    Parent->EA->Destroy();
+}
+
 void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHolder& parentholder){
     EA = editarea;
     ParentHolder = &parentholder;
@@ -325,16 +347,6 @@ void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHo
     g_signal_connect(CloseButton, "clicked", G_CALLBACK(SwitcherCloseButtonClicked), this);
 }
 
-void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
-    if (Parent->EA != nullptr) {
-        Parent->ParentHolder->Show(Parent->EA);
-    }
-}
-
-void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
-    Parent->EA->Destroy();
-}
-
 
 
 
@@ -344,13 +356,17 @@ void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
 
 static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
 
-EditAreaHolder* EditAreaHolder::GetHolder(int number){
+//static
+EditAreaHolder* EditAreaHolder::Get(int number){
     return EAHolders[number].get();
 }
-
-EditAreaHolder* EditAreaHolder::NewHolder(){
+//static
+EditAreaHolder* EditAreaHolder::New(){
     EAHolders.emplace_back(make_unique<EditAreaHolder>());
-    return EAHolders.back().get();
+    EditAreaHolder* newholder = EAHolders.back().get();
+    newholder->Init();
+
+    return newholder;
 }
 
 void EditAreaHolder::Init(){
@@ -359,6 +375,9 @@ void EditAreaHolder::Init(){
     Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
     Container = GTK_STACK(gtk_builder_get_object(builder, "Container"));
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), true);
+
+    std::shared_ptr<EditArea>& newea = EditArea::New(nullptr);
+    Show(newea);
 }
 
 void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){

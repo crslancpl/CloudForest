@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "EditArea.h"
 #include "FilePanel.h"
 #include "MainWindow.h"
 #include "guiCore.h"
@@ -81,7 +82,7 @@ void FilePanel::LoadRoot(GFile *file, GFileInfo *fileinfo){
 }
 
 void FilePanel::init(){
-    GtkBuilder *builder =  gtk_builder_new_from_file("UI/FilePanel.ui");
+    builder =  gtk_builder_new_from_file("UI/FilePanel.ui");
 
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
     FileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
@@ -221,7 +222,7 @@ void FPFolderButton::UnrefBuilder(){
  */
 
 static void FileButtonClick(GtkButton *self,FPFileButton &Parent){
-    //Parent.Open();// now gfile will not be dangling
+    Parent.Open();// now gfile will not be dangling
 }
 
 FPFileButton::~FPFileButton(){
@@ -240,13 +241,13 @@ void FPFileButton::init(GFile *filegfile, int level) {
     gtk_widget_add_css_class(GTK_WIDGET(Button), "FileButton");
     g_signal_connect(Button, "clicked", G_CALLBACK(FileButtonClick), this);
 }
-/*
+
 void FPFileButton::Open(){
-    if(ea == nullptr){
+    auto ea = EditArea::Get(FileAbsoPath);
+    if((ea) == nullptr){
         // no corresponding EditArea so create a new one
-        ea = NewEditArea(file, this);
+        ea = &EditArea::New(File);
     }
-     It can be shown on any EditAreaHolder, but now only AppWindow's EAHolder exist
-    GetAppWindow().EAHolder->Show(ea);
+    // It can be shown on any EditAreaHolder, but now only AppWindow's EAHolder exist
+    EditAreaHolder::Get(0)->Show(*ea);
 }
-*/

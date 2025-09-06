@@ -1,9 +1,12 @@
 #TrimSpecialCharacter
 #Keyword
-if else return while true false static public private for new auto const
-inline friend continue break
+if else return while static public private for new auto const
+inline friend continue break namespace using extern switch case
+default
 #Type
-int char class void enum bool
+int char class void enum bool unsigned long short
+#Value
+true false nullptr NULL
 #SLCmt
 //
 #MLCmtS
@@ -13,6 +16,6 @@ int char class void enum bool
 #TagSymbol
 #
 #Tags
-include pragma ifndef define endif
+include pragma ifndef ifdef define endif
 #TextSymbol
 ' "

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
@@ -23,7 +24,6 @@ static void FileSelected(GObject *source, GAsyncResult *result, void *data){
     file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, &err);
     if(file == nullptr) {
         // cancelled
-        g_print("Cancelled\n");
         return;
     }
     fileinfo = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
@@ -37,7 +37,6 @@ static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
     file = gtk_file_dialog_select_folder_finish(GTK_FILE_DIALOG(source), result, &err);
     if(file == nullptr) {
         // cancelled
-        g_print("Cancelled\n");
         return;
     }
     fileinfo = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
@@ -56,6 +55,8 @@ void filemanag::Process(FileAction* action){
         OpenFileChooser(false);
     }else if(action->actiontype == FileAction::ENUMERATE){
         EnumerateFolderChild((GFile*)action->data);
+    }else if(action->actiontype == FileAction::SAVE){
+        Save(action->file, (char*)action->data);
     }
 }
 
@@ -70,6 +71,42 @@ void filemanag::OpenFileChooser(bool FileOrDir){
         // open one folder
         gtk_file_dialog_set_title(FileDia, "Choose Folder");
         gtk_file_dialog_select_folder(FileDia, gui::AppWindow.Window, nullptr, FolderSelected, nullptr);
+    }
+}
+
+static void FileCreated(GObject *source, GAsyncResult *result, void* content){
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
+
+    if(file != nullptr){
+        filemanag::Save(file, nullptr);
+    }else{
+        Callback(nullptr, nullptr);
+    }
+}
+
+static void OpenFileSaver(){
+    gtk_file_dialog_save(FileDia, gui::AppWindow.Window, nullptr, FileCreated,nullptr);
+}
+
+void filemanag::Save(GFile *file, char* content){
+    static GUIAction guiaction;
+    static char* contentcache;
+    if(file == nullptr){
+        OpenFileSaver();
+        contentcache = strdup(content);
+    }else{
+        if(content != nullptr){
+            // the file is already exist so we don't have to choose the gfile
+            g_file_replace_contents(
+                file, content, strlen(content),
+                nullptr, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, nullptr, nullptr, nullptr);
+        }else{
+            // the file is newly created
+            g_file_replace_contents(
+                file, contentcache, strlen(contentcache),
+                nullptr, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, nullptr, nullptr, nullptr);
+        }
+        Callback(file, g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr));
     }
 }
 

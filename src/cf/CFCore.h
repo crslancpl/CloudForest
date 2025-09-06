@@ -2,10 +2,12 @@
 #define CFCORE_H_
 
 #include "CFEmbed.h"
+#include "../Core.h"
 
 
 namespace cf{
-void SendMessage();
+void Init();
+void Process(CFAction *action);
 }
 
 

@@ -26,8 +26,7 @@ void pybackend::Start(){
     PyConfig_Clear(&config);
 
 
-    PyRun_SimpleString("import CloudForest\n"
-                       "print('import')\n");
+    ExecuteFile("extension/init.py");
     return;
 
   exception:

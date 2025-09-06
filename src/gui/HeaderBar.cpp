@@ -5,6 +5,7 @@
 #include "../Core.h"
 #include "../Global.h"
 
+#include "EditArea.h"
 #include "guiCore.h"
 #include "MainWindow.h"
 #include "SettingPanel.h"
@@ -33,11 +34,9 @@ static void IdeButtonClicked(GtkButton *self, void* userdata){
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
-    /*
-    shared_ptr<EditArea> &newEditArea = NewEditArea(nullptr, nullptr);
-    GetAppWindow().EAHolder->Show(newEditArea);
+    auto newEditArea = EditArea::New(nullptr);
+    EditAreaHolder::Get(0)->Show(newEditArea);
     gtk_widget_grab_focus(GTK_WIDGET(newEditArea->TextView));
-    */
 }
 
 

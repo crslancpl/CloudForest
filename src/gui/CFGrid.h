@@ -2,10 +2,23 @@
 #define CFGRID_H_
 
 #include <gtk/gtk.h>
+#include <utility>
+#include <vector>
+
+class CFGridLayout{
+public:
+    bool vexpand;
+    bool hexpand;
+    int row;
+    int col;
+    int hspan;
+    int vspan;
+};
 
 class CFGrid{
     GtkGrid *Grid;
-    void InsertChild(GtkWidget *child, bool expand, int row, int col, int hspan, int vspan);
+    std::vector<std::pair<GtkWidget, CFGridLayout>> Children;
+    void InsertChild(GtkWidget *child);
     void RemoveChild(GtkWidget *child);
 };
 
