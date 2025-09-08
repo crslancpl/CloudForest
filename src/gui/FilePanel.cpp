@@ -243,11 +243,11 @@ void FPFileButton::init(GFile *filegfile, int level) {
 }
 
 void FPFileButton::Open(){
-    auto ea = EditArea::Get(FileAbsoPath);
+    auto ea = gui::GetEditArea(FileAbsoPath);
     if((ea) == nullptr){
         // no corresponding EditArea so create a new one
-        ea = &EditArea::New(File);
+        ea = gui::NewEditArea(File);
     }
     // It can be shown on any EditAreaHolder, but now only AppWindow's EAHolder exist
-    EditAreaHolder::Get(0)->Show(*ea);
+    gui::FocusedEAHolder->Show(*ea);
 }

@@ -15,9 +15,6 @@
 /* EdiaArea class is defined in DataTypes.h */
 class EditArea{
 public:
-    static std::shared_ptr<EditArea>& New(GFile *file);
-    static std::shared_ptr<EditArea>* Get(const std::string &filename);
-
     std::vector<std::string> TextChangedPyCallback;
     EditArea(GFile *file);
     ~EditArea();
@@ -61,20 +58,22 @@ public:
     void CountLine();
     void CountError();
     void LoadCursorPos();
-    char* GetContent();
+    const std::string& GetContent();
+    void AddTextChangedPyCalback(std::string funcname);
     void ShowTip(char *Text);// not working
     void ShowSuggestion(const std::vector<std::shared_ptr<Suggestion>> &Suggestions);// auto complete
     void ChangeLanguage(const std::string& lang, bool highlight);//pass false to highlight if you don't want to highlight now
     void HighlightSyntax();
     void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
     void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
+    void ApplyTagByLinePos(int line, int offset, int length,char *TagName);
     void Destroy();
     void Save();
     void LoadFile(GFile* newfile);
 };
 
 class EditAreaHolderTabBut{
-    public:
+public:
     std::shared_ptr<EditArea> EA;
     EditAreaHolder* ParentHolder;
     GtkBox *BaseBox;
@@ -85,12 +84,6 @@ class EditAreaHolderTabBut{
 
 class EditAreaHolder{
 public:
-    static EditAreaHolder* Get(int number);
-    static EditAreaHolder* New();
-
-    std::vector<std::shared_ptr<EditAreaHolderTabBut>> TabButtons;
-    std::vector<std::shared_ptr<EditArea>> EditAreas;
-
     GtkStack *Container;
     GtkBox *Switcher;
     GtkGrid *BaseGrid;
@@ -98,6 +91,9 @@ public:
     void Init();
     void Show(const std::shared_ptr<EditArea>& editarea);
     void Remove(EditArea* editarea);
+private:
+    std::vector<std::shared_ptr<EditAreaHolderTabBut>> TabButtons;
+    std::vector<std::shared_ptr<EditArea>> EditAreas;
     void NewTabButton();
 };
 

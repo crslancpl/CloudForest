@@ -6,30 +6,50 @@
 #define GUICORE_H_
 
 #include "../Core.h"
+#include "../Global.h"
+#include "EditArea.h"
 #include "FilePanel.h"
 #include "HeaderBar.h"
 #include "MainWindow.h"
 #include "SettingPanel.h"
+
+#include <future>
 #include <gtk/gtk.h>
 #include <string>
 
 namespace gui{
+
+//global variables
 extern MainWindow AppWindow;
 extern HeaderBar AppHeaderBar;
 extern SettingPanel AppSettingPanel;
 extern FilePanel AppFilePanel;
+extern EditAreaHolder* FocusedEAHolder;//by default this will be pointing
 
 void Init();
-void Process(GUIAction *action);//for core
+
+//
+std::shared_ptr<EditArea>* NewEditArea(GFile *file);
+std::shared_ptr<EditArea>* GetEditArea(const std::string &filename);
+EditAreaHolder* GetEAHolder(int number);
+EditAreaHolder* NewEAHolder();
+
+
+//async callback
+const results::Results* Process(GUIAction *action);//for core
+const results::Results* GetEditAreaContent(const std::string &filepath);
+const results::Results* GetOpenedEditArea(const std::string &filepath);
+
+//async request
+void OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*));
+void SaveFile(GFile* file, char* content, void(*callback)(GFile*,GFileInfo*));
+void EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*));
 
 void cfLoadLanguage(const std::string& langname);
 void cfProcessFile(const std::string& filepath, const std::string& language);
 
-//async
-void OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*));
-void SaveFile(GFile* file, char* content, void(*callback)(GFile*,GFileInfo*));
-void EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*));
-void GetEditAreaContent(const std::string &filepath, void (*callback)(char*));
+void PyRunCode(std::string &code);
+
 }
 
  #endif

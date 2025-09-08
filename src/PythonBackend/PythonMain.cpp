@@ -12,8 +12,6 @@ void pybackend::Start(){
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
 
-
-    /* optional but recommended */
     status = PyConfig_SetBytesString(&config, &config.program_name, nullptr);
     if (PyStatus_Exception(status)) {
         goto exception;

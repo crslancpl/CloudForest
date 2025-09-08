@@ -4,6 +4,7 @@
 #include "guiCore.h"
 
 #include "../Core.h"
+#include "../Global.h"
 #include "FilePanel.h"
 #include "EditArea.h"
 #include "MainWindow.h"
@@ -13,6 +14,7 @@
 
 #include <cstdlib>
 #include <memory>
+#include <string>
 #include <vector>
 
 
@@ -20,6 +22,9 @@ MainWindow gui::AppWindow;
 SettingPanel gui::AppSettingPanel;
 HeaderBar gui::AppHeaderBar;
 FilePanel gui::AppFilePanel;
+EditAreaHolder* gui::FocusedEAHolder;
+
+static std::vector<std::shared_ptr<EditArea>> EditAreas = {};
 
 
 static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, gpointer d){
@@ -34,31 +39,102 @@ void gui::Init(){
     gui::AppHeaderBar.Init();
     gui::AppFilePanel.init();
     gui::AppWindow.SetHeaderBar(GTK_WIDGET(AppHeaderBar.HeaderBarWidget));
+
+    /*
+     * This will be moved to CFGrid
+     */
     GtkGrid *grid = GTK_GRID(gtk_grid_new());
-    EditAreaHolder *newholder = EditAreaHolder::New();
+    EditAreaHolder *newholder = gui::NewEAHolder();
     GtkSeparator *separator = GTK_SEPARATOR(gtk_separator_new(GTK_ORIENTATION_HORIZONTAL));
 
     gtk_grid_attach(grid, GTK_WIDGET(gui::AppFilePanel.BaseGrid), 0, 0, 1, 1);
     gtk_grid_attach(grid, GTK_WIDGET(separator), 1, 0, 1, 1);
     gtk_grid_attach(grid, GTK_WIDGET(newholder->BaseGrid), 2, 0, 1, 1);
     gtk_window_set_child(gui::AppWindow.Window, GTK_WIDGET(grid));
-    gui::AppWindow.Show();
-
     gtk_widget_add_css_class(GTK_WIDGET(separator), "Separator");
     gtk_widget_set_size_request(GTK_WIDGET(separator), 5, 0);// height will be expanded
     GtkGestureDrag *drag = GTK_GESTURE_DRAG(gtk_gesture_drag_new());// create drag gesture for separator
     gtk_widget_add_controller(GTK_WIDGET(separator), GTK_EVENT_CONTROLLER(drag));// connect drag and separator
     g_signal_connect(drag, "drag-update", G_CALLBACK(SeparatorDragged), nullptr);
+
+    gui::FocusedEAHolder = newholder;
+    std::shared_ptr<EditArea> *blankeditarea = gui::NewEditArea(nullptr);
+    FocusedEAHolder->Show(*blankeditarea);
+    gui::AppWindow.Show();
 }
 
-void gui::Process(GUIAction *action){
+
+
+static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
+
+//static
+EditAreaHolder* gui::GetEAHolder(int number){
+    return EAHolders[number].get();
+}
+//static
+EditAreaHolder*gui::NewEAHolder(){
+    EAHolders.emplace_back(std::make_unique<EditAreaHolder>());
+    EditAreaHolder* newholder = EAHolders.back().get();
+    newholder->Init();
+
+    return newholder;
+}
+
+std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
+    EditAreas.emplace_back(std::make_shared<EditArea>(file));
+    return &EditAreas.back();
+}
+
+std::shared_ptr<EditArea>* gui::GetEditArea(const std::string &filepath){
+    /*
+     * Return nullptr if not found
+     */
+    for (std::shared_ptr<EditArea>& ea: EditAreas) {
+        if(ea->AbsoPath == filepath){
+            return &ea;
+        }
+    }
+    return nullptr;
+}
+
+
+const results::Results* gui::Process(GUIAction *action){
     if(action->actiontype == GUIAction::GETEDITAREACONTENT){
-        GetEditAreaContent(action->filename, action->callback);
-    }else if(action->actiontype ==GUIAction::DRAW){
-        auto ea = EditArea::Get(action->filename);
+        return GetEditAreaContent(action->filename);
+    }else if(action->actiontype == GUIAction::DRAWBYPOS){
+        auto ea = gui::GetEditArea(action->filename);
         (*ea)->ApplyTagByPos(action->startpos, action->endpos, (char*)action->otherdata);
+        return nullptr;
+    }else if(action->actiontype == GUIAction::DRAWBYLINE){
+        auto ea = gui::GetEditArea(action->filename);
+        (*ea)->ApplyTagByLinePos(action->line, action->offset, action->length, (char*)action->otherdata);
+    }else if(action->actiontype == GUIAction::ADDTEXTCHANGEDCALLBACK){
+        auto ea = gui::GetEditArea(action->filename);
+        (*ea)->AddTextChangedPyCalback(action->othertext);
+    }
+    return nullptr;
+}
+
+//async
+const results::Results* gui::GetEditAreaContent(const std::string &filepath){
+    static results::GetText Result;
+    auto ea = gui::GetEditArea(filepath);
+    if(ea != nullptr){
+        Result.text = &(*ea)->GetContent();
+        return &Result;
+    }else{
+        return nullptr;
     }
 }
+
+//async
+const results::Results* gui::GetOpenedEditArea(const std::string &filepath){
+    static results::GetAllEditAreaPath eapaths;
+    /*not finished */
+    return nullptr;
+}
+
+
 
 static FileAction fileaction;
 //async
@@ -125,10 +201,12 @@ void gui::cfProcessFile(const std::string& filepath, const std::string& language
     core::Interact(&cfaction);
 }
 
-//async
-void gui::GetEditAreaContent(const std::string &filepath, void (*callback)(char*)){
-    auto ea = EditArea::Get(filepath);
-    if(ea != nullptr){
-        callback((*ea)->GetContent());
-    }
+
+
+
+void gui::PyRunCode(std::string &code){
+    static PyAction action;
+    action.Destination = Parts::PYTHON;
+    action.code = code;
+    core::Interact(&action);
 }
