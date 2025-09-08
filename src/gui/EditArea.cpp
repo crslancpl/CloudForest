@@ -45,6 +45,12 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
     Parent->IsCurMovedByKey = true;
     Parent->CountLine();
     Parent->HighlightSyntax();
+
+    //run the callbacks for python
+    for (std::string &funcname : Parent->TextChangedPyCallback) {
+        std::string code = funcname + "(\"" + Parent->AbsoPath + "\")";
+        //gui::PyRunCode(code);
+    }
 }
 
 static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
@@ -60,25 +66,6 @@ static void SaveButtonClicked(GtkButton *self, EditArea* parent){
 }
 
 
-
-static std::vector<std::shared_ptr<EditArea>> EditAreas = {};
-
-std::shared_ptr<EditArea>& EditArea::New(GFile *file){
-    EditAreas.emplace_back(make_shared<EditArea>(file));
-    return EditAreas.back();
-}
-
-std::shared_ptr<EditArea>* EditArea::Get(const std::string &filepath){
-    /*
-     * Return nullptr if not found
-     */
-    for (std::shared_ptr<EditArea>& ea: EditAreas) {
-        if(ea->AbsoPath == filepath){
-            return &ea;
-        }
-    }
-    return nullptr;
-}
 
 EditArea::EditArea(GFile *file){
 
@@ -195,10 +182,19 @@ void EditArea::LoadCursorPos(){
     gtk_button_set_label(CursorPosBut, Pos.c_str());
 }
 
-char* EditArea::GetContent(){
+const std::string& EditArea::GetContent(){
+    // To prevent the text to be discarded before the caller
+    // get its content, we mark it static so it will not be discarded
+    static std::string content;
+
     gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
     gtk_text_buffer_get_end_iter(TextViewBuffer, EndItr);
-    return gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
+    content = gtk_text_buffer_get_text(TextViewBuffer, StartItr, EndItr, true);
+    return content;
+}
+
+void EditArea::AddTextChangedPyCalback(std::string funcname){
+    TextChangedPyCallback.emplace_back(funcname);
 }
 
 void EditArea::ShowTip(char *Text){
@@ -265,22 +261,17 @@ void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
 }
 
+void EditArea::ApplyTagByLinePos(int line, int offset, int length,char *TagName){
+    offset ++;
+    line --;// change the lines that starts from 1 to 0
+    gtk_text_buffer_get_iter_at_line_offset(TextViewBuffer, StartItr, line, offset);
+    gtk_text_iter_assign(EndItr, StartItr);
+    gtk_text_iter_backward_chars(EndItr, length);
+    gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
+}
+
 void EditArea::Destroy(){
-    gtk_stack_remove(ParentHolder->Container, GTK_WIDGET(BaseGrid));
-    int pos = 0;
     ParentHolder->Remove(this);
-
-    for(shared_ptr<EditAreaHolderTabBut>& t: ParentHolder->TabButtons){
-        if(t.get() == ParentSwitcher){
-            gtk_box_remove(ParentHolder->Switcher, GTK_WIDGET(t->BaseBox));
-            ParentHolder->TabButtons.erase(ParentHolder->TabButtons.begin()+pos);
-            break;
-        }
-        pos ++;
-    }
-
-    ParentSwitcher = nullptr;
-    ParentHolder = nullptr;
 }
 
 static EditArea *EditAreacache;// cache the edit area that is waiting for saving
@@ -354,30 +345,12 @@ void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHo
  * EditAreaHolder class
  */
 
-static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
-
-//static
-EditAreaHolder* EditAreaHolder::Get(int number){
-    return EAHolders[number].get();
-}
-//static
-EditAreaHolder* EditAreaHolder::New(){
-    EAHolders.emplace_back(make_unique<EditAreaHolder>());
-    EditAreaHolder* newholder = EAHolders.back().get();
-    newholder->Init();
-
-    return newholder;
-}
-
 void EditAreaHolder::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/EditAreaHolder.ui");
     BaseGrid = GTK_GRID(gtk_builder_get_object(builder, "EditAreaHolder"));
     Switcher = GTK_BOX(gtk_builder_get_object(builder, "Switcher"));
     Container = GTK_STACK(gtk_builder_get_object(builder, "Container"));
     gtk_widget_set_hexpand(GTK_WIDGET(BaseGrid), true);
-
-    std::shared_ptr<EditArea>& newea = EditArea::New(nullptr);
-    Show(newea);
 }
 
 void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
@@ -398,9 +371,26 @@ void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
 }
 
 void EditAreaHolder::Remove(EditArea *editarea){
+    /*
+     * Remove tab switcher from holder
+     */
     unsigned int offset = 0;
+    for(shared_ptr<EditAreaHolderTabBut>& t: TabButtons){
+        if(t.get()->EA.get() == editarea){
+            gtk_box_remove(Switcher, GTK_WIDGET(t->BaseBox));
+            TabButtons.erase(TabButtons.begin()+offset);
+            break;
+        }
+        offset ++;
+    }
+
+    /*
+     * Remove edit area from holder
+     */
+    offset = 0;
     for(std::shared_ptr<EditArea> ea : EditAreas){
-        if(editarea->AbsoPath == ea->AbsoPath){
+        if(editarea == ea.get()){
+            gtk_stack_remove(Container, GTK_WIDGET(ea->BaseGrid));
             EditAreas.erase(EditAreas.begin() +  offset);
             return;
         }

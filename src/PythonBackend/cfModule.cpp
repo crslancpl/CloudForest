@@ -1,9 +1,13 @@
+#include "cfModule.h"
+
 #include <Python.h>
 #include <cstdio>
 #include <methodobject.h>
 #include <object.h>
-#include "cfModule.h"
+#include <future>
+
 #include "../Core.h"
+#include "../Global.h"
 
 static PyObject *error;
 
@@ -56,22 +60,16 @@ static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
     guiaction.callback = callback;
     guiaction.actiontype = GUIAction::GETEDITAREACONTENT;
     guiaction.filename = absolutepath;
-    core::Interact(&guiaction);
-    g_print("b\n");
-    /*
-    shared_ptr<EditArea> *ea = core::GetEditAreaFromFileAbsoPath(absolutepath);
-    if(ea == nullptr){
-        return nullptr;
-    }
 
-    string text = (*ea)->GetContent();
+    std::future<const results::Results*> Gettext = std::async(core::Interact, &guiaction);
+    const results::GetText* r = (results::GetText*)Gettext.get();
+    const std::string* text = r->text;
 
-    if(text.empty()){
+    if(text->empty()){
         Py_RETURN_NONE;
     }else{
-        return PyUnicode_FromString(text.c_str());
+        return PyUnicode_FromString(text->c_str());
     }
-    */
     Py_RETURN_NONE;
 }
 
@@ -80,14 +78,11 @@ static PyObject *cf_EditArea_TextChanged_AddCallBack(PyObject *self, PyObject *a
     if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
         return nullptr;
     }
-    /*
-    shared_ptr<EditArea> *ea = core::GetEditAreaFromFileAbsoPath(absolutepath);
-    if(ea == nullptr){
-        return PyErr_NewException("Not found", nullptr, nullptr);
-    }
-
-    (*ea)->TextChangedPyCallback.emplace_back(pyfuncname);
-    */
+    guiaction.Destination = Parts::GUI;
+    guiaction.actiontype = GUIAction::ADDTEXTCHANGEDCALLBACK;
+    guiaction.othertext = pyfuncname;
+    guiaction.filename = absolutepath;
+    core::Interact(&guiaction);
     Py_RETURN_NONE;
 }
 
@@ -123,13 +118,15 @@ static PyObject *cf_EditArea_HighLight(PyObject *self, PyObject *args){
         return nullptr;
     }
     printf("highlights\n");
-    /*
-    EditArea *ea = core::GetEditAreaFromFileAbsoPath(absolutepath)->get();
-    if(ea == nullptr){
-        return nullptr;
-    }
-    ea->ApplyTagByLine(line, offset,length, tagname);
-    */
+
+    guiaction.actiontype = GUIAction::DRAWBYLINE;
+    guiaction.filename = absolutepath;
+    guiaction.line = line;
+    guiaction.offset = offset;
+    guiaction.length = length;
+    guiaction.otherdata = tagname;
+    core::Interact(&guiaction);
+
     Py_RETURN_NONE;
 }
 
@@ -138,7 +135,7 @@ static PyMethodDef cf_EditArea_method[]={
     {"getcontent", cf_EditArea_GetContent, METH_VARARGS, "get content from edit area"},
     {"textchanged_addcallback", cf_EditArea_TextChanged_AddCallBack, METH_VARARGS, "add callback"},
     {"textchanged_rmcallback", cf_EditArea_TextChanged_RemoveCallBack, METH_VARARGS, "remove callback"},
-    {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 0) length(>= 0) with tagname"},
+    {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
     {NULL, NULL, 0, NULL}
 };
 

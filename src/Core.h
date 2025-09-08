@@ -1,8 +1,9 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#include "gui/EditArea.h"
+#include "Global.h"
 #include <gtk/gtk.h>
+#include <future>
 #include <string>
 
 enum class Parts{
@@ -42,17 +43,24 @@ public:
 class GUIAction: public Action{
 public:
     enum ActionType{
-        GETEDITAREACONTENT, DRAW, CHANGEEDITAREAGFILE
+        GETEDITAREACONTENT, DRAWBYLINE, DRAWBYPOS, CHANGEEDITAREAGFILE, ADDTEXTCHANGEDCALLBACK
     };
     ActionType actiontype;
     std::string filename;
-    int startpos, endpos;
+    std::string othertext;
+    int startpos, endpos;//draw by pos
+    int line, offset, length;//draw by line
     void *otherdata;
     void (*callback)(char*);
 };
 
+class PyAction: public Action{
+public:
+    std::string code;//run the code
+};
+
 namespace core {
-void *Interact(Action *action);
+const results::Results* Interact(Action *action);
 }
 
 #endif

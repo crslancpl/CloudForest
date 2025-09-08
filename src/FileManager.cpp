@@ -44,6 +44,9 @@ static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
 }
 
 void filemanag::Init(){
+    /*
+     * Create a file dialog for the future
+     */
     FileDia = gtk_file_dialog_new();
 }
 

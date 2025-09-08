@@ -40,9 +40,9 @@ int main (int argc,char *argv[]){
 
 static void AppActivated (GtkApplication *app, gpointer user_data){
     global::GtkApp = app;
-    pybackend::Start();
     cf::Init();
     gui::Init();
+    pybackend::Start();
     filemanag::Init();
 }
 
@@ -50,7 +50,7 @@ static void AppActivated (GtkApplication *app, gpointer user_data){
 /*
  * core namespace
  */
-void *core::Interact(Action *action){
+const results::Results* core::Interact(Action *action){
     switch (action->Destination) {
     case Parts::CORE:
     break;
@@ -58,9 +58,10 @@ void *core::Interact(Action *action){
     filemanag::Process((FileAction*)action);
     break;
     case Parts::GUI:
-    gui::Process((GUIAction*)action);
+    return gui::Process((GUIAction*)action);
     break;
     case Parts::PYTHON:
+    pybackend::Execute(((PyAction*)action)->code);
     break;
     case Parts::CLOUDYFOREST:
     cf::Process((CFAction*)action);

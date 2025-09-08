@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <gtk/gtk.h>
+#include <future>
+
 #include "../Core.h"
 #include "../ToolFunctions.h"
 #include "CFEmbed.h"
@@ -10,12 +12,6 @@ static FileRespond resp;
 static Entry ent;
 static GUIAction guiaction;
 
-static void GotContentFromEditArea(char* content){
-    resp.IsPath = false;
-    resp.Content = content;
-    //g_print("%s\n", content);
-    emb_Send_Message_To_CF(FILERESP, &resp);
-}
 
 static void RequestFile(FileRequest *req){
     resp.FilePath = req->FilePath;
@@ -26,15 +22,20 @@ static void RequestFile(FileRequest *req){
         emb_Send_Message_To_CF(FILERESP, &resp);
     }else{
         guiaction.Destination = Parts::GUI;
-        guiaction.callback = GotContentFromEditArea;
         guiaction.filename = req->FilePath;
         guiaction.actiontype = GUIAction::GETEDITAREACONTENT;
-        core::Interact(&guiaction);
+
+        std::future<const results::Results*> gettext = std::async(core::Interact,&guiaction);
+        results::GetText* text = (results::GetText*)gettext.get();
+
+        resp.Content = text->text->c_str();
+        resp.IsPath = false;
+        emb_Send_Message_To_CF(FILERESP, &resp);
     }
 }
 
 static void Draw(Highlight* highlight){
-    guiaction.actiontype = GUIAction::DRAW;
+    guiaction.actiontype = GUIAction::DRAWBYPOS;
     guiaction.filename = highlight->file;
     guiaction.startpos = highlight->startpos;
     guiaction.endpos = highlight->endpos;
