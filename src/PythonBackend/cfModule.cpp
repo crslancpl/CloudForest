@@ -45,10 +45,7 @@ static PyObject *cf_GetAllOpenedFiles(PyObject *self, PyObject *args){
 }
 
 
-static GUIAction guiaction;
-static void callback(char*content){
-    g_print("a\n");
-}
+
 //async
 static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
     char* absolutepath;
@@ -56,14 +53,12 @@ static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
         return nullptr;
     }
 
-    guiaction.Destination = Parts::GUI;
-    guiaction.callback = callback;
-    guiaction.actiontype = GUIAction::GETEDITAREACONTENT;
-    guiaction.filename = absolutepath;
+    static request::EAGetText req;
+    req.Filepath = absolutepath;
 
-    std::future<const results::Results*> Gettext = std::async(core::Interact, &guiaction);
-    const results::GetText* r = (results::GetText*)Gettext.get();
-    const std::string* text = r->text;
+    std::future<const result::Result*> Gettext = std::async(core::Interact, &req);
+    const result::GetText* r = (result::GetText*)Gettext.get();
+    const std::string* text = r->Text;
 
     if(text->empty()){
         Py_RETURN_NONE;
@@ -78,11 +73,12 @@ static PyObject *cf_EditArea_TextChanged_AddCallBack(PyObject *self, PyObject *a
     if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
         return nullptr;
     }
-    guiaction.Destination = Parts::GUI;
-    guiaction.actiontype = GUIAction::ADDTEXTCHANGEDCALLBACK;
-    guiaction.othertext = pyfuncname;
-    guiaction.filename = absolutepath;
-    core::Interact(&guiaction);
+    static request::EAAddCallBack req;
+    req.Type = request::EAAddCallBack::TEXTCHANGED;
+    req.Filepath = absolutepath;
+    req.Funcname = pyfuncname;
+
+    core::Interact(&req);
     Py_RETURN_NONE;
 }
 
@@ -117,15 +113,15 @@ static PyObject *cf_EditArea_HighLight(PyObject *self, PyObject *args){
     if(!PyArg_ParseTuple(args, "siiis", &absolutepath,&line,&offset,&length,&tagname)){
         return nullptr;
     }
-    printf("highlights\n");
 
-    guiaction.actiontype = GUIAction::DRAWBYLINE;
-    guiaction.filename = absolutepath;
-    guiaction.line = line;
-    guiaction.offset = offset;
-    guiaction.length = length;
-    guiaction.otherdata = tagname;
-    core::Interact(&guiaction);
+    static request::EADrawByLine req;
+    req.Filepath = absolutepath;
+    req.Line = line;
+    req.Offset = offset;
+    req.Length = length;
+    req.Tagname = tagname;
+
+    core::Interact(&req);
 
     Py_RETURN_NONE;
 }

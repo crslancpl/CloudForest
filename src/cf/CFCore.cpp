@@ -2,73 +2,51 @@
 
 #include <cstring>
 #include <gtk/gtk.h>
+#include <map>
 #include <future>
 
 #include "../Core.h"
 #include "../ToolFunctions.h"
 #include "CFEmbed.h"
 
-static FileRespond resp;
+static FileRespond fresp;
 static Entry ent;
-static GUIAction guiaction;
 
 
-static void RequestFile(FileRequest *req){
-    resp.FilePath = req->FilePath;
+static void RequestFile(FileRequest *freq){
+    fresp.FilePath = freq->FilePath;
 
-    if (StartWith(req->FilePath, "syntax/")) {
-        resp.IsPath = true;
-        resp.Content = req->FilePath;
-        emb_Send_Message_To_CF(FILERESP, &resp);
+    if (StartWith(freq->FilePath, "syntax/")) {
+        fresp.IsPath = true;
+        fresp.Content = freq->FilePath;
+        emb_Send_Message_To_CF(FILERESP, &fresp);
     }else{
-        guiaction.Destination = Parts::GUI;
-        guiaction.filename = req->FilePath;
-        guiaction.actiontype = GUIAction::GETEDITAREACONTENT;
+        static request::EAGetText req;
+        req.Filepath = freq->FilePath;
 
-        std::future<const results::Results*> gettext = std::async(core::Interact,&guiaction);
-        results::GetText* text = (results::GetText*)gettext.get();
+        std::future<const result::Result*> gettext = std::async(core::Interact, &req);
+        result::GetText* text = (result::GetText*)gettext.get();
 
-        resp.Content = text->text->c_str();
-        resp.IsPath = false;
-        emb_Send_Message_To_CF(FILERESP, &resp);
+        fresp.Content = text->Text->c_str();
+        fresp.IsPath = false;
+        emb_Send_Message_To_CF(FILERESP, &fresp);
     }
 }
 
 static void Draw(Highlight* highlight){
-    guiaction.actiontype = GUIAction::DRAWBYPOS;
-    guiaction.filename = highlight->file;
-    guiaction.startpos = highlight->startpos;
-    guiaction.endpos = highlight->endpos;
-    switch (highlight->type) {
-    case CF_TYPE:
-        guiaction.otherdata = strdup("type");
-        break;
-    case CF_KEYWORD:
-        guiaction.otherdata = strdup("keyword");
-        break;
-    case CF_MULTCMT:
-        guiaction.otherdata = strdup("cmt");
-        break;
-    case CF_SINGCMT:
-        guiaction.otherdata = strdup("scmt");
-        break;
-    case CF_TEXT:
-        guiaction.otherdata = strdup("text");
-        break;
-    case CF_TAG:
-        guiaction.otherdata = strdup("tag");
-        break;
-    case CF_FUNCTIONNAME:
-        guiaction.otherdata = strdup("func");
-        break;
-    case CF_VALUE:
-        guiaction.otherdata = strdup("value");
-        break;
-    default:
-        guiaction.otherdata = strdup("none");
-        break;
-    }
-    core::Interact(&guiaction);
+    static request::EADrawByPos req;
+    static map<t, std::string> tagnames = {
+        {CF_TYPE,"type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "cmt"},
+        {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
+        {CF_NONE, "none"}
+    };
+
+    req.Startpos = highlight->startpos;
+    req.Endpos = highlight->endpos;
+    req.Filepath = highlight->file;
+    auto tagname = tagnames.find(highlight->type)->second;
+    req.Tagname = tagname;
+    core::Interact(&req);
 }
 
 static void CfMessageReceiver(MessageType type, void* data){
@@ -90,15 +68,15 @@ void cf::Init(){
     emb_Connect(CfMessageReceiver);
 }
 
-void cf::Process(CFAction *action){
+void cf::Process(request::Request* request){
     static Lang langmes;
-    if (action->actiontype == CFAction::LOADTEMP) {
-        langmes.LangName = strdup(action->language.c_str());
+    if(auto req = dynamic_cast<request::CFLoadTemplate*>(request)){
+        langmes.LangName = strdup(req->Language.c_str());
         emb_Send_Message_To_CF(MessageType::LANG, &langmes);
-    }else if(action->actiontype == CFAction::READFILE){
+    }else if(auto req = dynamic_cast<request::CFReadFile*>(request)){
         emb_Send_Message_To_CF(MessageType::RELOAD, nullptr);
-        ent.FileName = strdup(action->filepath.c_str());
-        ent.language = strdup(action->language.c_str());
+        ent.FileName = strdup(req->Filepath.c_str());
+        ent.language = strdup(req->Language.c_str());
         emb_Send_Message_To_CF(MessageType::ENTRYFILE, &ent);
     }
 }

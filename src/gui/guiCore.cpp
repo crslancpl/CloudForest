@@ -13,6 +13,7 @@
 #include "Style.h"
 
 #include <cstdlib>
+#include <glib/gprintf.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -85,6 +86,20 @@ std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
     return &EditAreas.back();
 }
 
+void gui::RemoveEditArea(EditArea* editarea){
+    unsigned int pos = 0;
+
+    editarea->Destroy();
+
+    for (std::shared_ptr<EditArea>& ea : EditAreas) {
+        if(ea.get() == editarea){
+            EditAreas.erase(EditAreas.begin() + pos);
+            return;
+        }
+        pos++;
+    }
+}
+
 std::shared_ptr<EditArea>* gui::GetEditArea(const std::string &filepath){
     /*
      * Return nullptr if not found
@@ -98,29 +113,28 @@ std::shared_ptr<EditArea>* gui::GetEditArea(const std::string &filepath){
 }
 
 
-const results::Results* gui::Process(GUIAction *action){
-    if(action->actiontype == GUIAction::GETEDITAREACONTENT){
-        return GetEditAreaContent(action->filename);
-    }else if(action->actiontype == GUIAction::DRAWBYPOS){
-        auto ea = gui::GetEditArea(action->filename);
-        (*ea)->ApplyTagByPos(action->startpos, action->endpos, (char*)action->otherdata);
-        return nullptr;
-    }else if(action->actiontype == GUIAction::DRAWBYLINE){
-        auto ea = gui::GetEditArea(action->filename);
-        (*ea)->ApplyTagByLinePos(action->line, action->offset, action->length, (char*)action->otherdata);
-    }else if(action->actiontype == GUIAction::ADDTEXTCHANGEDCALLBACK){
-        auto ea = gui::GetEditArea(action->filename);
-        (*ea)->AddTextChangedPyCalback(action->othertext);
+const result::Result* gui::Process(request::Request* request){
+    if(auto req = dynamic_cast<request::EAGetText*>(request)){
+        return GetEditAreaContent(req->Filepath);
+    }else if(auto req = dynamic_cast<request::EADrawByPos*>(request)){
+        auto ea = gui::GetEditArea(req->Filepath);
+        (*ea)->ApplyTagByPos(req->Startpos, req->Endpos, (char*)req->Tagname.c_str());
+    }else if(auto req = dynamic_cast<request::EADrawByLine*>(request)){
+        auto ea = gui::GetEditArea(req->Filepath);
+        (*ea)->ApplyTagByLinePos(req->Line, req->Offset, req->Length, (char*)req->Tagname.c_str());
+    }else if(auto req = dynamic_cast<request::EAAddCallBack*>(request)){
+        auto ea = gui::GetEditArea(req->Filepath);
+        (*ea)->AddTextChangedPyCalback(req->Funcname);
     }
     return nullptr;
 }
 
 //async
-const results::Results* gui::GetEditAreaContent(const std::string &filepath){
-    static results::GetText Result;
+const result::Result* gui::GetEditAreaContent(const std::string &filepath){
+    static result::GetText Result;
     auto ea = gui::GetEditArea(filepath);
     if(ea != nullptr){
-        Result.text = &(*ea)->GetContent();
+        Result.Text = &(*ea)->GetContent();
         return &Result;
     }else{
         return nullptr;
@@ -128,41 +142,42 @@ const results::Results* gui::GetEditAreaContent(const std::string &filepath){
 }
 
 //async
-const results::Results* gui::GetOpenedEditArea(const std::string &filepath){
-    static results::GetAllEditAreaPath eapaths;
+const result::Result* gui::GetOpenedEditArea(const std::string &filepath){
+    static result::GetAllEditAreaPath eapaths;
     /*not finished */
     return nullptr;
 }
 
 
 
-static FileAction fileaction;
 //async
 void gui::OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*)){
     /*
      * Tell file manager to open file chooser
      */
-    fileaction.Destination = Parts::FILEMANAGER;
-    fileaction.callback = callback;
+
     if(fileordir){
         //file
-        fileaction.actiontype = FileAction::OPENFILE;
+        static request::FileOpenFile req;
+        req.Callback = callback;
+        core::Interact(&req);
     }else{
         //folder
-        fileaction.actiontype = FileAction::OPENFOLDER;
+        static request::FileOpenFolder req;
+        req.Callback = callback;
+        core::Interact(&req);
     }
 
-    core::Interact(&fileaction);
+
 }
 
 //async
 void gui::SaveFile(GFile* file, char* content, void(*callback)(GFile*,GFileInfo*)){
-    fileaction.Destination = Parts::FILEMANAGER;
-    fileaction.actiontype = FileAction::SAVE;
-    fileaction.data = content;
-    fileaction.file = file;
-    fileaction.callback = callback;
-    core::Interact(&fileaction);
+    static request::FileSave req;
+    req.Content = content;
+    req.File = file;
+    req.Callback = callback;
+    core::Interact(&req);
 }
 
 //async
@@ -170,23 +185,22 @@ void gui::EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*)){
     /*
      * Tell file manager to enumerate folder
      */
-    fileaction.Destination = Parts::FILEMANAGER;
-    fileaction.callback = callback;
-    fileaction.actiontype = FileAction::ENUMERATE;
-    fileaction.data = folder;
-    core::Interact(&fileaction);
+    static request::FileEnumerate req;
+    req.File = folder;
+    req.Callback = callback;
+
+    core::Interact(&req);
 }
 
 
-static CFAction cfaction;
 void gui::cfLoadLanguage(const std::string& langname){
     /*
      * Tell CloudyForest to load the language template
      */
-    cfaction.Destination = Parts::CLOUDYFOREST;
-    cfaction.actiontype = CFAction::LOADTEMP;
-    cfaction.language = langname;
-    core::Interact(&cfaction);
+    static request::CFLoadTemplate req;
+    req.Language = langname;
+
+    core::Interact(&req);
 }
 
 void gui::cfProcessFile(const std::string& filepath, const std::string& language){
@@ -194,19 +208,18 @@ void gui::cfProcessFile(const std::string& filepath, const std::string& language
      * Tell CloudyForest to process a file. CloudyForest will
      * request for content later.
      */
-    cfaction.Destination = Parts::CLOUDYFOREST;
-    cfaction.actiontype = CFAction::READFILE;
-    cfaction.language = language;
-    cfaction.filepath = filepath;
-    core::Interact(&cfaction);
+    static request::CFReadFile req;
+    req.Filepath = filepath;
+    req.Language = language;
+
+    core::Interact(&req);
 }
 
 
 
 
-void gui::PyRunCode(std::string &code){
-    static PyAction action;
-    action.Destination = Parts::PYTHON;
-    action.code = code;
-    core::Interact(&action);
+void gui::PyRunCode(std::string& code){
+    static request::PyRunCode req;
+    req.Code = code;
+    core::Interact(&req);
 }

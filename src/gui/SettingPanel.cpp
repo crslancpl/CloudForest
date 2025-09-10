@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 //#include "FilePanel.h"
 #include <gtk/gtk.h>
+#include <gtk/gtkdropdown.h>
 
 static void CloseClicked(GtkButton *self, gpointer data){
     gtk_widget_set_visible(GTK_WIDGET(gui::AppSettingPanel.Window), false);
@@ -39,6 +40,11 @@ void SettingPanel::Init(){
     EditAreaSettingPage = GTK_BOX(gtk_builder_get_object(builder, "EditAreaSettingPage"));
     ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
 
+    TabBehaviorChooser = GTK_DROP_DOWN(gtk_builder_get_object(builder, "tabbehavchooser"));
+    TabSizeSetter = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "tabsizesetter"));
+
+    GtkAdjustment *adj = gtk_adjustment_new(0, 0, 16, 1, 1, 0);
+    gtk_spin_button_set_adjustment(TabSizeSetter, adj);
 
     gtk_widget_add_css_class(GTK_WIDGET(Window), "SettingPanel");
     gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
@@ -61,10 +67,11 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    int w = gtk_widget_get_width(GTK_WIDGET(Window))/1.5;
-    int h = gtk_widget_get_height(GTK_WIDGET(Window))/1.5;
 
-    gtk_widget_set_size_request(GTK_WIDGET(Window), w*0.7, 0);
+    int w = gtk_widget_get_width(GTK_WIDGET(gui::AppWindow.Window))/1.5;
+    int h = gtk_widget_get_height(GTK_WIDGET(gui::AppWindow.Window))/1.5;
+
+    gtk_widget_set_size_request(GTK_WIDGET(Stack), w*0.7, 0);
     gtk_window_set_default_size(Window, w,h);
     gtk_widget_set_visible(GTK_WIDGET(Window), true);
 }

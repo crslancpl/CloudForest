@@ -31,14 +31,15 @@ void Init();
 //
 std::shared_ptr<EditArea>* NewEditArea(GFile *file);
 std::shared_ptr<EditArea>* GetEditArea(const std::string &filename);
+void RemoveEditArea(EditArea* editarea);
 EditAreaHolder* GetEAHolder(int number);
 EditAreaHolder* NewEAHolder();
 
 
 //async callback
-const results::Results* Process(GUIAction *action);//for core
-const results::Results* GetEditAreaContent(const std::string &filepath);
-const results::Results* GetOpenedEditArea(const std::string &filepath);
+const result::Result* Process(request::Request* request);//for core
+const result::Result* GetEditAreaContent(const std::string &filepath);
+const result::Result* GetOpenedEditArea(const std::string &filepath);
 
 //async request
 void OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*));
@@ -48,7 +49,7 @@ void EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*));
 void cfLoadLanguage(const std::string& langname);
 void cfProcessFile(const std::string& filepath, const std::string& language);
 
-void PyRunCode(std::string &code);
+void PyRunCode(std::string& code);
 
 }
 

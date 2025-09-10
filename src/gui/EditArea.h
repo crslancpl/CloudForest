@@ -49,6 +49,7 @@ public:
     GtkTextBuffer *TextViewBuffer;// contains file content
     GtkTextView *LineNoArea;
     GtkTextBuffer *LineNoAreaBuffer;
+    GtkEventController* KeyDownEventCtrl;
 
     /* These iter are shared by multiple functions. ex: draw, delete line */
     GtkTextIter *StartItr;
@@ -93,7 +94,7 @@ public:
     void Remove(EditArea* editarea);
 private:
     std::vector<std::shared_ptr<EditAreaHolderTabBut>> TabButtons;
-    std::vector<std::shared_ptr<EditArea>> EditAreas;
+    //std::vector<std::shared_ptr<EditArea>> EditAreas;
     void NewTabButton();
 };
 
