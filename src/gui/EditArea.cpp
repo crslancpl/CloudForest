@@ -3,6 +3,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
+#include <gdk/gdkkeysyms.h>
 #include <gio/gmenu.h>
 #include <glib/gprintf.h>
 #include <glib.h>
@@ -49,8 +50,17 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
     //run the callbacks for python
     for (std::string &funcname : Parent->TextChangedPyCallback) {
         std::string code = funcname + "(\"" + Parent->AbsoPath + "\")";
-        //gui::PyRunCode(code);
+        gui::PyRunCode(code);
     }
+}
+
+static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* Parent){
+    if(keyval == GDK_KEY_Tab){
+        g_print("t\n");
+        gtk_text_buffer_insert_at_cursor(Parent->TextViewBuffer, "    ", 4);
+        return true;
+    }
+    return false;
 }
 
 static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
@@ -88,6 +98,10 @@ EditArea::EditArea(GFile *file){
     TextViewBuffer = gtk_text_view_get_buffer(TextView);
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
+    KeyDownEventCtrl = gtk_event_controller_key_new();
+
+
+    gtk_text_view_set_accepts_tab(TextView, false);
 
     /* Initialize variables */
     cacheTotalLine = 0;
@@ -116,6 +130,8 @@ EditArea::EditArea(GFile *file){
     LoadCursorPos();
 
     /* Connect signals */
+    g_signal_connect(KeyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
+    gtk_widget_add_controller(GTK_WIDGET(TextView), GTK_EVENT_CONTROLLER(KeyDownEventCtrl));
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
@@ -280,6 +296,7 @@ static void FileSaved(GFile* file, GFileInfo* info){
     if(file == nullptr){
         //saving cancelled
         EditAreacache = nullptr;
+        return;
     }
 
     EditAreacache->LoadFile(file);
@@ -316,7 +333,7 @@ static void SwitcherButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent)
 }
 
 static void SwitcherCloseButtonClicked(GtkButton *self, EditAreaHolderTabBut* Parent){
-    Parent->EA->Destroy();
+    gui::RemoveEditArea(Parent->EA.get());
 }
 
 void EditAreaHolderTabBut::Init(const shared_ptr<EditArea> &editarea, EditAreaHolder& parentholder){
@@ -375,7 +392,7 @@ void EditAreaHolder::Remove(EditArea *editarea){
      * Remove tab switcher from holder
      */
     unsigned int offset = 0;
-    for(shared_ptr<EditAreaHolderTabBut>& t: TabButtons){
+    for(std::shared_ptr<EditAreaHolderTabBut>& t: TabButtons){
         if(t.get()->EA.get() == editarea){
             gtk_box_remove(Switcher, GTK_WIDGET(t->BaseBox));
             TabButtons.erase(TabButtons.begin()+offset);
@@ -384,16 +401,5 @@ void EditAreaHolder::Remove(EditArea *editarea){
         offset ++;
     }
 
-    /*
-     * Remove edit area from holder
-     */
-    offset = 0;
-    for(std::shared_ptr<EditArea> ea : EditAreas){
-        if(editarea == ea.get()){
-            gtk_stack_remove(Container, GTK_WIDGET(ea->BaseGrid));
-            EditAreas.erase(EditAreas.begin() +  offset);
-            return;
-        }
-        offset ++;
-    }
+    gtk_stack_remove(Container, GTK_WIDGET(editarea->BaseGrid));
 }

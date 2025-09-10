@@ -7,7 +7,7 @@
 
 namespace cf{
 void Init();
-void Process(CFAction *action);
+void Process(request::Request* request);
 }
 
 

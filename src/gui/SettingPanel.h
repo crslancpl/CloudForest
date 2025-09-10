@@ -2,6 +2,7 @@
 #define SETTINGPANEL_H_
 
 #include <gtk/gtk.h>
+#include <gtk/gtkdropdown.h>
 
 class SettingPanel{
 public:
@@ -20,6 +21,12 @@ public:
     GtkStack *Stack;// right-hand side
     GtkBox *EditAreaSettingPage;
     GtkBox *ExtensionsPage;
+
+    /*
+     * Edit area setting page
+     */
+    GtkDropDown* TabBehaviorChooser;//determine whether showing tab or space when the tab button is clicked
+    GtkSpinButton* TabSizeSetter;
 };
 
 #endif

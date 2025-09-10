@@ -50,16 +50,19 @@ void filemanag::Init(){
     FileDia = gtk_file_dialog_new();
 }
 
-void filemanag::Process(FileAction* action){
-    Callback = action->callback;
-    if(action->actiontype == FileAction::OPENFILE){
+void filemanag::Process(request::Request* request){
+    if(auto req = dynamic_cast<request::FileOpenFile*>(request)){
+        Callback = req->Callback;
         OpenFileChooser(true);
-    }else if(action->actiontype == FileAction::OPENFOLDER){
+    }else if(auto req = dynamic_cast<request::FileOpenFolder*>(request)){
+        Callback = req->Callback;
         OpenFileChooser(false);
-    }else if(action->actiontype == FileAction::ENUMERATE){
-        EnumerateFolderChild((GFile*)action->data);
-    }else if(action->actiontype == FileAction::SAVE){
-        Save(action->file, (char*)action->data);
+    }else if(auto req = dynamic_cast<request::FileEnumerate*>(request)){
+        Callback = req->Callback;
+        EnumerateFolderChild(req->File);
+    }else if(auto req = dynamic_cast<request::FileSave*>(request)){
+        Callback = req->Callback;
+        Save(req->File, &req->Content);
     }
 }
 
@@ -91,22 +94,21 @@ static void OpenFileSaver(){
     gtk_file_dialog_save(FileDia, gui::AppWindow.Window, nullptr, FileCreated,nullptr);
 }
 
-void filemanag::Save(GFile *file, char* content){
-    static GUIAction guiaction;
-    static char* contentcache;
+void filemanag::Save(GFile *file, std::string* content){
+    static std::string contentcache;
     if(file == nullptr){
+        contentcache = *content;
         OpenFileSaver();
-        contentcache = strdup(content);
     }else{
         if(content != nullptr){
             // the file is already exist so we don't have to choose the gfile
             g_file_replace_contents(
-                file, content, strlen(content),
+                file, content->c_str(), content->size(),
                 nullptr, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, nullptr, nullptr, nullptr);
         }else{
             // the file is newly created
             g_file_replace_contents(
-                file, contentcache, strlen(contentcache),
+                file, contentcache.c_str(), contentcache.size(),
                 nullptr, false, GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION, nullptr, nullptr, nullptr);
         }
         Callback(file, g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr));

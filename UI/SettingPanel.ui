@@ -62,6 +62,38 @@
         </object>
     </child>
     <child>
+        <object class="GtkBox">
+            <property name="spacing">10</property>
+            <child>
+                <object class="GtkLabel">
+                    <property name="label">Tab button behavior</property>
+                </object>
+            </child>
+            <child>
+                <object class="GtkDropDown" id="tabbehavechooser">
+                    <property name="width-request">80</property>
+                    <property name="model">
+                        <object class="GtkStringList">
+                            <items>
+                                <item translatable="yes">tab</item>
+                                <item translatable="yes">space</item>
+                            </items>
+                        </object>
+                    </property>
+                </object>
+            </child>
+            <child>
+                <object class="GtkLabel">
+                    <property name="label">Size(char width)</property>
+                </object>
+            </child>
+            <child>
+                <object class="GtkSpinButton" id="tabsizesetter">
+                </object>
+            </child>
+        </object>
+    </child>
+    <child>
         <object class="GtkGrid">
             <property name="vexpand">true</property>
         </object>

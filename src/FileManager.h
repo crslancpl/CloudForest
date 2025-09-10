@@ -12,9 +12,9 @@
 
 namespace filemanag{
 void Init();
-void Process(FileAction* action);
+void Process(request::Request* request);
 void OpenFileChooser(bool FileOrDir);
-void Save(GFile *file,char* content);
+void Save(GFile *file,std::string* content);
 void LoadText(GFile* file,char* &textoutput);//load the content to textoutput
 void EnumerateFolderChild(GFile* folder);
 }

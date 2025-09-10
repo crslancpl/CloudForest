@@ -50,24 +50,24 @@ static void AppActivated (GtkApplication *app, gpointer user_data){
 /*
  * core namespace
  */
-const results::Results* core::Interact(Action *action){
-    switch (action->Destination) {
+const result::Result* core::Interact(request::Request *request){
+    switch (request->Destination) {
     case Parts::CORE:
     break;
     case Parts::FILEMANAGER:
-    filemanag::Process((FileAction*)action);
+    filemanag::Process(request);
     break;
     case Parts::GUI:
-    return gui::Process((GUIAction*)action);
+    return gui::Process(request);
     break;
     case Parts::PYTHON:
-    pybackend::Execute(((PyAction*)action)->code);
+    pybackend::Process(request);
     break;
     case Parts::CLOUDYFOREST:
-    cf::Process((CFAction*)action);
+    cf::Process(request);
     break;
     default:
-    g_print("unknown action\n");
+    g_print("unknown request\n");
     break;
     }
     return nullptr;
