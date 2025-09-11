@@ -3,6 +3,7 @@
 #include <glib.h>
 #include <regex>
 #include <algorithm>
+#include "EditArea.h"
 
 SearchReplaceDialog::SearchReplaceDialog(EditArea* editArea) 
     : m_editArea(editArea), m_dialog(nullptr), m_searchActive(false) {
