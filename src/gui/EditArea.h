@@ -10,7 +10,8 @@
 
 #include "../Classes.h"
 
-
+// Forward declaration
+class SearchReplaceDialog;
 
 /* EdiaArea class is defined in DataTypes.h */
 class EditArea{
@@ -55,6 +56,9 @@ public:
     GtkTextIter *StartItr;
     GtkTextIter *EndItr;
 
+    // Search and replace
+    std::unique_ptr<SearchReplaceDialog> searchDialog;
+
     void UnrefBuilder();
     void CountLine();
     void CountError();
@@ -71,6 +75,8 @@ public:
     void Destroy();
     void Save();
     void LoadFile(GFile* newfile);
+    void ShowSearchDialog();
+    void ShowReplaceDialog();
 };
 
 class EditAreaHolderTabBut{
@@ -92,6 +98,7 @@ public:
     void Init();
     void Show(const std::shared_ptr<EditArea>& editarea);
     void Remove(EditArea* editarea);
+    std::shared_ptr<EditArea> GetCurrentEditArea();
 private:
     std::vector<std::shared_ptr<EditAreaHolderTabBut>> TabButtons;
     //std::vector<std::shared_ptr<EditArea>> EditAreas;

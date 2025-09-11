@@ -26,6 +26,7 @@
 #include "FilePanel.h"
 #include "MainWindow.h"
 #include "guiCore.h"
+#include "SearchReplaceDialog.h"
 
 /*
  * EditArea class
@@ -60,6 +61,18 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
         gtk_text_buffer_insert_at_cursor(Parent->TextViewBuffer, "    ", 4);
         return true;
     }
+    
+    // Search and replace shortcuts
+    if (state & GDK_CONTROL_MASK) {
+        if (keyval == GDK_KEY_f) {
+            Parent->ShowSearchDialog();
+            return true;
+        } else if (keyval == GDK_KEY_h) {
+            Parent->ShowReplaceDialog();
+            return true;
+        }
+    }
+    
     return false;
 }
 
@@ -317,6 +330,20 @@ void EditArea::Save(){
     gui::SaveFile(EditingFile, content, FileSaved);
 }
 
+void EditArea::ShowSearchDialog() {
+    if (!searchDialog) {
+        searchDialog = std::make_unique<SearchReplaceDialog>(this);
+    }
+    searchDialog->Show();
+}
+
+void EditArea::ShowReplaceDialog() {
+    if (!searchDialog) {
+        searchDialog = std::make_unique<SearchReplaceDialog>(this);
+    }
+    searchDialog->Show();
+}
+
 
 
 
@@ -402,4 +429,16 @@ void EditAreaHolder::Remove(EditArea *editarea){
     }
 
     gtk_stack_remove(Container, GTK_WIDGET(editarea->BaseGrid));
+}
+
+std::shared_ptr<EditArea> EditAreaHolder::GetCurrentEditArea() {
+    const char* visibleChildName = gtk_stack_get_visible_child_name(Container);
+    if (visibleChildName) {
+        for (const auto& tabButton : TabButtons) {
+            if (tabButton->EA && tabButton->EA->RandomId == visibleChildName) {
+                return tabButton->EA;
+            }
+        }
+    }
+    return nullptr;
 }

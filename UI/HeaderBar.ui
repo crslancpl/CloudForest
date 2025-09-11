@@ -57,6 +57,18 @@
         <attribute name="accel">&lt;Control&gt;n</attribute>
       </item>
     </section>
+    <section>
+      <item>
+        <attribute name="label">Find</attribute>
+        <attribute name="action">app.search.find</attribute>
+        <attribute name="accel">&lt;Control&gt;f</attribute>
+      </item>
+      <item>
+        <attribute name="label">Find and Replace</attribute>
+        <attribute name="action">app.search.replace</attribute>
+        <attribute name="accel">&lt;Control&gt;h</attribute>
+      </item>
+    </section>
   </menu>
 
 

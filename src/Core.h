@@ -12,4 +12,5 @@ namespace core {
 const result::Result* Interact(request::Request *request);
 }
 
+
 #endif
