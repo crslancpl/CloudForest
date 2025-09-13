@@ -39,12 +39,26 @@ static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer 
     gtk_widget_grab_focus(GTK_WIDGET((*newEditArea)->TextView));
 }
 
+static void SearchClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
+    if (gui::FocusedEAHolder && gui::FocusedEAHolder->GetCurrentEditArea()) {
+        gui::FocusedEAHolder->GetCurrentEditArea()->ShowSearchDialog();
+    }
+}
+
+static void ReplaceClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
+    if (gui::FocusedEAHolder && gui::FocusedEAHolder->GetCurrentEditArea()) {
+        gui::FocusedEAHolder->GetCurrentEditArea()->ShowReplaceDialog();
+    }
+}
+
 
 static GActionEntry app_entries[] =
 {
   { "file.open", LoadFileClicked, nullptr, nullptr, nullptr },
   { "folder.open", LoadFolderClicked, nullptr, nullptr, nullptr },
-  { "file.new", NewFileClicked, nullptr, nullptr, nullptr }
+  { "file.new", NewFileClicked, nullptr, nullptr, nullptr },
+  { "search.find", SearchClicked, nullptr, nullptr, nullptr },
+  { "search.replace", ReplaceClicked, nullptr, nullptr, nullptr }
 };
 
 
