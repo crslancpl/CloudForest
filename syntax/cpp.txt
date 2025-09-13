@@ -19,3 +19,5 @@ true false nullptr NULL
 include pragma ifndef ifdef define endif
 #TextSymbol
 ' "
+#AcceptCharInName
+_

@@ -41,8 +41,8 @@ int main (int argc,char *argv[]){
 static void AppActivated (GtkApplication *app, gpointer user_data){
     global::GtkApp = app;
     cf::Init();
-    gui::Init();
     pybackend::Start();
+    gui::Init();
     filemanag::Init();
 }
 

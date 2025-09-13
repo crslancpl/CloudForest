@@ -4,14 +4,13 @@ from CloudForest import EditArea
 
 EditArea.test()
 
+def NewEACreated(file):
+    print(file+" created")
+    EditArea.textchanged_addcallback(file,"textchanged")
+
 def textchanged(file):
     text = EditArea.getcontent(file)
     print(text)
 
-    #if text == "aaaaaa\naaaaaa\naaaaaa" :
-    #    EditArea.highlight(file, 1, 1, 2, "type")
-    #    EditArea.highlight(file, 2, 2, 2, "type")
-    #    EditArea.highlight(file, 3, 2, 3, "type")
 
-
-EditArea.textchanged_addcallback("New File","textchanged")
+EditArea.opennew_addcallback("NewEACreated")

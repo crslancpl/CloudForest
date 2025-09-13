@@ -9,6 +9,7 @@
 namespace style{
 void LoadCssFromPath(const std::string &path);
 void LoadTextTag(GtkTextBuffer *buffer);
+void InitLangChooser();
 void OpenLangChooser(GtkButton *self, EditArea *parent);
 }
 

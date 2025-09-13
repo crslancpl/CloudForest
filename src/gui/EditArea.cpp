@@ -277,12 +277,16 @@ void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
 }
 
-void EditArea::ApplyTagByLinePos(int line, int offset, int length,char *TagName){
-    offset ++;
-    line --;// change the lines that starts from 1 to 0
-    gtk_text_buffer_get_iter_at_line_offset(TextViewBuffer, StartItr, line, offset);
+void EditArea::ApplyTagByLinePos(int line, int pos, int length,char *TagName){
+    line--;// change the lines that starts from 1 to 0
+    if (pos <= 0 ||strcmp(TagName, "none") == 0) {
+        return;
+    }
+
+    g_printf("line: %i pos: %i length: %i style: %s\n", line, pos, length, TagName);
+    gtk_text_buffer_get_iter_at_line_offset(TextViewBuffer, StartItr, line, pos -1 );
     gtk_text_iter_assign(EndItr, StartItr);
-    gtk_text_iter_backward_chars(EndItr, length);
+    gtk_text_iter_forward_chars(EndItr, length);
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
 }
 

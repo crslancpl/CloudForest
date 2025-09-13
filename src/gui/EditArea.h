@@ -67,7 +67,7 @@ public:
     void HighlightSyntax();
     void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
     void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
-    void ApplyTagByLinePos(int line, int offset, int length,char *TagName);
+    void ApplyTagByLinePos(int line, int pos, int length,char *TagName);
     void Destroy();
     void Save();
     void LoadFile(GFile* newfile);

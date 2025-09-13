@@ -28,7 +28,7 @@ public:
 class EAAddCallBack: public Request{
 public:
     enum CallbackType{
-        TEXTCHANGED
+        NEWEDITAREA, CLOSEEDITAREA, TEXTCHANGED, SAVING, SAVED, KEYDOWN
     };
     CallbackType Type;
     std::string Filepath;
@@ -47,7 +47,7 @@ public:
 class EADrawByLine: public Request{
 public:
     std::string Filepath;
-    int Line, Offset, Length;
+    unsigned int Line, Offset, Length;
     std::string Tagname;
     EADrawByLine() : Request(Parts::GUI) {}
 };
