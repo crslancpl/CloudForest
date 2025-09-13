@@ -1,6 +1,7 @@
 #include "CFCore.h"
 
 #include <cstring>
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <map>
 #include <future>
@@ -34,15 +35,23 @@ static void RequestFile(FileRequest *freq){
 }
 
 static void Draw(Highlight* highlight){
-    static request::EADrawByPos req;
+    //static request::EADrawByPos req;
+    static request::EADrawByLine req;
     static map<t, std::string> tagnames = {
-        {CF_TYPE,"type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "cmt"},
+        {CF_TYPE, "type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "mcmt"},
         {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
-        {CF_NONE, "none"}
+        {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}
     };
 
+    /*
     req.Startpos = highlight->startpos;
     req.Endpos = highlight->endpos;
+    */
+
+
+    req.Line = highlight->startline;
+    req.Offset = highlight->startlinepos;
+    req.Length = highlight->textlength;
     req.Filepath = highlight->file;
     auto tagname = tagnames.find(highlight->type)->second;
     req.Tagname = tagname;

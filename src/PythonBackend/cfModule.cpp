@@ -68,6 +68,20 @@ static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+
+static PyObject *cf_EditArea_OpenNew_AddCallBack(PyObject *self, PyObject *args){
+    char *pyfuncname;
+    if(!PyArg_ParseTuple(args, "s", &pyfuncname)){
+        return nullptr;
+    }
+    static request::EAAddCallBack req;
+    req.Type = request::EAAddCallBack::NEWEDITAREA;
+    req.Funcname = pyfuncname;
+
+    core::Interact(&req);
+    Py_RETURN_NONE;
+}
+
 static PyObject *cf_EditArea_TextChanged_AddCallBack(PyObject *self, PyObject *args){
     char *absolutepath, *pyfuncname;
     if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
@@ -129,6 +143,7 @@ static PyObject *cf_EditArea_HighLight(PyObject *self, PyObject *args){
 static PyMethodDef cf_EditArea_method[]={
     {"test", cf_Test, METH_VARARGS, ""},
     {"getcontent", cf_EditArea_GetContent, METH_VARARGS, "get content from edit area"},
+    {"opennew_addcallback", cf_EditArea_OpenNew_AddCallBack, METH_VARARGS, "add callback"},
     {"textchanged_addcallback", cf_EditArea_TextChanged_AddCallBack, METH_VARARGS, "add callback"},
     {"textchanged_rmcallback", cf_EditArea_TextChanged_RemoveCallBack, METH_VARARGS, "remove callback"},
     {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},

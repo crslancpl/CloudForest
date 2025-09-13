@@ -61,7 +61,7 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
         gtk_text_buffer_insert_at_cursor(Parent->TextViewBuffer, "    ", 4);
         return true;
     }
-    
+
     // Search and replace shortcuts
     if (state & GDK_CONTROL_MASK) {
         if (keyval == GDK_KEY_f) {
@@ -72,7 +72,7 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
             return true;
         }
     }
-    
+
     return false;
 }
 

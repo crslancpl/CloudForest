@@ -12,9 +12,6 @@ typedef struct Connect{
 }Connect ;
 
 typedef struct FileRequest{
-    /*
-     * from cloudyforest to the app
-     */
     const char* FilePath;//relative
 }FileRequest;
 
@@ -34,19 +31,28 @@ typedef struct Entry{
 }Entry;
 
 enum t{
-    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_VALUE
+    CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_VALUE,
+    CF_CHAR, CF_NEWLINE
 };
 
 typedef struct Highlight{
     char* file;
-    int startpos;
-    int endpos;
+    unsigned int startpos, endpos;
+    unsigned int startline, startlinepos;
+    unsigned int endline, endlinepos;
+    unsigned int textlength;
     t type;
 }Highlight;
 
 void emb_Send_Message_To_CF(MessageType type, void* data);
 
 void emb_Connect(void (*func)(MessageType, void*));
+
+void emb_Send_Message(MessageType type, void *data);
+
+void emb_Request_File(const char* filepath);
+
+void emb_Respond_File_Req();
 
 }
 #endif

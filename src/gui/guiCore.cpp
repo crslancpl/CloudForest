@@ -40,6 +40,7 @@ void gui::Init(){
     gui::AppHeaderBar.Init();
     gui::AppFilePanel.init();
     gui::AppWindow.SetHeaderBar(GTK_WIDGET(AppHeaderBar.HeaderBarWidget));
+    style::InitLangChooser();
 
     /*
      * This will be moved to CFGrid
@@ -68,22 +69,27 @@ void gui::Init(){
 
 static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
 
-//static
 EditAreaHolder* gui::GetEAHolder(int number){
     return EAHolders[number].get();
 }
-//static
-EditAreaHolder*gui::NewEAHolder(){
+
+EditAreaHolder* gui::NewEAHolder(){
     EAHolders.emplace_back(std::make_unique<EditAreaHolder>());
     EditAreaHolder* newholder = EAHolders.back().get();
     newholder->Init();
-
     return newholder;
 }
 
+static std::vector<std::string> EditAreaCreatedCallback = {};
+
 std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
     EditAreas.emplace_back(std::make_shared<EditArea>(file));
-    return &EditAreas.back();
+    std::shared_ptr<EditArea>* ea = &EditAreas.back();
+    for (std::string& func : EditAreaCreatedCallback) {
+        std::string function = func + "(\"" + (*ea)->AbsoPath + "\")";
+        gui::PyRunCode(function);
+    }
+    return ea;
 }
 
 void gui::RemoveEditArea(EditArea* editarea){
@@ -124,7 +130,16 @@ const result::Result* gui::Process(request::Request* request){
         (*ea)->ApplyTagByLinePos(req->Line, req->Offset, req->Length, (char*)req->Tagname.c_str());
     }else if(auto req = dynamic_cast<request::EAAddCallBack*>(request)){
         auto ea = gui::GetEditArea(req->Filepath);
-        (*ea)->AddTextChangedPyCalback(req->Funcname);
+        switch (req->Type) {
+        case request::EAAddCallBack::NEWEDITAREA:
+            EditAreaCreatedCallback.emplace_back(req->Funcname);
+            break;
+        case request::EAAddCallBack::TEXTCHANGED:
+            (*ea)->AddTextChangedPyCalback(req->Funcname);
+            break;
+        default:
+            break;
+        }
     }
     return nullptr;
 }
