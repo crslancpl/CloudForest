@@ -1,12 +1,17 @@
 #TrimSpecialCharacter
 #Keyword
-if else return while static public private for new auto const
-inline friend continue break namespace using extern switch case
+if else return while for new
+continue break namespace using switch case
+typedef
 default
 #Type
-int char class void enum bool unsigned long short
+auto int char class void enum bool unsigned long short struct
 #Value
 true false nullptr NULL
+#Modifier
+static const inline virtual extern friend
+#AreaModifier
+public private protected
 #SLCmt
 //
 #MLCmtS

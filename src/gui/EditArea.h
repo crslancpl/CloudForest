@@ -25,8 +25,8 @@ public:
 
     bool IsSaved = true;
     bool IsCurMovedByKey;
-    int cacheTotalLine = 0;
-    int CursorPos;
+    unsigned int cacheTotalLine = 0;
+    unsigned int CursorPos;
 
 
     std::string RandomId;
@@ -69,9 +69,9 @@ public:
     void ShowSuggestion(const std::vector<std::shared_ptr<Suggestion>> &Suggestions);// auto complete
     void ChangeLanguage(const std::string& lang, bool highlight);//pass false to highlight if you don't want to highlight now
     void HighlightSyntax();
-    void ApplyTagByLength(int TextStartPos, int TextLength, char *TagName);
-    void ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName);
-    void ApplyTagByLinePos(int line, int pos, int length,char *TagName);
+    void ApplyTagByLength(unsigned int TextStartPos, unsigned int TextLength, char *TagName);
+    void ApplyTagByPos(unsigned int TextStartPos, unsigned int TextEndPos, char *TagName);
+    void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,char *TagName);
     void Destroy();
     void Save();
     void LoadFile(GFile* newfile);

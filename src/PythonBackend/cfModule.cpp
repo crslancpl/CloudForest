@@ -30,17 +30,18 @@ static PyObject *cf_Test(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-static PyObject *cf_GetAllOpenedFiles(PyObject *self, PyObject *args){
-    /*
-    vector<shared_ptr<EditArea>> &AllEditArea = core::GetAllEditArea();
-    PyObject *list = PyList_New(AllEditArea.size());
-    for(shared_ptr<EditArea> &ea: AllEditArea){
-        PyObject *editareafilepath = PyUnicode_FromString(ea->AbsoPath.c_str());
-        PyList_Append(list, editareafilepath);
+static PyObject *cf_EditArea_SetLang(PyObject *self, PyObject *args){
+    char* absolutepath, lang;
+    if(!PyArg_ParseTuple(args, "ss", &absolutepath, lang)){
+        return nullptr;
     }
 
-    return list;
-    */
+    static request::EASetLang req;
+    req.Filepath = absolutepath;
+    req.Lang = lang;
+
+    core::Interact(&req);
+
     Py_RETURN_NONE;
 }
 
@@ -147,6 +148,7 @@ static PyMethodDef cf_EditArea_method[]={
     {"textchanged_addcallback", cf_EditArea_TextChanged_AddCallBack, METH_VARARGS, "add callback"},
     {"textchanged_rmcallback", cf_EditArea_TextChanged_RemoveCallBack, METH_VARARGS, "remove callback"},
     {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
+    {"setlanguage", cf_EditArea_SetLang, METH_VARARGS, "set the language of edit area"},
     {NULL, NULL, 0, NULL}
 };
 

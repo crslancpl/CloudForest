@@ -4,7 +4,8 @@
 extern "C" {
 
 enum MessageType:char{
-    CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD
+    CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD,
+    FIND
 };
 
 typedef struct Connect{
@@ -21,6 +22,11 @@ typedef struct FileRespond{
     const char* Content;// can be path or whole file
 }FileRespond;
 
+typedef struct Find {
+    const char* FilePath;
+    const char* Text;
+}Find;
+
 typedef struct Lang{
     char* LangName;
 }Lang;
@@ -32,7 +38,7 @@ typedef struct Entry{
 
 enum t{
     CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_VALUE,
-    CF_CHAR, CF_NEWLINE
+    CF_CHAR, CF_NEWLINE, CF_MODIFIER
 };
 
 typedef struct Highlight{

@@ -157,8 +157,11 @@ const result::Result* gui::GetEditAreaContent(const std::string &filepath){
 }
 
 //async
-const result::Result* gui::GetOpenedEditArea(const std::string &filepath){
-    static result::GetAllEditAreaPath eapaths;
+const result::Result* gui::ChangeEditAreaLanguage(const std::string &filepath, const std::string &lang){
+    auto ea = gui::GetEditArea(filepath);
+    if(ea != nullptr){
+        (*ea)->ChangeLanguage(lang, true);
+    }
     /*not finished */
     return nullptr;
 }

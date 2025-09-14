@@ -39,7 +39,7 @@ EditAreaHolder* NewEAHolder();
 //async callback
 const result::Result* Process(request::Request* request);//for core
 const result::Result* GetEditAreaContent(const std::string &filepath);
-const result::Result* GetOpenedEditArea(const std::string &filepath);
+const result::Result* ChangeEditAreaLanguage(const std::string &filepath, const std::string &lang);
 
 //async request
 void OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*));

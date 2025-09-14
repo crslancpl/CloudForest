@@ -40,7 +40,7 @@ static void Draw(Highlight* highlight){
     static map<t, std::string> tagnames = {
         {CF_TYPE, "type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "mcmt"},
         {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
-        {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}
+        {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
     /*

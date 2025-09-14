@@ -25,6 +25,13 @@ public:
     EAGetText() : Request(Parts::GUI) {}
 };
 
+class EASetLang: public Request{
+public:
+    std::string Filepath;
+    std::string Lang;
+    EASetLang() : Request(Parts::GUI) {}
+};
+
 class EAAddCallBack: public Request{
 public:
     enum CallbackType{

@@ -161,7 +161,7 @@ EditArea::EditArea(GFile *file){
 
     style::LoadTextTag(TextViewBuffer);
 
-    ChangeLanguage("js", false);
+    ChangeLanguage("cpp", false);
 }
 
 EditArea::~EditArea(){
@@ -270,32 +270,42 @@ void EditArea::LoadFile(GFile* newfile){
 }
 
 void EditArea::HighlightSyntax(){
-    gtk_text_buffer_get_start_iter(TextViewBuffer, StartItr);
-    gtk_text_buffer_get_end_iter(TextViewBuffer,EndItr);
+    gtk_text_buffer_get_bounds(TextViewBuffer, StartItr, EndItr);
     gtk_text_buffer_remove_all_tags(TextViewBuffer, StartItr, EndItr);
 
     gui::cfProcessFile(AbsoPath, Language);
 }
 
-void EditArea::ApplyTagByLength(int TextStartPos, int TextLength, char *TagName){
+void EditArea::ApplyTagByLength(unsigned int TextStartPos, unsigned int TextLength, char *TagName){
+    /*
+     * Position 1 is the position of the first character in the buffer
+     */
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos + TextLength);
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
 }
 
-void EditArea::ApplyTagByPos(int TextStartPos, int TextEndPos, char *TagName){
+void EditArea::ApplyTagByPos(unsigned int TextStartPos, unsigned int TextEndPos, char *TagName){
+    /*
+     * Position 1 is the position of the first character in the buffer
+     */
     TextStartPos --;
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, StartItr, TextStartPos);
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, EndItr, TextEndPos);
     gtk_text_buffer_apply_tag_by_name(TextViewBuffer, TagName, StartItr, EndItr);
 }
 
-void EditArea::ApplyTagByLinePos(int line, int pos, int length,char *TagName){
+void EditArea::ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,char *TagName){
+    /*
+     * Line 1 is the first line, and position 1 is the position
+     * of the first character in the line So line and position shouldn't
+     * be less then 1.
+     */
     line--;// change the lines that starts from 1 to 0
     if (pos <= 0 ||strcmp(TagName, "none") == 0) {
         return;
     }
-    g_print("line %i pos %i tag %s\n", line, pos, TagName);
+    //g_print("line %i pos %i tag %s\n", line, pos, TagName);
     gtk_text_buffer_get_iter_at_line_offset(TextViewBuffer, StartItr, line, pos -1 );
     gtk_text_iter_assign(EndItr, StartItr);
     gtk_text_iter_forward_chars(EndItr, length);
