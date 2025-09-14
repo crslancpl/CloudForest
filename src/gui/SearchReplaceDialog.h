@@ -19,7 +19,7 @@ public:
 
 private:
     EditArea* m_editArea;
-    GtkDialog* m_dialog;
+    GtkWindow* m_dialog;
     GtkEntry* m_searchEntry;
     GtkEntry* m_replaceEntry;
     GtkCheckButton* m_caseSensitiveCheck;

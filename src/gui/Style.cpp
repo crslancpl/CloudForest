@@ -24,8 +24,14 @@ void style::LoadTextTag(GtkTextBuffer *buffer){
     gtk_text_buffer_create_tag(buffer, "tag", "foreground","rgb(176,112,229)", nullptr);
     gtk_text_buffer_create_tag(buffer, "func", "foreground","rgb(199,176,252)", nullptr);
     gtk_text_buffer_create_tag(buffer, "value", "foreground","rgb(128,188,237)", nullptr);
+
     gtk_text_buffer_create_tag(buffer, "error", "underline", PANGO_UNDERLINE_ERROR, nullptr);
     gtk_text_buffer_create_tag(buffer, "warning", "underline", PANGO_UNDERLINE_SINGLE, nullptr);
+
+    gtk_text_buffer_create_tag(buffer, "search_highlight",
+                                "background", "yellow",
+                                "foreground", "black",
+                                nullptr);
 }
 
 

@@ -1,7 +1,5 @@
 #TrimSpecialCharacter
-
 #Keyword
-
 #Type
 color background image border radius
 top bottom left right font size padding margin
@@ -17,4 +15,6 @@ transparent none px % cm
 #Tags
 import
 #TextSymbol
-"
+' "
+#AcceptCharInName
+_ -

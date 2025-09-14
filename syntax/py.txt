@@ -9,3 +9,5 @@ def class
 #
 #TextSymbol
 '
+#AcceptCharInName
+_

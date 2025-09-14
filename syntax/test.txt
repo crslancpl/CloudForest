@@ -1,0 +1,20 @@
+#TrimSpecialCharacter
+#Keyword
+#Type
+color background image border radius
+top bottom left right font size padding margin
+caret family
+#Value
+transparent none px % cm
+#MLCmtS
+/*
+#MLCmtE
+*/
+#TagSymbol
+@
+#Tags
+import
+#TextSymbol
+' "
+#AcceptCharInName
+_ -

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "EditArea.h"
 
-SearchReplaceDialog::SearchReplaceDialog(EditArea* editArea) 
+SearchReplaceDialog::SearchReplaceDialog(EditArea* editArea)
     : m_editArea(editArea), m_dialog(nullptr), m_searchActive(false) {
     CreateDialog();
 }
@@ -17,7 +17,8 @@ SearchReplaceDialog::~SearchReplaceDialog() {
 }
 
 void SearchReplaceDialog::CreateDialog() {
-    m_dialog = GTK_DIALOG(gtk_dialog_new());
+    m_dialog = GTK_WINDOW(gtk_window_new());
+    gtk_window_set_hide_on_close(m_dialog, true);
     gtk_window_set_title(GTK_WINDOW(m_dialog), "Find and Replace");
     gtk_window_set_modal(GTK_WINDOW(m_dialog), TRUE);
     gtk_window_set_transient_for(GTK_WINDOW(m_dialog), GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(m_editArea->TextView), GTK_TYPE_WINDOW)));
@@ -31,7 +32,7 @@ void SearchReplaceDialog::CreateDialog() {
     // Initialize search state
     gtk_text_buffer_get_selection_bounds(m_editArea->TextViewBuffer, &m_searchStart, &m_searchEnd);
     if (gtk_text_iter_equal(&m_searchStart, &m_searchEnd)) {
-        gtk_text_buffer_get_iter_at_mark(m_editArea->TextViewBuffer, &m_searchStart, 
+        gtk_text_buffer_get_iter_at_mark(m_editArea->TextViewBuffer, &m_searchStart,
                                         gtk_text_buffer_get_insert(m_editArea->TextViewBuffer));
     }
 }
@@ -63,7 +64,7 @@ void SearchReplaceDialog::CreateWidgets() {
 }
 
 void SearchReplaceDialog::SetupLayout() {
-    GtkWidget* contentArea = gtk_dialog_get_content_area(m_dialog);
+    GtkWidget* contentArea = gtk_window_get_default_widget(m_dialog);
     GtkWidget* grid = gtk_grid_new();
     gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
     gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
@@ -94,10 +95,11 @@ void SearchReplaceDialog::SetupLayout() {
     // Status row
     gtk_grid_attach(GTK_GRID(grid), GTK_WIDGET(m_statusLabel), 0, 3, 3, 1);
 
-    gtk_box_append(GTK_BOX(contentArea), grid);
+    gtk_window_set_child(m_dialog, grid);
+    //gtk_box_append(GTK_BOX(contentArea), grid);
 
     // Add close button to action area
-    gtk_dialog_add_button(m_dialog, "Close", GTK_RESPONSE_CLOSE);
+    // gtk_window_add_button(m_dialog, "Close", GTK_RESPONSE_CLOSE);
 }
 
 void SearchReplaceDialog::ConnectSignals() {
@@ -206,13 +208,13 @@ bool SearchReplaceDialog::FindText(const std::string& text, bool caseSensitive, 
 
         // Select the found text
         gtk_text_buffer_select_range(m_editArea->TextViewBuffer, &m_searchStart, &m_searchEnd);
-        
+
         // Scroll to the found text
         gtk_text_view_scroll_to_iter(m_editArea->TextView, &m_searchStart, 0.1, FALSE, 0.0, 0.0);
-        
+
         // Highlight the match
         HighlightMatch(m_searchStart, m_searchEnd);
-        
+
         UpdateStatus("Found match");
         return true;
     } else {
@@ -223,14 +225,10 @@ bool SearchReplaceDialog::FindText(const std::string& text, bool caseSensitive, 
 
 void SearchReplaceDialog::HighlightMatch(const GtkTextIter& start, const GtkTextIter& end) {
     ClearHighlight();
-    
+
     // Create a tag for highlighting
-    GtkTextTag* tag = gtk_text_buffer_create_tag(m_editArea->TextViewBuffer, "search_highlight",
-                                                "background", "yellow",
-                                                "foreground", "black",
-                                                NULL);
-    
-    gtk_text_buffer_apply_tag(m_editArea->TextViewBuffer, tag, &start, &end);
+
+    gtk_text_buffer_apply_tag_by_name(m_editArea->TextViewBuffer, "search_highlight", &start, &end);
 }
 
 void SearchReplaceDialog::ClearHighlight() {
@@ -259,7 +257,7 @@ void SearchReplaceDialog::ReplaceCurrent() {
 void SearchReplaceDialog::ReplaceAll() {
     const char* searchText = gtk_editable_get_text(GTK_EDITABLE(m_searchEntry));
     const char* replacement = gtk_editable_get_text(GTK_EDITABLE(m_replaceEntry));
-    
+
     if (!searchText || strlen(searchText) == 0) {
         UpdateStatus("Please enter search text");
         return;

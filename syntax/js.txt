@@ -2,7 +2,7 @@
 #Keyword
 if else return while true false for async break continue import from
 #Type
-function var const let
+function var const let class
 #SLCmt
 //
 #MLCmtS
@@ -11,3 +11,5 @@ function var const let
 */
 #TextSymbol
 ' " `
+#AcceptCharInName
+_
