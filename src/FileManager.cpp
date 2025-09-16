@@ -71,7 +71,7 @@ void filemanag::OpenFileChooser(bool FileOrDir){
 
     if(FileOrDir){
         // open one file
-        gtk_file_dialog_set_title(FileDia, "Choose Files");
+        gtk_file_dialog_set_title(FileDia, "Choose File");
         gtk_file_dialog_open (FileDia, gui::AppWindow.Window, nullptr, FileSelected, nullptr);
     }else{
         // open one folder

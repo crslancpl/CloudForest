@@ -21,6 +21,7 @@
 
 #include "../ToolFunctions.h"
 #include "../cf/CFEmbed.h"
+#include "SettingPanel.h"
 #include "Style.h"
 #include "EditArea.h"
 #include "FilePanel.h"
@@ -50,14 +51,15 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
 
     //run the callbacks for python
     for (std::string &funcname : Parent->TextChangedPyCallback) {
-        std::string code = funcname + "(\"" + Parent->AbsoPath + "\")";
+        std::string code =
+            funcname + "(\"" + Parent->AbsoPath + "\"," +
+            std::to_string(Parent->CursorLine) + "," + std::to_string(Parent->CursorPos) +")";
         gui::PyRunCode(code);
     }
 }
 
 static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* Parent){
     if(keyval == GDK_KEY_Tab){
-        g_print("t\n");
         gtk_text_buffer_insert_at_cursor(Parent->TextViewBuffer, "    ", 4);
         return true;
     }
@@ -70,6 +72,15 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
         } else if (keyval == GDK_KEY_h) {
             Parent->ShowReplaceDialog();
             return true;
+        } else if (keyval == GDK_KEY_s){
+            Parent->Save();
+            return true;
+        } else if (keyval == GDK_KEY_o){
+            gui::OpenFileChooser(true);
+        }
+    } else if (state & GDK_ALT_MASK) {
+        if (keyval == GDK_KEY_s) {
+            gui::AppSettingPanel.Show();
         }
     }
 
@@ -205,9 +216,9 @@ void EditArea::LoadCursorPos(){
     g_object_get(TextViewBuffer, "cursor-position", &CursorPos, nullptr);
 
     gtk_text_buffer_get_iter_at_offset(TextViewBuffer, Cursoritr, CursorPos);
-    int LineNo = gtk_text_iter_get_line(Cursoritr) + 1;
-    int LineOffset = gtk_text_iter_get_line_offset(Cursoritr) + 1;
-    string Pos = "Line: " + to_string(LineNo) + '/' + to_string(cacheTotalLine) + " Offset: " + to_string(LineOffset);
+    CursorLine = gtk_text_iter_get_line(Cursoritr) + 1;
+    CursorLinePos = gtk_text_iter_get_line_offset(Cursoritr) + 1;
+    string Pos = "Line: " + to_string(CursorLine) + '/' + to_string(cacheTotalLine) + " Offset: " + to_string(CursorLinePos);
     gtk_button_set_label(CursorPosBut, Pos.c_str());
 }
 

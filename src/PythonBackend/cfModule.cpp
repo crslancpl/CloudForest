@@ -2,6 +2,7 @@
 
 #include <Python.h>
 #include <cstdio>
+#include <cstring>
 #include <methodobject.h>
 #include <object.h>
 #include <future>
@@ -70,53 +71,41 @@ static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
 }
 
 
-static PyObject *cf_EditArea_OpenNew_AddCallBack(PyObject *self, PyObject *args){
+static PyObject *cf_EditArea_AddCallBack(PyObject *self, PyObject *args){
+    char *filename;
+    char *eventtype;
     char *pyfuncname;
-    if(!PyArg_ParseTuple(args, "s", &pyfuncname)){
-        return nullptr;
+
+    if(!PyArg_ParseTuple(args, "zss", &filename, &eventtype, &pyfuncname)){
+        Py_RETURN_NONE;
     }
+
     static request::EAAddCallBack req;
-    req.Type = request::EAAddCallBack::NEWEDITAREA;
+
+    if(strcmp(eventtype, "OPENNEW")==0){
+        //
+        req.Filepath = "";
+        req.Type = request::EAAddCallBack::NEWEDITAREA;
+    }else if(strcmp(eventtype, "TEXTCHANGED")==0){
+        //
+        req.Filepath = filename;
+        req.Type = request::EAAddCallBack::TEXTCHANGED;
+    }else{
+        Py_RETURN_NONE;
+    }
+
     req.Funcname = pyfuncname;
 
     core::Interact(&req);
     Py_RETURN_NONE;
 }
 
-static PyObject *cf_EditArea_TextChanged_AddCallBack(PyObject *self, PyObject *args){
-    char *absolutepath, *pyfuncname;
-    if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
-        return nullptr;
-    }
-    static request::EAAddCallBack req;
-    req.Type = request::EAAddCallBack::TEXTCHANGED;
-    req.Filepath = absolutepath;
-    req.Funcname = pyfuncname;
-
-    core::Interact(&req);
-    Py_RETURN_NONE;
-}
-
-static PyObject *cf_EditArea_TextChanged_RemoveCallBack(PyObject *self, PyObject *args){
+static PyObject *cf_EditArea_RemoveCallBack(PyObject *self, PyObject *args){
     char *absolutepath, *pyfuncname;
     if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
         return nullptr;
     }
     /*
-    shared_ptr<EditArea> *ea = core::GetEditAreaFromFileAbsoPath(absolutepath);
-    if(ea == nullptr){
-        return PyErr_NewException("Not found", nullptr, nullptr);
-    }
-
-    vector<string> &callbacks = (*ea)->TextChangedPyCallback;
-
-    int pos = -1;
-    for(string& callback : callbacks){
-        pos ++;
-        if(callback == pyfuncname){
-            callbacks.erase(callbacks.begin() + pos);
-        }
-    }
     */
     Py_RETURN_NONE;
 }
@@ -144,9 +133,8 @@ static PyObject *cf_EditArea_HighLight(PyObject *self, PyObject *args){
 static PyMethodDef cf_EditArea_method[]={
     {"test", cf_Test, METH_VARARGS, ""},
     {"getcontent", cf_EditArea_GetContent, METH_VARARGS, "get content from edit area"},
-    {"opennew_addcallback", cf_EditArea_OpenNew_AddCallBack, METH_VARARGS, "add callback"},
-    {"textchanged_addcallback", cf_EditArea_TextChanged_AddCallBack, METH_VARARGS, "add callback"},
-    {"textchanged_rmcallback", cf_EditArea_TextChanged_RemoveCallBack, METH_VARARGS, "remove callback"},
+    {"addcallback", cf_EditArea_AddCallBack, METH_VARARGS, "add callback"},
+    {"rmcallback", cf_EditArea_RemoveCallBack, METH_VARARGS, "remove callback"},
     {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
     {"setlanguage", cf_EditArea_SetLang, METH_VARARGS, "set the language of edit area"},
     {NULL, NULL, 0, NULL}
@@ -167,7 +155,7 @@ static PyMethodDef cf_method[] ={
 
 static struct PyModuleDef cloudforestmodule = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "CloudForest",
+    .m_name = "CloudForestPy",
     .m_size = 0,
     .m_methods = cf_method,
     .m_slots = nullptr

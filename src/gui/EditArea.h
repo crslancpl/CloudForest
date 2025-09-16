@@ -27,6 +27,8 @@ public:
     bool IsCurMovedByKey;
     unsigned int cacheTotalLine = 0;
     unsigned int CursorPos;
+    unsigned int CursorLine;
+    unsigned int CursorLinePos;
 
 
     std::string RandomId;

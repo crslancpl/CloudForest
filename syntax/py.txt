@@ -8,6 +8,6 @@ def class
 #SLCmt
 #
 #TextSymbol
-'
+' "
 #AcceptCharInName
 _

@@ -42,7 +42,7 @@ const result::Result* GetEditAreaContent(const std::string &filepath);
 const result::Result* ChangeEditAreaLanguage(const std::string &filepath, const std::string &lang);
 
 //async request
-void OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*));
+void OpenFileChooser(bool fileordir);
 void SaveFile(GFile* file, char* content, void(*callback)(GFile*,GFileInfo*));
 void EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*));
 

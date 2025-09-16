@@ -41,22 +41,22 @@ bool EndWith(const string &Text, const string &Pattern){
 }
 
 vector<string> TrimText(const string &Text, const string &Separator) {
-	vector<string> result;
-	string current;
+    vector<string> result;
+    string current;
 
-	for (char c : Text) {
-		if (Separator.find(c) != string::npos) {
-			if (!current.empty()) {
-				result.push_back(current);
-				current.clear();
-			}
-		} else {
-			current += c;
-		}
-	}
+    for (char c : Text) {
+        if (Separator.find(c) != string::npos) {
+            if (!current.empty()) {
+                result.push_back(current);
+                current.clear();
+	    }
+        } else {
+            current += c;
+        }
+    }
 
-	if (!current.empty()) {
-		result.push_back(current);
-	}
-	return result;
+    if (!current.empty()) {
+        result.push_back(current);
+    }
+    return result;
 }

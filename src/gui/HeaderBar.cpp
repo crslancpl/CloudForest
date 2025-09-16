@@ -11,22 +11,19 @@
 #include "SettingPanel.h"
 #include "FilePanel.h"
 
-static void FileChoosen(GFile *file, GFileInfo *fileinfo){
-    gui::AppFilePanel.LoadRoot(file, fileinfo);
-}
 
 static void LoadFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app){
     /*
      * Tell file manager to open the file chooser
      */
-    gui::OpenFileChooser(true, FileChoosen);
+    gui::OpenFileChooser(true);
 }
 
 static void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app){
     /*
      * Tell file manager to open the file chooser and choose folder
      */
-    gui::OpenFileChooser(false, FileChoosen);
+    gui::OpenFileChooser(false);
 }
 
 static void IdeButtonClicked(GtkButton *self, void* userdata){

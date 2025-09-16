@@ -66,7 +66,6 @@ void gui::Init(){
 }
 
 
-
 static std::vector<std::unique_ptr<EditAreaHolder>> EAHolders = {};
 
 EditAreaHolder* gui::GetEAHolder(int number){
@@ -168,8 +167,12 @@ const result::Result* gui::ChangeEditAreaLanguage(const std::string &filepath, c
 
 
 
+static void FileChoosen(GFile *file, GFileInfo *fileinfo){
+    gui::AppFilePanel.LoadRoot(file, fileinfo);
+}
+
 //async
-void gui::OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*)){
+void gui::OpenFileChooser(bool fileordir){
     /*
      * Tell file manager to open file chooser
      */
@@ -177,16 +180,14 @@ void gui::OpenFileChooser(bool fileordir, void (*callback)(GFile*,GFileInfo*)){
     if(fileordir){
         //file
         static request::FileOpenFile req;
-        req.Callback = callback;
+        req.Callback = FileChoosen;
         core::Interact(&req);
     }else{
         //folder
         static request::FileOpenFolder req;
-        req.Callback = callback;
+        req.Callback = FileChoosen;
         core::Interact(&req);
     }
-
-
 }
 
 //async

@@ -15,7 +15,7 @@ static void ExecuteFile(const string &path){
 }
 
 void pybackend::Start(){
-    PyImport_AppendInittab("CloudForest", initcloudforestmodule);
+    PyImport_AppendInittab("CloudForestPy", initcloudforestmodule);
 
     PyStatus status;
     PyConfig config;
