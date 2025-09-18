@@ -22,6 +22,28 @@
     font-weight: bolder;
 }
 
+.SettingPage {
+    margin: 15px 5px;
+}
+
+.SettingPage spinbutton {
+    background-image: none;
+    border: solid 1px azure;
+    border-radius: 10px;
+    background-color: transparent;
+}
+
+.SettingPage dropdown {
+    background-image: none;
+    border: solid 1px azure;
+    background-color: transparent;
+}
+
+.SettingPage button {
+    background-image: none;
+    background-color: transparent;
+}
+
 #PageName {
     font-size: 25px;
 }

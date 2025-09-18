@@ -1,9 +1,7 @@
 #include "SettingPanel.h"
+#include "CFLayout.h"
 #include "guiCore.h"
 #include "MainWindow.h"
-//#include "FilePanel.h"
-#include <gtk/gtk.h>
-#include <gtk/gtkdropdown.h>
 
 static void CloseClicked(GtkButton *self, gpointer data){
     gtk_widget_set_visible(GTK_WIDGET(gui::AppSettingPanel.Window), false);
@@ -12,6 +10,7 @@ static void CloseClicked(GtkButton *self, gpointer data){
 static void SwitchTab(GtkButton *self, GtkBox* page){
     gtk_stack_set_visible_child(gui::AppSettingPanel.Stack, GTK_WIDGET(page));
 }
+
 
 void SettingPanel::Init(){
     /*
@@ -29,36 +28,54 @@ void SettingPanel::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/SettingPanel.ui");
 
     Window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
-    BaseBox = GTK_BOX(gtk_builder_get_object(builder, "BaseBox"));
+    BaseLayout = new CFLayout(GTK_ORIENTATION_HORIZONTAL);
+    gtk_window_set_child(Window, GTK_WIDGET(BaseLayout->BaseBox));
 
+    BindTabButtons(builder);
+    BindEditAreaSettingPage(builder);
+    BindExtensionSettingPage(builder);
+
+    gtk_window_set_decorated(Window, false);
+    gtk_window_set_transient_for(Window, gui::AppWindow.Window);
+
+    BaseLayout->InsertChild(GTK_WIDGET(TabButtonBox));
+    Stack = GTK_STACK(gtk_stack_new());
+    gtk_widget_add_css_class(GTK_WIDGET(Stack), "SettingPage");
+    BaseLayout->InsertChild(GTK_WIDGET(Stack));
+    gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
+    gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
+}
+
+void SettingPanel::BindTabButtons(GtkBuilder* builder){
+    /*
+     * The left hand side of the setting panel
+     */
     TabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
+
     EditAreaSettingButton = GTK_BUTTON(gtk_builder_get_object(builder, "EditAreaButton"));
     ExtensionsButton = GTK_BUTTON(gtk_builder_get_object(builder, "ExtensionButton"));
     CloseButton = GTK_BUTTON(gtk_builder_get_object(builder,"CloseButton"));
-
-    Stack = GTK_STACK(gtk_builder_get_object(builder, "stack"));
-    EditAreaSettingPage = GTK_BOX(gtk_builder_get_object(builder, "EditAreaSettingPage"));
-    ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
-
-    TabBehaviorChooser = GTK_DROP_DOWN(gtk_builder_get_object(builder, "tabbehavchooser"));
-    TabSizeSetter = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "tabsizesetter"));
-
-    GtkAdjustment *adj = gtk_adjustment_new(0, 0, 16, 1, 1, 0);
-    gtk_spin_button_set_adjustment(TabSizeSetter, adj);
 
     gtk_widget_add_css_class(GTK_WIDGET(Window), "SettingPanel");
     gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
     gtk_widget_add_css_class(GTK_WIDGET(CloseButton), "CloseButton");
 
-    gtk_window_set_decorated(Window, false);
-    gtk_window_set_transient_for(Window, gui::AppWindow.Window);
-
-    gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
-    gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
-
     g_signal_connect(EditAreaSettingButton, "clicked", G_CALLBACK(SwitchTab), EditAreaSettingPage);
     g_signal_connect(ExtensionsButton, "clicked", G_CALLBACK(SwitchTab), ExtensionsPage);
     g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseClicked), nullptr);
+}
+
+void SettingPanel::BindEditAreaSettingPage(GtkBuilder* builder){
+    EditAreaSettingPage = GTK_BOX(gtk_builder_get_object(builder, "EditAreaSettingPage"));
+
+    TabBehaviorChooser = GTK_DROP_DOWN(gtk_builder_get_object(builder, "tabbehavchooser"));
+    TabSizeSetter = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "tabsizesetter"));
+    GtkAdjustment *adj = gtk_adjustment_new(0, 0, 16, 1, 1, 0);
+    gtk_spin_button_set_adjustment(TabSizeSetter, adj);
+}
+
+void SettingPanel::BindExtensionSettingPage(GtkBuilder* builder){
+    ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
 }
 
 void SettingPanel::Show(){

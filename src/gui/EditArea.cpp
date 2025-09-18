@@ -130,7 +130,6 @@ EditArea::EditArea(GFile *file){
     /* Initialize variables */
     cacheTotalLine = 0;
     CursorPos = 0;
-    GenerateId(RandomId);
     IsCurMovedByKey = false;
     Cursoritr = new GtkTextIter();
     StartItr = new GtkTextIter();
@@ -263,7 +262,7 @@ void EditArea::LoadFile(GFile* newfile){
         // Don't open file
         gtk_button_set_label(LocationBut, "New File");
         FileName = strdup("New File");
-        AbsoPath = strdup("New File");
+        GenerateId(AbsoPath);
     }else{
         char *content;
         FileName = g_file_get_basename(newfile);
@@ -422,19 +421,19 @@ void EditAreaHolder::Init(){
 }
 
 void EditAreaHolder::Show(const shared_ptr<EditArea>& editarea){
-    if(gtk_stack_get_child_by_name(Container, editarea->RandomId.c_str())==nullptr){
+    if(gtk_stack_get_child_by_name(Container, editarea->AbsoPath.c_str())==nullptr){
         // Edit area is not listed in this EditAreaHolder
         if(gtk_widget_get_parent(GTK_WIDGET(editarea->BaseGrid)) != nullptr){
             gtk_widget_unparent(GTK_WIDGET(editarea->BaseGrid));
         }
-        gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->RandomId.c_str());
+        gtk_stack_add_named(Container, GTK_WIDGET(editarea->BaseGrid),editarea->AbsoPath.c_str());
         TabButtons.emplace_back(make_shared<EditAreaHolderTabBut>());
         shared_ptr<EditAreaHolderTabBut> &b = TabButtons[TabButtons.size()-1];
         b->Init(editarea, *this);
         editarea->ParentSwitcher = b.get();
         gtk_box_append(Switcher, GTK_WIDGET(b->BaseBox));//Switcher
     }
-    gtk_stack_set_visible_child_name(Container, editarea->RandomId.c_str());
+    gtk_stack_set_visible_child_name(Container, editarea->AbsoPath.c_str());
     editarea->HighlightSyntax();
 }
 
@@ -459,7 +458,7 @@ std::shared_ptr<EditArea> EditAreaHolder::GetCurrentEditArea() {
     const char* visibleChildName = gtk_stack_get_visible_child_name(Container);
     if (visibleChildName) {
         for (const auto& tabButton : TabButtons) {
-            if (tabButton->EA && tabButton->EA->RandomId == visibleChildName) {
+            if (tabButton->EA && tabButton->EA->AbsoPath == visibleChildName) {
                 return tabButton->EA;
             }
         }

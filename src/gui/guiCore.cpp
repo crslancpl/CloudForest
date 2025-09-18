@@ -6,6 +6,7 @@
 #include "../Core.h"
 #include "../Global.h"
 #include "FilePanel.h"
+#include "CFLayout.h"
 #include "EditArea.h"
 #include "MainWindow.h"
 #include "HeaderBar.h"
@@ -14,6 +15,7 @@
 
 #include <cstdlib>
 #include <glib/gprintf.h>
+#include <gtk/gtklayoutmanager.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,12 +29,6 @@ EditAreaHolder* gui::FocusedEAHolder;
 
 static std::vector<std::shared_ptr<EditArea>> EditAreas = {};
 
-
-static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, gpointer d){
-    gtk_widget_set_size_request(GTK_WIDGET(gui::AppFilePanel.BaseGrid),
-        gtk_widget_get_width(GTK_WIDGET(gui::AppFilePanel.BaseGrid)) + x, 0);
-}
-
 void gui::Init(){
     style::LoadCssFromPath("styles/DefaultDarkTheme.css");
     gui::AppWindow.Init();
@@ -42,26 +38,13 @@ void gui::Init(){
     gui::AppWindow.SetHeaderBar(GTK_WIDGET(AppHeaderBar.HeaderBarWidget));
     style::InitLangChooser();
 
-    /*
-     * This will be moved to CFGrid
-     */
-    GtkGrid *grid = GTK_GRID(gtk_grid_new());
     EditAreaHolder *newholder = gui::NewEAHolder();
-    GtkSeparator *separator = GTK_SEPARATOR(gtk_separator_new(GTK_ORIENTATION_HORIZONTAL));
-
-    gtk_grid_attach(grid, GTK_WIDGET(gui::AppFilePanel.BaseGrid), 0, 0, 1, 1);
-    gtk_grid_attach(grid, GTK_WIDGET(separator), 1, 0, 1, 1);
-    gtk_grid_attach(grid, GTK_WIDGET(newholder->BaseGrid), 2, 0, 1, 1);
-    gtk_window_set_child(gui::AppWindow.Window, GTK_WIDGET(grid));
-    gtk_widget_add_css_class(GTK_WIDGET(separator), "Separator");
-    gtk_widget_set_size_request(GTK_WIDGET(separator), 5, 0);// height will be expanded
-    GtkGestureDrag *drag = GTK_GESTURE_DRAG(gtk_gesture_drag_new());// create drag gesture for separator
-    gtk_widget_add_controller(GTK_WIDGET(separator), GTK_EVENT_CONTROLLER(drag));// connect drag and separator
-    g_signal_connect(drag, "drag-update", G_CALLBACK(SeparatorDragged), nullptr);
-
     gui::FocusedEAHolder = newholder;
-    std::shared_ptr<EditArea> *blankeditarea = gui::NewEditArea(nullptr);
-    FocusedEAHolder->Show(*blankeditarea);
+    gui::FocusedEAHolder->Show(*gui::NewEditArea(nullptr));
+
+    gui::AppWindow.Layout->InsertChild(GTK_WIDGET(gui::AppFilePanel.BaseGrid));
+    gui::AppWindow.Layout->InsertChild(GTK_WIDGET(newholder->BaseGrid));
+
     gui::AppWindow.Show();
 }
 
@@ -84,10 +67,12 @@ static std::vector<std::string> EditAreaCreatedCallback = {};
 std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
     EditAreas.emplace_back(std::make_shared<EditArea>(file));
     std::shared_ptr<EditArea>* ea = &EditAreas.back();
+
     for (std::string& func : EditAreaCreatedCallback) {
         std::string function = func + "(\"" + (*ea)->AbsoPath + "\")";
         gui::PyRunCode(function);
     }
+
     return ea;
 }
 

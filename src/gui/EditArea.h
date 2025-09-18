@@ -31,10 +31,9 @@ public:
     unsigned int CursorLinePos;
 
 
-    std::string RandomId;
     std::string Language;
     std::string FileName;
-    std::string RelaPath;
+    //std::string RelaPath;
     std::string AbsoPath;
 
     GtkBuilder *builder;

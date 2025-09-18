@@ -25,7 +25,7 @@ target_link_libraries(PyBackend Python::Python PkgConfig::GTK4)
 add_library(Gui STATIC
     src/gui/guiCore.cpp src/gui/MainWindow.cpp src/gui/HeaderBar.cpp
     src/gui/SettingPanel.cpp src/gui/FilePanel.cpp src/gui/EditArea.cpp
-    src/gui/SearchReplaceDialog.cpp src/gui/Style.cpp
+    src/gui/SearchReplaceDialog.cpp src/gui/Style.cpp src/gui/CFLayout.cpp
     )
 
 target_link_libraries(Gui PkgConfig::GTK4)

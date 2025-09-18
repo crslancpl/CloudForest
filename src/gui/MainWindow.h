@@ -3,8 +3,10 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <memory>
 
 #include "../Classes.h"
+#include "CFLayout.h"
 
 class MainWindow{
 public:
@@ -12,6 +14,7 @@ public:
     void Show();
     void SetHeaderBar(GtkWidget *headerbar);
     GtkWindow *Window;
+    CFLayout *Layout;
 };
 
 #endif
