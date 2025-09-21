@@ -28,8 +28,8 @@ void SettingPanel::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/SettingPanel.ui");
 
     Window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
-    BaseLayout = new CFLayout(GTK_ORIENTATION_HORIZONTAL);
-    gtk_window_set_child(Window, GTK_WIDGET(BaseLayout->BaseBox));
+    BaseLayout.Init(GTK_ORIENTATION_HORIZONTAL);
+    gtk_window_set_child(Window, GTK_WIDGET(BaseLayout.BaseBox));
 
     BindTabButtons(builder);
     BindEditAreaSettingPage(builder);
@@ -38,10 +38,10 @@ void SettingPanel::Init(){
     gtk_window_set_decorated(Window, false);
     gtk_window_set_transient_for(Window, gui::AppWindow.Window);
 
-    BaseLayout->InsertChild(GTK_WIDGET(TabButtonBox));
+    BaseLayout.InsertChild(GTK_WIDGET(TabButtonBox));
     Stack = GTK_STACK(gtk_stack_new());
     gtk_widget_add_css_class(GTK_WIDGET(Stack), "SettingPage");
-    BaseLayout->InsertChild(GTK_WIDGET(Stack));
+    BaseLayout.InsertChild(GTK_WIDGET(Stack));
     gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
     gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
 }

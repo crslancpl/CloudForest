@@ -14,7 +14,7 @@ public:
     void Show();
     void SetHeaderBar(GtkWidget *headerbar);
     GtkWindow *Window;
-    CFLayout *Layout;
+    CFLayout Layout;
 };
 
 #endif

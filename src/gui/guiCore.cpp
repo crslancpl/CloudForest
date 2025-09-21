@@ -42,8 +42,8 @@ void gui::Init(){
     gui::FocusedEAHolder = newholder;
     gui::FocusedEAHolder->Show(*gui::NewEditArea(nullptr));
 
-    gui::AppWindow.Layout->InsertChild(GTK_WIDGET(gui::AppFilePanel.BaseGrid));
-    gui::AppWindow.Layout->InsertChild(GTK_WIDGET(newholder->BaseGrid));
+    gui::AppWindow.Layout.InsertChild(GTK_WIDGET(gui::AppFilePanel.BaseGrid));
+    gui::AppWindow.Layout.InsertChild(GTK_WIDGET(newholder->BaseGrid));
 
     gui::AppWindow.Show();
 }

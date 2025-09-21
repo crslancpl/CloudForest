@@ -28,10 +28,17 @@
 #include "MainWindow.h"
 #include "guiCore.h"
 #include "SearchReplaceDialog.h"
+#include "CFPopover.h"
 
 /*
  * EditArea class
  */
+
+static void unfocused(GtkEventControllerFocus* self, EditArea* parent){
+    parent->Tippopover->Hide();
+    parent->Sugpopover->Hide();
+}
+
 
 static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *Parent){
     Parent->IsCurMovedByKey = true;
@@ -44,10 +51,16 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
         gtk_widget_add_css_class(GTK_WIDGET(Parent->ParentSwitcher->Button), "SwitcherButtonUnsaved");
         gtk_button_set_label(Parent->SaveBut, "Save");
     }
-
-    Parent->IsCurMovedByKey = true;
+    Parent->LoadCursorPos();
+    Parent->IsCurMovedByKey =true;
+    Parent->IsTextChanged = true;
     Parent->CountLine();
     Parent->HighlightSyntax();
+
+    if(gtk_text_iter_inside_word(Parent->CursorItr) || gtk_text_iter_ends_word(Parent->CursorItr)){
+        Parent->ShowTip(strdup("show tips"));
+        Parent->ShowSuggestion(nullptr);
+    }
 
     //run the callbacks for python
     for (std::string &funcname : Parent->TextChangedPyCallback) {
@@ -77,6 +90,8 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
             return true;
         } else if (keyval == GDK_KEY_o){
             gui::OpenFileChooser(true);
+        } else if(keyval == GDK_KEY_t){
+            //
         }
     } else if (state & GDK_ALT_MASK) {
         if (keyval == GDK_KEY_s) {
@@ -90,8 +105,15 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
 static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *Parent){
     Parent->LoadCursorPos();
     if(Parent->IsCurMovedByKey == true){
-        gtk_text_view_scroll_to_iter(Parent->TextView, Parent->Cursoritr, 0.4 ,false, 0.4, 0.4);
+        gtk_text_view_scroll_to_iter(Parent->TextView, Parent->CursorItr, 0.4 ,false, 0.4, 0.4);
         Parent->IsCurMovedByKey = false;
+    }
+
+    if(Parent->IsTextChanged == false){
+        Parent->Tippopover->Hide();
+        Parent->Sugpopover->Hide();
+    }else{
+        Parent->IsTextChanged = false;
     }
 }
 
@@ -123,7 +145,13 @@ EditArea::EditArea(GFile *file){
     LineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
     LineNoAreaBuffer = gtk_text_view_get_buffer(LineNoArea);
     KeyDownEventCtrl = gtk_event_controller_key_new();
+    FocusEventCtrl = gtk_event_controller_focus_new();
 
+    CursorRec = new GdkRectangle();
+    Tippopover = new TipPopover();
+    Tippopover->Init(GTK_WIDGET(TextView));
+    Sugpopover = new SuggestionPopover();
+    Sugpopover->Init(GTK_WIDGET(TextView));
 
     gtk_text_view_set_accepts_tab(TextView, false);
 
@@ -131,16 +159,14 @@ EditArea::EditArea(GFile *file){
     cacheTotalLine = 0;
     CursorPos = 0;
     IsCurMovedByKey = false;
-    Cursoritr = new GtkTextIter();
+
+    CursorItr = new GtkTextIter();
     StartItr = new GtkTextIter();
     EndItr = new GtkTextIter();
 
     /* Set properties */
     gtk_button_set_label(SaveBut, "Saved");
-    gtk_scrolled_window_set_vadjustment(
-        GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "LineNoScroll")),
-        gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView))
-    );
+    gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(LineNoArea), gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView)));
     gtk_text_view_set_bottom_margin (TextView, 80);
     gtk_text_view_set_bottom_margin (LineNoArea, 80);
     gtk_text_view_set_pixels_below_lines(TextView, 5);
@@ -155,8 +181,10 @@ EditArea::EditArea(GFile *file){
     /* Connect signals */
     g_signal_connect(KeyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
     gtk_widget_add_controller(GTK_WIDGET(TextView), GTK_EVENT_CONTROLLER(KeyDownEventCtrl));
+    g_signal_connect(FocusEventCtrl, "leave", G_CALLBACK(unfocused), this);
+    gtk_widget_add_controller(GTK_WIDGET(TextView), FocusEventCtrl);
     g_signal_connect(TextView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
-    g_signal_connect(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
+    g_signal_connect_after(TextViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
     g_signal_connect_after(TextViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
     g_signal_connect(SaveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
     g_signal_connect(LangBut, "clicked", G_CALLBACK(style::OpenLangChooser), this);//Choose language is done by TextTag.cpp
@@ -175,7 +203,7 @@ EditArea::EditArea(GFile *file){
 }
 
 EditArea::~EditArea(){
-    delete [] Cursoritr;
+    delete [] CursorItr;
     delete [] StartItr;
     delete [] EndItr;
 }
@@ -214,11 +242,36 @@ void EditArea::CountError(){
 void EditArea::LoadCursorPos(){
     g_object_get(TextViewBuffer, "cursor-position", &CursorPos, nullptr);
 
-    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, Cursoritr, CursorPos);
-    CursorLine = gtk_text_iter_get_line(Cursoritr) + 1;
-    CursorLinePos = gtk_text_iter_get_line_offset(Cursoritr) + 1;
+    gtk_text_buffer_get_iter_at_offset(TextViewBuffer, CursorItr, CursorPos);
+    CursorLine = gtk_text_iter_get_line(CursorItr) + 1;
+    CursorLinePos = gtk_text_iter_get_line_offset(CursorItr) + 1;
     string Pos = "Line: " + to_string(CursorLine) + '/' + to_string(cacheTotalLine) + " Offset: " + to_string(CursorLinePos);
     gtk_button_set_label(CursorPosBut, Pos.c_str());
+
+    /*
+     * Set rectangle
+     * The calculation of the adjustment value is not accurate
+     * yet. One line of adjustment is roughly equal to 24 unit
+     */
+
+    int newx, newy;
+    gtk_text_view_get_iter_location(TextView, CursorItr, CursorRec);
+    gtk_text_view_buffer_to_window_coords(TextView, GTK_TEXT_WINDOW_WIDGET,
+        CursorRec->x, CursorRec->y, &newx, &newy);
+
+    GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(TextView));
+    GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView));
+    newx -= gtk_adjustment_get_value(hadj);
+    newy -= gtk_adjustment_get_value(vadj)/24;
+
+    //uncomment this line to see the x and y from get value
+    //g_print("new x: %i new y: %i\n",
+    // gtk_adjustment_get_value(hadj),
+    // gtk_adjustment_get_value(vadj)
+    // );
+
+    CursorRec->x = newx;
+    CursorRec->y = newy;
 }
 
 const std::string& EditArea::GetContent(){
@@ -237,11 +290,11 @@ void EditArea::AddTextChangedPyCalback(std::string funcname){
 }
 
 void EditArea::ShowTip(char *Text){
-    //
+    Tippopover->ShowContent(CursorRec, Text);
 }
 
-void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> &Suggestions){
-    //
+void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> *Suggestions){
+    Sugpopover->Show(CursorRec, nullptr);
 }
 
 
@@ -311,6 +364,7 @@ void EditArea::ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned i
      * of the first character in the line So line and position shouldn't
      * be less then 1.
      */
+
     line--;// change the lines that starts from 1 to 0
     if (pos <= 0 ||strcmp(TagName, "none") == 0) {
         return;
@@ -366,7 +420,6 @@ void EditArea::ShowReplaceDialog() {
     }
     searchDialog->Show();
 }
-
 
 
 

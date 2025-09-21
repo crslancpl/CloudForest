@@ -11,7 +11,7 @@ public:
     void Show();
 
     GtkWindow *Window;
-    CFLayout *BaseLayout;// Saperates TabButtonBox and Stack
+    CFLayout BaseLayout;// Saperates TabButtonBox and Stack
 
     GtkBox *TabButtonBox;// left-hand side
 

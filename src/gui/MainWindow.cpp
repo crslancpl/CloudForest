@@ -17,8 +17,8 @@ static void SeparatorDragUpdate(GtkGestureDrag* self, gdouble x, gdouble y, gpoi
 void MainWindow::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/MainWindow.ui");
     Window = GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow"));
-    Layout = new CFLayout(GTK_ORIENTATION_HORIZONTAL);
-    gtk_window_set_child(Window, GTK_WIDGET(Layout->BaseBox));
+    Layout.Init(GTK_ORIENTATION_HORIZONTAL);
+    gtk_window_set_child(Window, GTK_WIDGET(Layout.BaseBox));
 
     gtk_window_set_default_size(Window, 1000, 600);
     if(global::GtkApp == nullptr){

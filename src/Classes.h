@@ -24,6 +24,10 @@ class Suggestion;
 // TextTag.h
 class TagStyle;
 class TagTables;
-
+// CFLayout.h
+class CFLayout;
+// CFPopover.h
+class TipPopover;
+class SuggestionPopover;
 
 #endif

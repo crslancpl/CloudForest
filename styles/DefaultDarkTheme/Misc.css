@@ -14,3 +14,11 @@
     border-color: skyblue;
     color: white;
 }
+
+.tippopover {
+    font-size: 15px;
+}
+
+.suggestionpopover {
+    font-size: 15px;
+}

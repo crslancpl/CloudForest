@@ -4,26 +4,39 @@
 #include <gtk/gtk.h>
 #include <utility>
 #include <vector>
+#include <map>
+
+class LayoutNeighbor;
 
 /*
  * Usage
- * constructing: CFLayout *layoutname = new CFLayout(GTK_ORIENTATION_...);
- * add new child: layoutname->InsertChild(GTK_WIDGET(widget));
+ *
+ * constructing: layoutobject.Init(GTK_ORIENTATION_...);
+ * add new child: layoutobject.InsertChild(GTK_WIDGET(widget));
+ * remove child: layoutobject.ReomoveChild(GTK_WIDGET(widget));
  */
 class CFLayout{
 public:
-    //static CFLayout* New(GtkOrientation orientation);
-    std::vector<GtkWidget*> Widgets;// from left to right
-    CFLayout(GtkOrientation orientation);
+    std::vector<GtkWidget*> Widgets;// from left to right or from top to bottom
     GtkBox *BaseBox;
     GtkOrientation Orientation;
+    void Init(GtkOrientation orientation);
     void InsertChild(GtkWidget *child);
     void RemoveChild(GtkWidget *child);
+    LayoutNeighbor GetNeighbors(GtkWidget *widget);
 private:
-    GtkWidget *GetNeighbor(GtkSeparator *separator );
     GtkSeparator *NewSeparator();
 };
 
+class LayoutNeighbor{
+public:
+    /*
+     * This is for GetNeighbors functon
+     *
+     */
+    int Prevpos = -1, Nextpos = -1;
+    GtkWidget *PrevWid = nullptr, *NextWid = nullptr;
+};
 
 /*
  * This shouldn't be used outside CFLayout
