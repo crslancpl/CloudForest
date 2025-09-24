@@ -133,7 +133,7 @@ const result::Result* gui::GetEditAreaContent(const std::string &filepath){
     static result::GetText Result;
     auto ea = gui::GetEditArea(filepath);
     if(ea != nullptr){
-        Result.Text = &(*ea)->GetContent();
+        Result.Text = (*ea)->GetContent();
         return &Result;
     }else{
         return nullptr;

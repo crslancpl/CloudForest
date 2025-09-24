@@ -1,8 +1,10 @@
 #include <cstdio>
+#include <glib/gprintf.h>
 #define PY_SSIZE_T_CLEAN
 
 #include "PythonMain.h"
 #include "cfModule.h"
+#include "cfPythonTool.h"
 
 
 static void Execute(const string &code){
@@ -32,8 +34,8 @@ void pybackend::Start(){
     }
     PyConfig_Clear(&config);
 
-
     ExecuteFile("extension/init.py");
+    InitPythonTool();
     return;
 
   exception:
@@ -47,10 +49,13 @@ void pybackend::End(){
     }
 }
 
-void pybackend::Process(request::Request* request){
+const result::Result* pybackend::Process(request::Request* request){
     if(auto req = dynamic_cast<request::PyRunCode*>(request)){
         Execute(req->Code);
     }else if(auto req = dynamic_cast<request::PyRunFile*>(request)){
         ExecuteFile(req->Filepath);
+    }else if(auto req = dynamic_cast<request::PyGetLspMessage*>(request)){
+        return GetLspMessage(req);
     }
+    return nullptr;
 }

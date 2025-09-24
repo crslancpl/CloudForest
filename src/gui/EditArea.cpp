@@ -57,6 +57,9 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
     Parent->CountLine();
     Parent->HighlightSyntax();
 
+    Parent->LSPserver->DidOpen(Parent->AbsoPath, Parent->GetContent());
+    Parent->LSPserver->Autocomplete(Parent->AbsoPath, Parent->CursorLine-1, Parent->CursorLinePos-1);
+
     if(gtk_text_iter_inside_word(Parent->CursorItr) || gtk_text_iter_ends_word(Parent->CursorItr)){
         Parent->ShowTip(strdup("show tips"));
         Parent->ShowSuggestion(nullptr);
@@ -178,6 +181,8 @@ EditArea::EditArea(GFile *file){
     CountError();
     LoadCursorPos();
 
+    LSPserver = LSPServer::GetServer("clangd");
+
     /* Connect signals */
     g_signal_connect(KeyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
     gtk_widget_add_controller(GTK_WIDGET(TextView), GTK_EVENT_CONTROLLER(KeyDownEventCtrl));
@@ -250,28 +255,11 @@ void EditArea::LoadCursorPos(){
 
     /*
      * Set rectangle
-     * The calculation of the adjustment value is not accurate
-     * yet. One line of adjustment is roughly equal to 24 unit
      */
 
-    int newx, newy;
     gtk_text_view_get_iter_location(TextView, CursorItr, CursorRec);
     gtk_text_view_buffer_to_window_coords(TextView, GTK_TEXT_WINDOW_WIDGET,
-        CursorRec->x, CursorRec->y, &newx, &newy);
-
-    GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(TextView));
-    GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(TextView));
-    newx -= gtk_adjustment_get_value(hadj);
-    newy -= gtk_adjustment_get_value(vadj)/24;
-
-    //uncomment this line to see the x and y from get value
-    //g_print("new x: %i new y: %i\n",
-    // gtk_adjustment_get_value(hadj),
-    // gtk_adjustment_get_value(vadj)
-    // );
-
-    CursorRec->x = newx;
-    CursorRec->y = newy;
+        CursorRec->x, CursorRec->y, &CursorRec->x, &CursorRec->y);
 }
 
 const std::string& EditArea::GetContent(){

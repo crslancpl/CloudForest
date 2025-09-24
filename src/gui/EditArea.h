@@ -10,6 +10,8 @@
 
 #include "../Classes.h"
 
+#include "../lsp/LSP.h"
+
 // Forward declaration
 class SearchReplaceDialog;
 
@@ -19,6 +21,8 @@ public:
     std::vector<std::string> TextChangedPyCallback;
     EditArea(GFile *file);
     ~EditArea();
+
+    LSPServer* LSPserver;
 
     EditAreaHolderTabBut* ParentSwitcher = nullptr;
     EditAreaHolder* ParentHolder = nullptr;

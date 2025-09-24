@@ -21,6 +21,9 @@ protected:
 
 class EAGetText: public Request{
 public:
+    /*
+     * result: result::GetText
+     */
     std::string Filepath;
     EAGetText() : Request(Parts::GUI) {}
 };
@@ -69,6 +72,31 @@ class PyRunFile: public Request{
 public:
     std::string Filepath;
     PyRunFile() : Request(Parts::PYTHON) {}
+};
+
+class PyGetLspMessage: public Request{
+public:
+    /*
+     * result: result::GetText
+     *
+     * use Init(), AutoComplete(), Exit()... to change the type
+     * of the lsp message
+     */
+
+    enum Type{
+        INIT, AUTOCOMPLETE, CHANGECONTENT, EXIT
+    };
+
+    void Init();
+    void AutoComplete(const std::string &path, unsigned int line, unsigned int pos);
+    void ChangeContent(const std::string &path, const std::string &content);
+    void Exit();
+    Type MessageType;
+    std::string Path;
+    std::string Content;
+    int Line, Pos;
+
+    PyGetLspMessage(): Request(Parts::PYTHON){}
 };
 
 class FileOpenFile: public Request{
@@ -137,7 +165,7 @@ class Result{
 
 class GetText: public Result{
 public:
-    const std::string* Text;
+    std::string Text;
 };
 
 class GetAllEditAreaPath: public Result{

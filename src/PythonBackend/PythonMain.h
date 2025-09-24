@@ -11,7 +11,7 @@ using namespace std;
 namespace pybackend{
 void Start();
 void End();
-void Process(request::Request* request);
+const result::Result* Process(request::Request* request);
 };
 
 #endif

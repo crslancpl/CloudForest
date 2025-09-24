@@ -28,7 +28,7 @@ static void RequestFile(FileRequest *freq){
         std::future<const result::Result*> gettext = std::async(core::Interact, &req);
         result::GetText* text = (result::GetText*)gettext.get();
 
-        fresp.Content = text->Text->c_str();
+        fresp.Content = text->Text.c_str();
         fresp.IsPath = false;
         emb_Send_Message_To_CF(FILERESP, &fresp);
     }

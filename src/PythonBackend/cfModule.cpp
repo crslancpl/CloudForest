@@ -60,12 +60,12 @@ static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
 
     std::future<const result::Result*> Gettext = std::async(core::Interact, &req);
     const result::GetText* r = (result::GetText*)Gettext.get();
-    const std::string* text = r->Text;
+    std::string text = r->Text;
 
-    if(text->empty()){
+    if(text.empty()){
         Py_RETURN_NONE;
     }else{
-        return PyUnicode_FromString(text->c_str());
+        return PyUnicode_FromString(text.c_str());
     }
     Py_RETURN_NONE;
 }
