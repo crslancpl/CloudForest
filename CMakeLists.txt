@@ -18,7 +18,9 @@ endif()
 
 add_library(PyBackend STATIC
     src/PythonBackend/PythonMain.cpp src/PythonBackend/cfModule.cpp
-    src/PythonBackend/cfPythonTool.cpp
+    src/PythonBackend/cfPythonTool.cpp src/PythonBackend/cfEditArea.cpp
+
+    src/requests/PyRequests.cpp
     )
 
 target_link_libraries(PyBackend Python::Python PkgConfig::GTK4)
@@ -40,7 +42,7 @@ target_link_libraries(CloudyForest ${CFLIBPATH} PkgConfig::GTK4)
 
 add_executable(${PROJECT_NAME}
     src/Core.cpp src/Global.cpp src/FileManager.cpp
-    src/ToolFunctions.cpp src/lsp/LSP.cpp
+    src/ToolFunctions.cpp
     )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

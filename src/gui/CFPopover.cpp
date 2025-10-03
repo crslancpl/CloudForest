@@ -52,7 +52,7 @@ void SuggestionPopover::Init(GtkWidget *parent){
     gtk_popover_set_has_arrow(Popover, false);
 }
 
-void SuggestionPopover::Show(GdkRectangle* rec, const std::vector<Suggestion> *content){
+void SuggestionPopover::Show(GdkRectangle* rec){
     gtk_popover_set_pointing_to(Popover, rec);
     gtk_popover_popup(Popover);
     int width = gtk_widget_get_size(GTK_WIDGET(Popover), GTK_ORIENTATION_HORIZONTAL);
@@ -61,4 +61,19 @@ void SuggestionPopover::Show(GdkRectangle* rec, const std::vector<Suggestion> *c
 
 void SuggestionPopover::Hide(){
     gtk_popover_popdown(Popover);
+}
+
+void SuggestionPopover::Add(Suggestion &item){
+    GtkButton *button = GTK_BUTTON(gtk_button_new());
+    GtkLabel *label = GTK_LABEL(gtk_label_new(item.Label.c_str()));
+    gtk_button_set_child(button, GTK_WIDGET(label));
+    Suggestions.emplace_back(std::move(item), GTK_WIDGET(button));
+    gtk_box_append(Box, GTK_WIDGET(button));
+}
+
+void SuggestionPopover::Clear(){
+    for(auto item : Suggestions ){
+        gtk_box_remove(Box, item.second);
+    }
+    Suggestions.clear();
 }

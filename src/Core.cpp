@@ -14,7 +14,8 @@
 #include "gui/guiCore.h"
 #include "PythonBackend/PythonMain.h"
 #include "Global.h"
-#include "lsp/LSP.h"
+
+#include "requests/BaseRequest.h"
 
 /*
  * local variables
@@ -54,7 +55,7 @@ static void AppClosed (GtkApplication *app, gpointer user_data){
      * LSP server depends on python, so we have to stop
      * the lsp server before ending the python backend
      */
-    LSPServer::StopAll();
+
     pybackend::End();
     g_print("\n\n[!NOTE]\nCloudForest closed\n");
 }
@@ -62,7 +63,7 @@ static void AppClosed (GtkApplication *app, gpointer user_data){
 /*
  * core namespace
  */
-const result::Result* core::Interact(request::Request *request){
+const result::Result* core::Interact(Request *request){
     switch (request->Destination) {
     case Parts::CORE:
     break;

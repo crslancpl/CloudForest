@@ -9,8 +9,7 @@
 #include <memory>
 
 #include "../Classes.h"
-
-#include "../lsp/LSP.h"
+#include "../Types.h"
 
 // Forward declaration
 class SearchReplaceDialog;
@@ -21,8 +20,6 @@ public:
     std::vector<std::string> TextChangedPyCallback;
     EditArea(GFile *file);
     ~EditArea();
-
-    LSPServer* LSPserver;
 
     EditAreaHolderTabBut* ParentSwitcher = nullptr;
     EditAreaHolder* ParentHolder = nullptr;
@@ -75,6 +72,7 @@ public:
     const std::string& GetContent();
     void AddTextChangedPyCalback(std::string funcname);
     void ShowTip(char *Text);// not working
+    void ClearSuggestion();
     void ShowSuggestion(const std::vector<std::shared_ptr<Suggestion>> *Suggestions);// auto complete
     void ChangeLanguage(const std::string& lang, bool highlight);//pass false to highlight if you don't want to highlight now
     void HighlightSyntax();

@@ -17,7 +17,7 @@ void InitPythonTool(){
     Py_DECREF(modulename);
 }
 
-const result::GetText* GetLspMessage(request::PyGetLspMessage* req){
+const result::GetText* GetLspMessage(PyGetLspMessage* req){
     /*
      * [NOTE]
      * The python code is in extension/CloudForestBuiltIn/LSPMsg.py
@@ -34,24 +34,24 @@ const result::GetText* GetLspMessage(request::PyGetLspMessage* req){
     }
 
 
-    if(req->MessageType == request::PyGetLspMessage::INIT){
+    if(req->MessageType == PyGetLspMessage::INIT){
         function = PyObject_GetAttrString(LSPMsgModule, "GetInitMessage");
         if(PyCallable_Check(function)){
             value = PyObject_CallObject(function, NULL);
         }
-    }else if(req->MessageType == request::PyGetLspMessage::EXIT){
+    }else if(req->MessageType == PyGetLspMessage::EXIT){
         g_print("exit\n");
         function = PyObject_GetAttrString(LSPMsgModule, "GetExitMessage");
         if(PyCallable_Check(function)){
             value = PyObject_CallObject(function, NULL);
         }
-    }else if(req->MessageType == request::PyGetLspMessage::CHANGECONTENT){
+    }else if(req->MessageType == PyGetLspMessage::CHANGECONTENT){
         function = PyObject_GetAttrString(LSPMsgModule, "GetDidOpenMessage");
         if(PyCallable_Check(function)){
             PyObject* param = Py_BuildValue("(ss)",req->Path.c_str(), req->Content.c_str());
             value = PyObject_CallObject(function, param);
         }
-    }else if(req->MessageType == request::PyGetLspMessage::AUTOCOMPLETE){
+    }else if(req->MessageType == PyGetLspMessage::AUTOCOMPLETE){
         function = PyObject_GetAttrString(LSPMsgModule, "GetAutoCompMessage");
         if(PyCallable_Check(function)){
             PyObject* param = Py_BuildValue("(sii)",req->Path.c_str(), req->Line, req->Pos);

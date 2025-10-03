@@ -1,14 +1,21 @@
 #include "cfModule.h"
 
 #include <Python.h>
+#include <abstract.h>
 #include <cstdio>
 #include <cstring>
+#include <listobject.h>
 #include <methodobject.h>
+#include <modsupport.h>
 #include <object.h>
 #include <future>
 
+#include "cfEditArea.h"
+
 #include "../Core.h"
 #include "../Global.h"
+#include "../Types.h"
+#include "../Classes.h"
 
 static PyObject *error;
 
@@ -31,125 +38,46 @@ static PyObject *cf_Test(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-static PyObject *cf_EditArea_SetLang(PyObject *self, PyObject *args){
-    char* absolutepath, lang;
-    if(!PyArg_ParseTuple(args, "ss", &absolutepath, lang)){
-        return nullptr;
-    }
 
-    static request::EASetLang req;
-    req.Filepath = absolutepath;
-    req.Lang = lang;
+static PyObject *OpenEditAreaCallbackList = nullptr;
 
-    core::Interact(&req);
+static PyObject *cf_Add_Callback(PyObject *self, PyObject *args){
+    PyObject* callback;
+    char* type;
 
-    Py_RETURN_NONE;
-}
-
-
-
-//async
-static PyObject *cf_EditArea_GetContent(PyObject *self, PyObject *args){
-    char* absolutepath;
-    if(!PyArg_ParseTuple(args, "s", &absolutepath)){
-        return nullptr;
-    }
-
-    static request::EAGetText req;
-    req.Filepath = absolutepath;
-
-    std::future<const result::Result*> Gettext = std::async(core::Interact, &req);
-    const result::GetText* r = (result::GetText*)Gettext.get();
-    std::string text = r->Text;
-
-    if(text.empty()){
-        Py_RETURN_NONE;
-    }else{
-        return PyUnicode_FromString(text.c_str());
-    }
-    Py_RETURN_NONE;
-}
-
-
-static PyObject *cf_EditArea_AddCallBack(PyObject *self, PyObject *args){
-    char *filename;
-    char *eventtype;
-    char *pyfuncname;
-
-    if(!PyArg_ParseTuple(args, "zss", &filename, &eventtype, &pyfuncname)){
-        Py_RETURN_NONE;
-    }
-
-    static request::EAAddCallBack req;
-
-    if(strcmp(eventtype, "OPENNEW")==0){
-        //
-        req.Filepath = "";
-        req.Type = request::EAAddCallBack::NEWEDITAREA;
-    }else if(strcmp(eventtype, "TEXTCHANGED")==0){
-        //
-        req.Filepath = filename;
-        req.Type = request::EAAddCallBack::TEXTCHANGED;
-    }else{
-        Py_RETURN_NONE;
-    }
-
-    req.Funcname = pyfuncname;
-
-    core::Interact(&req);
-    Py_RETURN_NONE;
-}
-
-static PyObject *cf_EditArea_RemoveCallBack(PyObject *self, PyObject *args){
-    char *absolutepath, *pyfuncname;
-    if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
-        return nullptr;
-    }
     /*
-    */
-    Py_RETURN_NONE;
-}
-
-
-static PyObject *cf_EditArea_HighLight(PyObject *self, PyObject *args){
-    char *absolutepath, *tagname;
-    int line, offset, length;
-    if(!PyArg_ParseTuple(args, "siiis", &absolutepath,&line,&offset,&length,&tagname)){
+     * [!NOTE]
+     * type should be "OPENEDITAREA"
+     */
+    if(!PyArg_ParseTuple(args,"s0",&type,&callback)){
         return nullptr;
     }
+    if(!PyCallable_Check(callback)){
+        printf("error: cf add callback argument is not callable\n");
+    }
 
-    static request::EADrawByLine req;
-    req.Filepath = absolutepath;
-    req.Line = line;
-    req.Offset = offset;
-    req.Length = length;
-    req.Tagname = tagname;
+    if(OpenEditAreaCallbackList == nullptr){
+        // the callback list is not initialized
+        // we have to create the list
+        OpenEditAreaCallbackList = PyList_New(0);
 
-    core::Interact(&req);
+        if (OpenEditAreaCallbackList == nullptr) {
+            // failed to create the list
+            return nullptr;
+        }
+    }
+
+    PyList_Append(OpenEditAreaCallbackList, callback);
+
+    Py_INCREF(callback);
 
     Py_RETURN_NONE;
 }
 
-static PyMethodDef cf_EditArea_method[]={
-    {"test", cf_Test, METH_VARARGS, ""},
-    {"getcontent", cf_EditArea_GetContent, METH_VARARGS, "get content from edit area"},
-    {"addcallback", cf_EditArea_AddCallBack, METH_VARARGS, "add callback"},
-    {"rmcallback", cf_EditArea_RemoveCallBack, METH_VARARGS, "remove callback"},
-    {"highlight", cf_EditArea_HighLight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
-    {"setlanguage", cf_EditArea_SetLang, METH_VARARGS, "set the language of edit area"},
-    {NULL, NULL, 0, NULL}
-};
-
-static struct PyModuleDef editareamodule = {
-    .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "EditArea",
-    .m_size = 0,
-    .m_methods = cf_EditArea_method,
-    .m_slots = nullptr
-};
 
 static PyMethodDef cf_method[] ={
     {"test",  cf_Test, METH_VARARGS,"test if module available"},
+    {"AddCallback",  cf_Test, METH_VARARGS,"add callback to event"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -164,7 +92,23 @@ static struct PyModuleDef cloudforestmodule = {
 
 PyMODINIT_FUNC initcloudforestmodule(void){
     PyObject *cfmodule = PyModule_Create(&cloudforestmodule);
-    PyObject *eamodule = PyModule_Create(&editareamodule);
-    PyModule_AddObject(cfmodule, "EditArea", eamodule);
+
+    PyModule_AddObject(cfmodule, "EditArea", (PyObject*)init_cf_EditArea_class());
     return cfmodule;
+}
+
+
+void RunCallback(PyRunCallBack* req){
+    PyObject *args;
+
+    if(req->Type == PyRunCallBack::NEWEDITAREA){
+        args = Py_BuildValue("(0)", nullptr);
+        unsigned int size = PyList_GET_SIZE(OpenEditAreaCallbackList);
+        for(unsigned int i = 0; i < size; i++){
+            PyObject *func = PyList_GetItem(OpenEditAreaCallbackList, i);
+            PyObject_CallObject(func, args);
+        }
+    }
+
+    Py_DecRef(args);
 }

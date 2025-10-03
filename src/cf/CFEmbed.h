@@ -3,62 +3,68 @@
 
 extern "C" {
 
-enum MessageType:char{
+enum cf_MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD,
-    FIND
+    FIND, TOGGLEOUTPUT
 };
 
-typedef struct Connect{
-    void (*bridge)(MessageType type,void* data);
-}Connect ;
+typedef struct {
+    void (*bridge)(cf_MessageType type,void* data);
+}cf_Connect_msg;
 
-typedef struct FileRequest{
+typedef struct {
+    bool AcceptOutput;
+}cf_ToggleOutput_msg;
+
+typedef struct {
     const char* FilePath;//relative
-}FileRequest;
+}cf_FileRequest_msg;
 
-typedef struct FileRespond{
+typedef struct {
     bool IsPath;
     const char* FilePath;// relative, telling which file is this
     const char* Content;// can be path or whole file
-}FileRespond;
+}cf_FileResponse_msg;
 
-typedef struct Find {
+typedef struct {
     const char* FilePath;
     const char* Text;
-}Find;
+}cf_Find_msg;
 
-typedef struct Lang{
+typedef struct {
     char* LangName;
-}Lang;
+}cf_LoadLang_msg;
 
-typedef struct Entry{
+typedef struct {
     char* FileName;
     char* language;
-}Entry;
+}cf_Entry_msg;
 
-enum t{
+enum cf_HLType{
     CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_VALUE,
     CF_CHAR, CF_NEWLINE, CF_MODIFIER
 };
 
-typedef struct Highlight{
+typedef struct {
     char* file;
     unsigned int startpos, endpos;
     unsigned int startline, startlinepos;
     unsigned int endline, endlinepos;
     unsigned int textlength;
-    t type;
-}Highlight;
+    cf_HLType type;
+}cf_Highlight_msg;
 
-void emb_Send_Message_To_CF(MessageType type, void* data);
+void cf_Send_Message(cf_MessageType type, void* data);
 
-void emb_Connect(void (*func)(MessageType, void*));
+void cf_Post_Message(cf_MessageType type, void *data);
+/*
+ * [!NOTE]
+ * Post is from cloudyforst to the app
+ */
 
-void emb_Send_Message(MessageType type, void *data);
+void cf_Request_File(const char* filepath);
 
-void emb_Request_File(const char* filepath);
-
-void emb_Respond_File_Req();
+void cf_Response_File_Req();
 
 }
 #endif

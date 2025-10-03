@@ -20,7 +20,6 @@ class FPFileButton;
 class EditArea;
 class EditAreaHolder;
 class EditAreaHolderTabBut;
-class Suggestion;
 // TextTag.h
 class TagStyle;
 class TagTables;

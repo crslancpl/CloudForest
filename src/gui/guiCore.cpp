@@ -20,6 +20,10 @@
 #include <string>
 #include <vector>
 
+#include "../requests/GUIRequests.h"
+#include "../requests/FileRequests.h"
+#include "../requests/CFRequests.h"
+#include "../requests/PyRequests.h"
 
 MainWindow gui::AppWindow;
 SettingPanel gui::AppSettingPanel;
@@ -70,7 +74,7 @@ std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
 
     for (std::string& func : EditAreaCreatedCallback) {
         std::string function = func + "(\"" + (*ea)->AbsoPath + "\")";
-        gui::PyRunCode(function);
+        gui::RunPythonCode(function);
     }
 
     return ea;
@@ -103,23 +107,31 @@ std::shared_ptr<EditArea>* gui::GetEditArea(const std::string &filepath){
 }
 
 
-const result::Result* gui::Process(request::Request* request){
-    if(auto req = dynamic_cast<request::EAGetText*>(request)){
-        return GetEditAreaContent(req->Filepath);
-    }else if(auto req = dynamic_cast<request::EADrawByPos*>(request)){
-        auto ea = gui::GetEditArea(req->Filepath);
-        (*ea)->ApplyTagByPos(req->Startpos, req->Endpos, (char*)req->Tagname.c_str());
-    }else if(auto req = dynamic_cast<request::EADrawByLine*>(request)){
-        auto ea = gui::GetEditArea(req->Filepath);
-        (*ea)->ApplyTagByLinePos(req->Line, req->Offset, req->Length, (char*)req->Tagname.c_str());
-    }else if(auto req = dynamic_cast<request::EAAddCallBack*>(request)){
-        auto ea = gui::GetEditArea(req->Filepath);
+const result::Result* gui::Process(Request* request){
+    EditArea* ea;
+    if(auto req = dynamic_cast<EAGetText*>(request)){
+        if(req->Parent != nullptr){
+            ea = req->Parent;
+        }else{
+            ea = GetEditArea(req->Filepath)->get();
+        }
+        return GetEditAreaContent(ea);
+    }else if(auto req = dynamic_cast<EADrawByPos*>(request)){
+        req->Parent->ApplyTagByPos(req->Startpos, req->Endpos, (char*)req->Tagname.c_str());
+    }else if(auto req = dynamic_cast<EADrawByLine*>(request)){
+        if(req->Parent != nullptr){
+            ea = req->Parent;
+        }else{
+            ea = GetEditArea(req->Filepath)->get();
+        }
+        ea->ApplyTagByLinePos(req->Line, req->Offset, req->Length, (char*)req->Tagname.c_str());
+    }else if(auto req = dynamic_cast<EAAddCallBack*>(request)){
         switch (req->Type) {
-        case request::EAAddCallBack::NEWEDITAREA:
+        case EAAddCallBack::NEWEDITAREA:
             EditAreaCreatedCallback.emplace_back(req->Funcname);
             break;
-        case request::EAAddCallBack::TEXTCHANGED:
-            (*ea)->AddTextChangedPyCalback(req->Funcname);
+        case EAAddCallBack::TEXTCHANGED:
+            req->Parent->AddTextChangedPyCalback(req->Funcname);
             break;
         default:
             break;
@@ -129,11 +141,10 @@ const result::Result* gui::Process(request::Request* request){
 }
 
 //async
-const result::Result* gui::GetEditAreaContent(const std::string &filepath){
+const result::Result* gui::GetEditAreaContent(EditArea *ea){
     static result::GetText Result;
-    auto ea = gui::GetEditArea(filepath);
     if(ea != nullptr){
-        Result.Text = (*ea)->GetContent();
+        Result.Text = ea->GetContent();
         return &Result;
     }else{
         return nullptr;
@@ -141,10 +152,9 @@ const result::Result* gui::GetEditAreaContent(const std::string &filepath){
 }
 
 //async
-const result::Result* gui::ChangeEditAreaLanguage(const std::string &filepath, const std::string &lang){
-    auto ea = gui::GetEditArea(filepath);
+const result::Result* gui::ChangeEditAreaLanguage(EditArea *ea, const std::string &lang){
     if(ea != nullptr){
-        (*ea)->ChangeLanguage(lang, true);
+        ea->ChangeLanguage(lang, true);
     }
     /*not finished */
     return nullptr;
@@ -164,12 +174,12 @@ void gui::OpenFileChooser(bool fileordir){
 
     if(fileordir){
         //file
-        static request::FileOpenFile req;
+        static FileOpenFile req;
         req.Callback = FileChoosen;
         core::Interact(&req);
     }else{
         //folder
-        static request::FileOpenFolder req;
+        static FileOpenFolder req;
         req.Callback = FileChoosen;
         core::Interact(&req);
     }
@@ -177,7 +187,7 @@ void gui::OpenFileChooser(bool fileordir){
 
 //async
 void gui::SaveFile(GFile* file, char* content, void(*callback)(GFile*,GFileInfo*)){
-    static request::FileSave req;
+    static FileSave req;
     req.Content = content;
     req.File = file;
     req.Callback = callback;
@@ -189,7 +199,7 @@ void gui::EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*)){
     /*
      * Tell file manager to enumerate folder
      */
-    static request::FileEnumerate req;
+    static FileEnumerate req;
     req.File = folder;
     req.Callback = callback;
 
@@ -201,7 +211,7 @@ void gui::cfLoadLanguage(const std::string& langname){
     /*
      * Tell CloudyForest to load the language template
      */
-    static request::CFLoadTemplate req;
+    static CFLoadTemplate req;
     req.Language = langname;
 
     core::Interact(&req);
@@ -212,7 +222,7 @@ void gui::cfProcessFile(const std::string& filepath, const std::string& language
      * Tell CloudyForest to process a file. CloudyForest will
      * request for content later.
      */
-    static request::CFReadFile req;
+    static CFReadFile req;
     req.Filepath = filepath;
     req.Language = language;
 
@@ -222,8 +232,8 @@ void gui::cfProcessFile(const std::string& filepath, const std::string& language
 
 
 
-void gui::PyRunCode(std::string& code){
-    static request::PyRunCode req;
+void gui::RunPythonCode(std::string& code){
+    static PyRunCode req;
     req.Code = code;
     core::Interact(&req);
 }

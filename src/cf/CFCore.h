@@ -3,11 +3,11 @@
 
 #include "CFEmbed.h"
 #include "../Core.h"
-
+#include "../requests/BaseRequest.h"
 
 namespace cf{
 void Init();
-void Process(request::Request* request);
+void Process(Request* request);
 }
 
 

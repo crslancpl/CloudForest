@@ -12,7 +12,7 @@
 
 namespace filemanag{
 void Init();
-void Process(request::Request* request);
+void Process(Request* request);
 void OpenFileChooser(bool FileOrDir);
 void Save(GFile *file,std::string* content);
 void LoadText(GFile* file,char* &textoutput);//load the content to textoutput

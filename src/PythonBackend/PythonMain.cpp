@@ -35,6 +35,8 @@ void pybackend::Start(){
     PyConfig_Clear(&config);
 
     ExecuteFile("extension/init.py");
+    //ExecuteFile("extension/testlsp.py");
+    ExecuteFile("extension/LSPClient.py");
     InitPythonTool();
     return;
 
@@ -49,13 +51,15 @@ void pybackend::End(){
     }
 }
 
-const result::Result* pybackend::Process(request::Request* request){
-    if(auto req = dynamic_cast<request::PyRunCode*>(request)){
+const result::Result* pybackend::Process(Request* request){
+    if(auto req = dynamic_cast<PyRunCode*>(request)){
         Execute(req->Code);
-    }else if(auto req = dynamic_cast<request::PyRunFile*>(request)){
+    }else if(auto req = dynamic_cast<PyRunFile*>(request)){
         ExecuteFile(req->Filepath);
-    }else if(auto req = dynamic_cast<request::PyGetLspMessage*>(request)){
+    }else if(auto req = dynamic_cast<PyGetLspMessage*>(request)){
         return GetLspMessage(req);
+    }else if(auto req =  dynamic_cast<PyRunCallBack*>(request)){
+        RunCallback(req);
     }
     return nullptr;
 }

@@ -37,9 +37,9 @@ EditAreaHolder* NewEAHolder();
 
 
 //async callback
-const result::Result* Process(request::Request* request);//for core
-const result::Result* GetEditAreaContent(const std::string &filepath);
-const result::Result* ChangeEditAreaLanguage(const std::string &filepath, const std::string &lang);
+const result::Result* Process(Request* request);//for core
+const result::Result* GetEditAreaContent(EditArea *ea);
+const result::Result* ChangeEditAreaLanguage(EditArea *ea, const std::string &lang);
 
 //async request
 void OpenFileChooser(bool fileordir);
@@ -49,7 +49,7 @@ void EnumFolder(GFile *folder, void (*callback)(GFile*,GFileInfo*));
 void cfLoadLanguage(const std::string& langname);
 void cfProcessFile(const std::string& filepath, const std::string& language);
 
-void PyRunCode(std::string& code);
+void RunPythonCode(std::string& code);
 
 }
 

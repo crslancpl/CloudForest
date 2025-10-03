@@ -13,6 +13,8 @@
 #include "gui/guiCore.h"
 #include "ToolFunctions.h"
 
+#include "requests/FileRequests.h"
+
 static GtkFileDialog *FileDia;
 
 static void (*Callback)(GFile *file, GFileInfo *fileinfo);
@@ -50,17 +52,17 @@ void filemanag::Init(){
     FileDia = gtk_file_dialog_new();
 }
 
-void filemanag::Process(request::Request* request){
-    if(auto req = dynamic_cast<request::FileOpenFile*>(request)){
+void filemanag::Process(Request* request){
+    if(auto req = dynamic_cast<FileOpenFile*>(request)){
         Callback = req->Callback;
         OpenFileChooser(true);
-    }else if(auto req = dynamic_cast<request::FileOpenFolder*>(request)){
+    }else if(auto req = dynamic_cast<FileOpenFolder*>(request)){
         Callback = req->Callback;
         OpenFileChooser(false);
-    }else if(auto req = dynamic_cast<request::FileEnumerate*>(request)){
+    }else if(auto req = dynamic_cast<FileEnumerate*>(request)){
         Callback = req->Callback;
         EnumerateFolderChild(req->File);
-    }else if(auto req = dynamic_cast<request::FileSave*>(request)){
+    }else if(auto req = dynamic_cast<FileSave*>(request)){
         Callback = req->Callback;
         Save(req->File, &req->Content);
     }

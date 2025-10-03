@@ -6,10 +6,15 @@
 #include <future>
 #include <string>
 
+#include "requests/BaseRequest.h"
+#include "requests/CFRequests.h"
+#include "requests/FileRequests.h"
+#include "requests/GUIRequests.h"
+#include "requests/PyRequests.h"
 
 
 namespace core {
-const result::Result* Interact(request::Request *request);
+const result::Result* Interact(Request *request);
 }
 
 

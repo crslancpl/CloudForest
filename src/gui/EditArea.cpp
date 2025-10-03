@@ -57,9 +57,6 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
     Parent->CountLine();
     Parent->HighlightSyntax();
 
-    Parent->LSPserver->DidOpen(Parent->AbsoPath, Parent->GetContent());
-    Parent->LSPserver->Autocomplete(Parent->AbsoPath, Parent->CursorLine-1, Parent->CursorLinePos-1);
-
     if(gtk_text_iter_inside_word(Parent->CursorItr) || gtk_text_iter_ends_word(Parent->CursorItr)){
         Parent->ShowTip(strdup("show tips"));
         Parent->ShowSuggestion(nullptr);
@@ -70,7 +67,7 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
         std::string code =
             funcname + "(\"" + Parent->AbsoPath + "\"," +
             std::to_string(Parent->CursorLine) + "," + std::to_string(Parent->CursorPos) +")";
-        gui::PyRunCode(code);
+        gui::RunPythonCode(code);
     }
 }
 
@@ -181,7 +178,6 @@ EditArea::EditArea(GFile *file){
     CountError();
     LoadCursorPos();
 
-    LSPserver = LSPServer::GetServer("clangd");
 
     /* Connect signals */
     g_signal_connect(KeyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
@@ -282,7 +278,7 @@ void EditArea::ShowTip(char *Text){
 }
 
 void EditArea::ShowSuggestion(const vector<shared_ptr<Suggestion>> *Suggestions){
-    Sugpopover->Show(CursorRec, nullptr);
+    Sugpopover->Show(CursorRec);
 }
 
 
@@ -290,7 +286,7 @@ void EditArea::ChangeLanguage(const string &lang, bool highlight){
     gui::cfLoadLanguage(lang);
     Language = lang;
 
-    emb_Send_Message_To_CF(MessageType::RELOAD, nullptr);
+    cf_Send_Message(cf_MessageType::RELOAD, nullptr);
     if(highlight){
         HighlightSyntax();
     }

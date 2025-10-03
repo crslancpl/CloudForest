@@ -4,6 +4,8 @@
 #include <Python.h>
 #include "../Global.h"
 
-const result::GetText* GetLspMessage(request::PyGetLspMessage* req);
+#include "../requests/PyRequests.h"
+
+const result::GetText* GetLspMessage(PyGetLspMessage* req);
 void InitPythonTool();
 #endif

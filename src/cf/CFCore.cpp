@@ -10,19 +10,23 @@
 #include "../ToolFunctions.h"
 #include "CFEmbed.h"
 
-static FileRespond fresp;
-static Entry ent;
+#include "../requests/BaseRequest.h"
+#include "../requests/GUIRequests.h"
+#include "../requests/CFRequests.h"
+
+static cf_FileResponse_msg fresp;
+static cf_Entry_msg ent;
 
 
-static void RequestFile(FileRequest *freq){
+static void RequestFile(cf_FileRequest_msg *freq){
     fresp.FilePath = freq->FilePath;
 
     if (StartWith(freq->FilePath, "syntax/")) {
         fresp.IsPath = true;
         fresp.Content = freq->FilePath;
-        emb_Send_Message_To_CF(FILERESP, &fresp);
+        cf_Send_Message(FILERESP, &fresp);
     }else{
-        static request::EAGetText req;
+        static EAGetText req;
         req.Filepath = freq->FilePath;
 
         std::future<const result::Result*> gettext = std::async(core::Interact, &req);
@@ -30,23 +34,20 @@ static void RequestFile(FileRequest *freq){
 
         fresp.Content = text->Text.c_str();
         fresp.IsPath = false;
-        emb_Send_Message_To_CF(FILERESP, &fresp);
+        cf_Send_Message(FILERESP, &fresp);
     }
 }
 
-static void Draw(Highlight* highlight){
+static void Draw(cf_Highlight_msg* highlight){
     //static request::EADrawByPos req;
-    static request::EADrawByLine req;
-    static map<t, std::string> tagnames = {
+    static EADrawByLine req;
+    static map<cf_HLType, std::string> tagnames = {
         {CF_TYPE, "type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "mcmt"},
         {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
         {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
-    /*
-    req.Startpos = highlight->startpos;
-    req.Endpos = highlight->endpos;
-    */
+
 
 
     req.Line = highlight->startline;
@@ -58,34 +59,36 @@ static void Draw(Highlight* highlight){
     core::Interact(&req);
 }
 
-static void CfMessageReceiver(MessageType type, void* data){
+static void CfMessageReceiver(cf_MessageType type, void* data){
     /*
      * Receiving messages form CloudyForest
      */
     if(type == CONNECT){
         g_print("CloudyForest Connected\n");
     }else if(type == FILEREQ){
-        RequestFile((FileRequest*)data);
+        RequestFile((cf_FileRequest_msg*)data);
     }else if(type == DRAW){
-        Highlight *highlight =(Highlight*)data;
+        cf_Highlight_msg *highlight =(cf_Highlight_msg*)data;
         Draw(highlight);
     }
 }
 
 
 void cf::Init(){
-    emb_Connect(CfMessageReceiver);
+    cf_Connect_msg m;
+    m.bridge = CfMessageReceiver;
+    cf_Send_Message(cf_MessageType::CONNECT, &m);
 }
 
-void cf::Process(request::Request* request){
-    static Lang langmes;
-    if(auto req = dynamic_cast<request::CFLoadTemplate*>(request)){
+void cf::Process(Request* request){
+    static cf_LoadLang_msg langmes;
+    if(auto req = dynamic_cast<CFLoadTemplate*>(request)){
         langmes.LangName = strdup(req->Language.c_str());
-        emb_Send_Message_To_CF(MessageType::LANG, &langmes);
-    }else if(auto req = dynamic_cast<request::CFReadFile*>(request)){
-        emb_Send_Message_To_CF(MessageType::RELOAD, nullptr);
+        cf_Send_Message(cf_MessageType::LANG, &langmes);
+    }else if(auto req = dynamic_cast<CFReadFile*>(request)){
+        cf_Send_Message(cf_MessageType::RELOAD, nullptr);
         ent.FileName = strdup(req->Filepath.c_str());
         ent.language = strdup(req->Language.c_str());
-        emb_Send_Message_To_CF(MessageType::ENTRYFILE, &ent);
+        cf_Send_Message(cf_MessageType::ENTRYFILE, &ent);
     }
 }

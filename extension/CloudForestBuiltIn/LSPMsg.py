@@ -41,6 +41,11 @@ AutoCompleteMessage = {
     }
 }
 
+def GetContentLengthHeader(content:str)->str:
+    header = "Content-Length: " + str(len(content)) + "\r\n\r\n"
+    return header
+
+
 def GetInitMessage()->str:
     message = json.dumps(InitMessage)
     return message
@@ -69,3 +74,25 @@ def GetAutoCompMessage(fileuri:str, line:int, char:int)->str:
 
     message = json.dumps(copied)
     return message
+
+def ReadAutoComplete(message:str):
+    msg = json.loads(message)
+
+    result = msg.get("result")
+    if result:
+        print(result)
+    else:
+        print("no value for item")
+
+    for items in result:
+       print(items)
+    #print("id: " + msg['id'])
+
+def ReadLSPMessage(message:str):
+    msg = json.loads(message)
+
+    id = msg.get("id")
+    if id == 2:
+        # Code completion
+        items = msg.get("result").get("items")
+        return items

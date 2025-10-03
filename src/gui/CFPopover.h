@@ -1,10 +1,12 @@
 #ifndef CFPOPOVER_H_
 #define CFPOPOVER_H_
 
-#include "gtk/gtk.h"
+#include <gtk/gtk.h>
 
 #include <string>
 #include <vector>
+
+#include "../Types.h"
 
 class TipPopover{
 public:
@@ -15,13 +17,6 @@ public:
     void Hide();
 };
 
-class Suggestion{
-public:
-    std::string Text;
-    std::string Code;
-    std::string Type;
-    std::string Description;
-};
 
 class SuggestionPopover{
 public:
@@ -29,9 +24,12 @@ public:
     GtkScrolledWindow *ScrollWin;
     GtkBox *Box;
     GtkLabel *Label;
+    std::vector<std::pair<Suggestion,GtkWidget*>> Suggestions;
     void Init(GtkWidget *parent);
-    void Show(GdkRectangle* rec, const std::vector<Suggestion> *content);
+    void Show(GdkRectangle* rec);
     void Hide();
+    void Add(Suggestion &item);
+    void Clear();
 };
 
 #endif
