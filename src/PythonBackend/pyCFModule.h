@@ -4,7 +4,7 @@
 #include <Python.h>
 #include "../requests/PyRequests.h"
 
-PyMODINIT_FUNC initcloudforestmodule();
+PyMODINIT_FUNC init_cloudforest_module();
 void RunCallback(PyRunCallBack* req);
 
 #endif

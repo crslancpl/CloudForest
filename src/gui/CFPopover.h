@@ -10,8 +10,8 @@
 
 class TipPopover{
 public:
-    GtkLabel *TipLabel;
-    GtkPopover *Popover;
+    GtkLabel *m_TipLabel;
+    GtkPopover *m_Popover;
     void Init(GtkWidget *parent);
     void ShowContent(GdkRectangle* rec, const std::string &content);
     void Hide();
@@ -20,15 +20,15 @@ public:
 
 class SuggestionPopover{
 public:
-    GtkPopover *Popover;
-    GtkScrolledWindow *ScrollWin;
-    GtkBox *Box;
-    GtkLabel *Label;
-    std::vector<std::pair<Suggestion,GtkWidget*>> Suggestions;
+    GtkPopover *m_Popover;
+    GtkScrolledWindow *m_ScrollWin;
+    GtkBox *m_Box;
+    GtkLabel *m_Label;
+    std::vector<std::pair<Suggestion*,GtkWidget*>> m_Suggestions;
     void Init(GtkWidget *parent);
     void Show(GdkRectangle* rec);
     void Hide();
-    void Add(Suggestion &item);
+    void Add(Suggestion *item);
     void Clear();
 };
 

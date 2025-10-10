@@ -62,6 +62,6 @@ const result::GetText* GetLspMessage(PyGetLspMessage* req){
     }
 
     text = PyUnicode_AsUTF8(value);
-    Message.Text = text;
+    Message.Text = text.c_str();
     return &Message;
 }

@@ -31,6 +31,18 @@ public:
     EASetLang() : Request(Parts::GUI) {}
 };
 
+class EAHideSuggestion: public Request{
+public:
+    EditArea* Parent;
+    EAHideSuggestion():Request(Parts::GUI) {}
+};
+
+class EAShowSuggestion: public Request{
+public:
+    EditArea* Parent;
+    EAShowSuggestion():Request(Parts::GUI) {}
+};
+
 class EAAddSuggestion: public Request{
 public:
     EditArea* Parent;
@@ -48,21 +60,6 @@ public:
     std::string Filepath;
 
     EAClearSuggestion():Request(Parts::GUI) {}
-};
-
-class EAAddCallBack: public Request{
-public:
-    enum CallbackType{
-        NEWEDITAREA, CLOSEEDITAREA, TEXTCHANGED, SAVING, SAVED, KEYDOWN
-    };
-    CallbackType Type;
-
-    EditArea* Parent;
-    //or get from filepath
-    std::string Filepath;
-
-    std::string Funcname;
-    EAAddCallBack() : Request(Parts::GUI) {}
 };
 
 class EADrawByPos: public Request{

@@ -17,8 +17,8 @@ elseif(WIN32)
 endif()
 
 add_library(PyBackend STATIC
-    src/PythonBackend/PythonMain.cpp src/PythonBackend/cfModule.cpp
-    src/PythonBackend/cfPythonTool.cpp src/PythonBackend/cfEditArea.cpp
+    src/PythonBackend/PythonMain.cpp src/PythonBackend/pyCFModule.cpp
+    src/PythonBackend/cfPythonTool.cpp src/PythonBackend/pyEditArea.cpp
 
     src/requests/PyRequests.cpp
     )

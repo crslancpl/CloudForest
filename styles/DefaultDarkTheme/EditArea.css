@@ -5,6 +5,7 @@
 #EditAreaBaseGrid button {
     background-image: none;
 }
+
 #EditAreaBaseGrid textview,
 #EditAreaBaseGrid textview text {
     background-color: transparent;
@@ -30,13 +31,13 @@
     font-family: monospace;
 }
 
-#EditAreaBaseGrid button {
+#MiscPanel button {
     color: white;
-    border: none;
     background-color: transparent;
+    border: transparent solid 1px;
 }
 
-#EditAreaBaseGrid button:hover {
+#MiscPanel button:hover {
     border: rgba(255, 0, 0, 0.6) solid 1px;
 }
 
@@ -75,4 +76,3 @@
     background-image: none;
     background-color: transparent;
 }
-

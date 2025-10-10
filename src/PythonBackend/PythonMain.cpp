@@ -1,9 +1,10 @@
+#include "pyEditArea.h"
 #include <cstdio>
 #include <glib/gprintf.h>
 #define PY_SSIZE_T_CLEAN
 
 #include "PythonMain.h"
-#include "cfModule.h"
+#include "pyCFModule.h"
 #include "cfPythonTool.h"
 
 
@@ -17,7 +18,7 @@ static void ExecuteFile(const string &path){
 }
 
 void pybackend::Start(){
-    PyImport_AppendInittab("CloudForestPy", initcloudforestmodule);
+    PyImport_AppendInittab("CloudForestPy", init_cloudforest_module);
 
     PyStatus status;
     PyConfig config;
@@ -35,8 +36,7 @@ void pybackend::Start(){
     PyConfig_Clear(&config);
 
     ExecuteFile("extension/init.py");
-    //ExecuteFile("extension/testlsp.py");
-    ExecuteFile("extension/LSPClient.py");
+
     InitPythonTool();
     return;
 
@@ -60,6 +60,10 @@ const result::Result* pybackend::Process(Request* request){
         return GetLspMessage(req);
     }else if(auto req =  dynamic_cast<PyRunCallBack*>(request)){
         RunCallback(req);
+    }else if(auto req = dynamic_cast<PyRegisterEA*>(request)){
+        register_py_EditArea(req);
+    }else if(auto req = dynamic_cast<PyCallbackEA*>(request)){
+        callback_py_EditArea_object(req);
     }
     return nullptr;
 }

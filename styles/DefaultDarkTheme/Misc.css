@@ -21,4 +21,18 @@
 
 .suggestionpopover {
     font-size: 15px;
+    background-image: none;
+}
+
+.suggestionpopover button {
+    color: white;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.suggestionpopover button:hover {
+    color: black;
+    background-image: none;
+    background-color: rgba(179, 233, 196, 0.9);
 }

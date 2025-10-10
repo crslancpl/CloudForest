@@ -33,7 +33,7 @@ static void IdeButtonClicked(GtkButton *self, void* userdata){
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
     auto newEditArea = gui::NewEditArea(nullptr);
     gui::FocusedEAHolder->Show(*newEditArea);
-    gtk_widget_grab_focus(GTK_WIDGET((*newEditArea)->TextView));
+    gtk_widget_grab_focus(GTK_WIDGET((*newEditArea)->m_TextView));
 }
 
 static void SearchClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {

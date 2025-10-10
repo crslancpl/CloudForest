@@ -1,5 +1,6 @@
 # for writing and parsing LSP message
 
+from ast import Num
 import json
 
 InitMessage= {
@@ -88,11 +89,15 @@ def ReadAutoComplete(message:str):
        print(items)
     #print("id: " + msg['id'])
 
-def ReadLSPMessage(message:str):
+def ReadLSPMessage(message:str)->list|None:
+    # returns a [id, data] pair
     msg = json.loads(message)
 
     id = msg.get("id")
+    data = None
     if id == 2:
         # Code completion
-        items = msg.get("result").get("items")
-        return items
+        data = msg.get("result").get("items")
+    elif id == 1:
+        data = "initmessage"
+    return [id,data]

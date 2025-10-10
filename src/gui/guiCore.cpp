@@ -47,7 +47,7 @@ void gui::Init(){
     gui::FocusedEAHolder->Show(*gui::NewEditArea(nullptr));
 
     gui::AppWindow.Layout.InsertChild(GTK_WIDGET(gui::AppFilePanel.BaseGrid));
-    gui::AppWindow.Layout.InsertChild(GTK_WIDGET(newholder->BaseGrid));
+    gui::AppWindow.Layout.InsertChild(GTK_WIDGET(newholder->m_BaseGrid));
 
     gui::AppWindow.Show();
 }
@@ -73,7 +73,7 @@ std::shared_ptr<EditArea>* gui::NewEditArea(GFile *file){
     std::shared_ptr<EditArea>* ea = &EditAreas.back();
 
     for (std::string& func : EditAreaCreatedCallback) {
-        std::string function = func + "(\"" + (*ea)->AbsoPath + "\")";
+        std::string function = func + "(\"" + (*ea)->m_AbsoPath + "\")";
         gui::RunPythonCode(function);
     }
 
@@ -99,7 +99,7 @@ std::shared_ptr<EditArea>* gui::GetEditArea(const std::string &filepath){
      * Return nullptr if not found
      */
     for (std::shared_ptr<EditArea>& ea: EditAreas) {
-        if(ea->AbsoPath == filepath){
+        if(ea->m_AbsoPath == filepath){
             return &ea;
         }
     }
@@ -125,17 +125,14 @@ const result::Result* gui::Process(Request* request){
             ea = GetEditArea(req->Filepath)->get();
         }
         ea->ApplyTagByLinePos(req->Line, req->Offset, req->Length, (char*)req->Tagname.c_str());
-    }else if(auto req = dynamic_cast<EAAddCallBack*>(request)){
-        switch (req->Type) {
-        case EAAddCallBack::NEWEDITAREA:
-            EditAreaCreatedCallback.emplace_back(req->Funcname);
-            break;
-        case EAAddCallBack::TEXTCHANGED:
-            req->Parent->AddTextChangedPyCalback(req->Funcname);
-            break;
-        default:
-            break;
-        }
+    }else if(auto req = dynamic_cast<EAClearSuggestion*>(request)){
+        req->Parent->ClearSuggestion();
+    }else if(auto req = dynamic_cast<EAAddSuggestion*>(request)){
+        req->Parent->AddSuggestion(req->Sug);
+    }else if(auto req = dynamic_cast<EAHideSuggestion*>(request)){
+        req->Parent->HideSuggestion();
+    }else if(auto req = dynamic_cast<EAShowSuggestion*>(request)){
+        req->Parent->ShowSuggestion();
     }
     return nullptr;
 }
@@ -144,7 +141,7 @@ const result::Result* gui::Process(Request* request){
 const result::Result* gui::GetEditAreaContent(EditArea *ea){
     static result::GetText Result;
     if(ea != nullptr){
-        Result.Text = ea->GetContent();
+        Result.Text = ea->GetContent().c_str();
         return &Result;
     }else{
         return nullptr;
@@ -235,5 +232,21 @@ void gui::cfProcessFile(const std::string& filepath, const std::string& language
 void gui::RunPythonCode(std::string& code){
     static PyRunCode req;
     req.Code = code;
+    core::Interact(&req);
+}
+
+void gui::PythonRegisterEA(EditArea *self){
+    static PyRegisterEA req;
+    req.ea = self;
+    req.FilePath = self->m_AbsoPath;
+    core::Interact(&req);
+}
+
+void gui::PythonCallbackEATextChanged(EditArea *self){
+    static PyCallbackEA req;
+    req.m_CallbackType = PyCallbackEA::TEXTCHANGED;
+    req.ea = self;
+    req.m_StartLine = self->m_CursorLine;
+    req.m_StartPos = self->m_CursorLinePos;
     core::Interact(&req);
 }

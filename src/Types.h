@@ -16,4 +16,12 @@ typedef struct{
     SuggestionRange Range;// where to insert the text
 }Suggestion;
 
+typedef struct CFRequestData{
+    virtual ~CFRequestData(){}
+}CFRequestData;
+
+typedef struct CFReadTemp:public CFRequestData {
+    //
+}CFReadTemp;
+
 #endif

@@ -21,7 +21,7 @@ void SearchReplaceDialog::CreateDialog() {
     gtk_window_set_hide_on_close(m_dialog, true);
     gtk_window_set_title(GTK_WINDOW(m_dialog), "Find and Replace");
     gtk_window_set_modal(GTK_WINDOW(m_dialog), TRUE);
-    gtk_window_set_transient_for(GTK_WINDOW(m_dialog), GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(m_editArea->TextView), GTK_TYPE_WINDOW)));
+    gtk_window_set_transient_for(GTK_WINDOW(m_dialog), GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(m_editArea->m_TextView), GTK_TYPE_WINDOW)));
     gtk_window_set_default_size(GTK_WINDOW(m_dialog), 500, 200);
     gtk_window_set_resizable(GTK_WINDOW(m_dialog), FALSE);
 
@@ -30,10 +30,10 @@ void SearchReplaceDialog::CreateDialog() {
     ConnectSignals();
 
     // Initialize search state
-    gtk_text_buffer_get_selection_bounds(m_editArea->TextViewBuffer, &m_searchStart, &m_searchEnd);
+    gtk_text_buffer_get_selection_bounds(m_editArea->m_TextViewBuffer, &m_searchStart, &m_searchEnd);
     if (gtk_text_iter_equal(&m_searchStart, &m_searchEnd)) {
-        gtk_text_buffer_get_iter_at_mark(m_editArea->TextViewBuffer, &m_searchStart,
-                                        gtk_text_buffer_get_insert(m_editArea->TextViewBuffer));
+        gtk_text_buffer_get_iter_at_mark(m_editArea->m_TextViewBuffer, &m_searchStart,
+                                        gtk_text_buffer_get_insert(m_editArea->m_TextViewBuffer));
     }
 }
 
@@ -167,8 +167,8 @@ bool SearchReplaceDialog::FindText(const std::string& text, bool caseSensitive, 
     GtkTextIter searchEnd = m_searchEnd;
 
     // Get the full text buffer
-    gtk_text_buffer_get_bounds(m_editArea->TextViewBuffer, &start, &end);
-    std::string bufferText = gtk_text_buffer_get_text(m_editArea->TextViewBuffer, &start, &end, TRUE);
+    gtk_text_buffer_get_bounds(m_editArea->m_TextViewBuffer, &start, &end);
+    std::string bufferText = gtk_text_buffer_get_text(m_editArea->m_TextViewBuffer, &start, &end, TRUE);
 
     // Prepare search text
     std::string searchText = text;
@@ -203,14 +203,14 @@ bool SearchReplaceDialog::FindText(const std::string& text, bool caseSensitive, 
 
     if (foundPos != std::string::npos) {
         // Update search position
-        gtk_text_buffer_get_iter_at_offset(m_editArea->TextViewBuffer, &m_searchStart, foundPos);
-        gtk_text_buffer_get_iter_at_offset(m_editArea->TextViewBuffer, &m_searchEnd, foundPos + searchText.length());
+        gtk_text_buffer_get_iter_at_offset(m_editArea->m_TextViewBuffer, &m_searchStart, foundPos);
+        gtk_text_buffer_get_iter_at_offset(m_editArea->m_TextViewBuffer, &m_searchEnd, foundPos + searchText.length());
 
         // Select the found text
-        gtk_text_buffer_select_range(m_editArea->TextViewBuffer, &m_searchStart, &m_searchEnd);
+        gtk_text_buffer_select_range(m_editArea->m_TextViewBuffer, &m_searchStart, &m_searchEnd);
 
         // Scroll to the found text
-        gtk_text_view_scroll_to_iter(m_editArea->TextView, &m_searchStart, 0.1, FALSE, 0.0, 0.0);
+        gtk_text_view_scroll_to_iter(m_editArea->m_TextView, &m_searchStart, 0.1, FALSE, 0.0, 0.0);
 
         // Highlight the match
         HighlightMatch(m_searchStart, m_searchEnd);
@@ -228,13 +228,13 @@ void SearchReplaceDialog::HighlightMatch(const GtkTextIter& start, const GtkText
 
     // Create a tag for highlighting
 
-    gtk_text_buffer_apply_tag_by_name(m_editArea->TextViewBuffer, "search_highlight", &start, &end);
+    gtk_text_buffer_apply_tag_by_name(m_editArea->m_TextViewBuffer, "search_highlight", &start, &end);
 }
 
 void SearchReplaceDialog::ClearHighlight() {
     GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(m_editArea->TextViewBuffer, &start, &end);
-    gtk_text_buffer_remove_tag_by_name(m_editArea->TextViewBuffer, "search_highlight", &start, &end);
+    gtk_text_buffer_get_bounds(m_editArea->m_TextViewBuffer, &start, &end);
+    gtk_text_buffer_remove_tag_by_name(m_editArea->m_TextViewBuffer, "search_highlight", &start, &end);
 }
 
 void SearchReplaceDialog::UpdateStatus(const std::string& message) {
@@ -242,11 +242,11 @@ void SearchReplaceDialog::UpdateStatus(const std::string& message) {
 }
 
 void SearchReplaceDialog::ReplaceCurrent() {
-    if (gtk_text_buffer_get_has_selection(m_editArea->TextViewBuffer)) {
+    if (gtk_text_buffer_get_has_selection(m_editArea->m_TextViewBuffer)) {
         const char* replacement = gtk_editable_get_text(GTK_EDITABLE(m_replaceEntry));
         if (replacement) {
-            gtk_text_buffer_delete_selection(m_editArea->TextViewBuffer, TRUE, TRUE);
-            gtk_text_buffer_insert_at_cursor(m_editArea->TextViewBuffer, replacement, -1);
+            gtk_text_buffer_delete_selection(m_editArea->m_TextViewBuffer, TRUE, TRUE);
+            gtk_text_buffer_insert_at_cursor(m_editArea->m_TextViewBuffer, replacement, -1);
             UpdateStatus("Replaced");
         }
     } else {
@@ -272,8 +272,8 @@ void SearchReplaceDialog::ReplaceAll() {
 
     // Get the full text
     GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(m_editArea->TextViewBuffer, &start, &end);
-    std::string bufferText = gtk_text_buffer_get_text(m_editArea->TextViewBuffer, &start, &end, TRUE);
+    gtk_text_buffer_get_bounds(m_editArea->m_TextViewBuffer, &start, &end);
+    std::string bufferText = gtk_text_buffer_get_text(m_editArea->m_TextViewBuffer, &start, &end, TRUE);
 
     // Prepare search text
     std::string searchStr = searchText;
@@ -287,15 +287,15 @@ void SearchReplaceDialog::ReplaceAll() {
     while ((pos = bufferText.find(searchStr, pos)) != std::string::npos) {
         // Get the original text positions
         GtkTextIter iterStart, iterEnd;
-        gtk_text_buffer_get_iter_at_offset(m_editArea->TextViewBuffer, &iterStart, pos);
-        gtk_text_buffer_get_iter_at_offset(m_editArea->TextViewBuffer, &iterEnd, pos + searchStr.length());
+        gtk_text_buffer_get_iter_at_offset(m_editArea->m_TextViewBuffer, &iterStart, pos);
+        gtk_text_buffer_get_iter_at_offset(m_editArea->m_TextViewBuffer, &iterEnd, pos + searchStr.length());
 
         // Replace the text
-        gtk_text_buffer_delete(m_editArea->TextViewBuffer, &iterStart, &iterEnd);
-        gtk_text_buffer_insert(m_editArea->TextViewBuffer, &iterStart, replacement, -1);
+        gtk_text_buffer_delete(m_editArea->m_TextViewBuffer, &iterStart, &iterEnd);
+        gtk_text_buffer_insert(m_editArea->m_TextViewBuffer, &iterStart, replacement, -1);
 
         // Update buffer text for next search
-        bufferText = gtk_text_buffer_get_text(m_editArea->TextViewBuffer, &start, &end, TRUE);
+        bufferText = gtk_text_buffer_get_text(m_editArea->m_TextViewBuffer, &start, &end, TRUE);
         if (!caseSensitive) {
             std::transform(bufferText.begin(), bufferText.end(), bufferText.begin(), ::tolower);
         }

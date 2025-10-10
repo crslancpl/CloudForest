@@ -1,4 +1,4 @@
-#include "cfModule.h"
+#include "pyCFModule.h"
 
 #include <Python.h>
 #include <abstract.h>
@@ -10,7 +10,7 @@
 #include <object.h>
 #include <future>
 
-#include "cfEditArea.h"
+#include "pyEditArea.h"
 
 #include "../Core.h"
 #include "../Global.h"
@@ -78,7 +78,7 @@ static PyObject *cf_Add_Callback(PyObject *self, PyObject *args){
 static PyMethodDef cf_method[] ={
     {"test",  cf_Test, METH_VARARGS,"test if module available"},
     {"AddCallback",  cf_Test, METH_VARARGS,"add callback to event"},
-    {NULL, NULL, 0, NULL}
+    {nullptr, nullptr, 0, nullptr}
 };
 
 static struct PyModuleDef cloudforestmodule = {
@@ -90,10 +90,10 @@ static struct PyModuleDef cloudforestmodule = {
 };
 
 
-PyMODINIT_FUNC initcloudforestmodule(void){
+PyMODINIT_FUNC init_cloudforest_module(void){
     PyObject *cfmodule = PyModule_Create(&cloudforestmodule);
 
-    PyModule_AddObject(cfmodule, "EditArea", (PyObject*)init_cf_EditArea_class());
+    PyModule_AddObject(cfmodule, "EditAreaMod", (PyObject*)init_cf_EditArea_module());
     return cfmodule;
 }
 

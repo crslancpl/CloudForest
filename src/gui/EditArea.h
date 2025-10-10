@@ -14,50 +14,48 @@
 // Forward declaration
 class SearchReplaceDialog;
 
-/* EdiaArea class is defined in DataTypes.h */
 class EditArea{
 public:
-    std::vector<std::string> TextChangedPyCallback;
     EditArea(GFile *file);
     ~EditArea();
 
-    EditAreaHolderTabBut* ParentSwitcher = nullptr;
-    EditAreaHolder* ParentHolder = nullptr;
-    TipPopover* Tippopover;
-    SuggestionPopover* Sugpopover;
+    EditAreaHolderTabBut* m_ParentSwitcher = nullptr;
+    EditAreaHolder* m_ParentHolder = nullptr;
+    TipPopover* m_Tippopover;
+    SuggestionPopover* m_Sugpopover;
 
-    GdkRectangle *CursorRec;
+    GdkRectangle *m_CursorRec;
 
-    bool IsSaved = true;
-    bool IsCurMovedByKey = false;
-    bool IsTextChanged = false;
-    unsigned int cacheTotalLine = 0;
-    unsigned int CursorPos;
-    unsigned int CursorLine;
-    unsigned int CursorLinePos;
+    bool m_IsSaved = true;
+    bool m_IsCurMovedByKey = false;
+    bool m_IsTextChanged = false;
+    unsigned int m_cacheTotalLine = 0;
+    unsigned int m_CursorPos;
+    unsigned int m_CursorLine;
+    unsigned int m_CursorLinePos;
 
 
-    std::string Language;
-    std::string FileName;
+    std::string m_Language;
+    std::string m_FileName;
     //std::string RelaPath;
-    std::string AbsoPath;
+    std::string m_AbsoPath;
 
-    GtkBuilder *builder;
-    GFile *EditingFile = nullptr;
-    GtkGrid *BaseGrid;
-    GtkButton *LocationBut;// showing path
-    GtkButton *SaveBut;
-    GtkButton *ErrorBut;
-    GtkLabel *ErrorButLabel;
-    GtkButton *OutlineBut;// not working now
-    GtkButton *LangBut;
-    GtkButton *CursorPosBut;// showing cursor's current line and offset
-    GtkTextView *TextView;
-    GtkTextBuffer *TextViewBuffer;// contains file content
-    GtkTextView *LineNoArea;
-    GtkTextBuffer *LineNoAreaBuffer;
-    GtkEventController *KeyDownEventCtrl;
-    GtkEventController *FocusEventCtrl;
+    GtkBuilder *m_Builder;
+    GFile *m_EditingFile = nullptr;
+    GtkGrid *m_BaseGrid;
+    GtkButton *m_LocationBut;// showing path
+    GtkButton *m_SaveBut;
+    GtkButton *m_ErrorBut;
+    GtkLabel *m_ErrorButLabel;
+    GtkButton *m_OutlineBut;// not working now
+    GtkButton *m_LangBut;
+    GtkButton *m_CursorPosBut;// showing cursor's current line and offset
+    GtkTextView *m_TextView;
+    GtkTextBuffer *m_TextViewBuffer;// contains file content
+    GtkTextView *m_LineNoArea;
+    GtkTextBuffer *m_LineNoAreaBuffer;
+    GtkEventController *m_KeyDownEventCtrl;
+    GtkEventController *m_FocusEventCtrl;
 
     /* These iter are shared by multiple functions. ex: draw, delete line */
     GtkTextIter *CursorItr,*StartItr,*EndItr;
@@ -70,10 +68,13 @@ public:
     void CountError();
     void LoadCursorPos();
     const std::string& GetContent();
-    void AddTextChangedPyCalback(std::string funcname);
     void ShowTip(char *Text);// not working
+
     void ClearSuggestion();
-    void ShowSuggestion(const std::vector<std::shared_ptr<Suggestion>> *Suggestions);// auto complete
+    void AddSuggestion(Suggestion* sug);
+    void ShowSuggestion();// auto complete
+    void HideSuggestion();
+
     void ChangeLanguage(const std::string& lang, bool highlight);//pass false to highlight if you don't want to highlight now
     void HighlightSyntax();
     void ApplyTagByLength(unsigned int TextStartPos, unsigned int TextLength, char *TagName);
@@ -84,30 +85,34 @@ public:
     void LoadFile(GFile* newfile);
     void ShowSearchDialog();
     void ShowReplaceDialog();
+
+private:
+    void LoadGui();
+    void ConnectSignals();
 };
 
 class EditAreaHolderTabBut{
 public:
-    std::shared_ptr<EditArea> EA;
-    EditAreaHolder* ParentHolder;
-    GtkBox *BaseBox;
-    GtkButton *Button;
-    GtkButton *CloseButton;
+    std::shared_ptr<EditArea> m_CorrespondingEA;
+    EditAreaHolder* m_ParentHolder;
+    GtkBox *m_BaseBox;
+    GtkButton *m_Button;
+    GtkButton *m_CloseButton;
     void Init(const std::shared_ptr<EditArea>& editarea, EditAreaHolder& parentholder);
 };
 
 class EditAreaHolder{
 public:
-    GtkStack *Container;
-    GtkBox *Switcher;
-    GtkGrid *BaseGrid;
+    GtkStack *m_Container;
+    GtkBox *m_Switcher;
+    GtkGrid *m_BaseGrid;
 
     void Init();
     void Show(const std::shared_ptr<EditArea>& editarea);
     void Remove(EditArea* editarea);
     std::shared_ptr<EditArea> GetCurrentEditArea();
 private:
-    std::vector<std::shared_ptr<EditAreaHolderTabBut>> TabButtons;
+    std::vector<std::shared_ptr<EditAreaHolderTabBut>> m_TabButtons;
     //std::vector<std::shared_ptr<EditArea>> EditAreas;
     void NewTabButton();
 };

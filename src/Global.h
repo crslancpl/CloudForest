@@ -18,7 +18,7 @@ class Result{
 
 class GetText: public Result{
 public:
-    std::string Text;
+    const char* Text;
 };
 
 class GetAllEditAreaPath: public Result{

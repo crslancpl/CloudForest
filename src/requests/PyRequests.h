@@ -5,6 +5,8 @@
 
 #include <string>
 
+class EditArea;
+
 class PyRunCode: public Request{
 public:
     std::string Code;
@@ -42,7 +44,7 @@ public:
     PyGetLspMessage(): Request(Parts::PYTHON){}
 };
 
-class PyRunCallBack:Request{
+class PyRunCallBack:public Request{
 public:
     enum CallbackType {
         NEWEDITAREA
@@ -50,6 +52,24 @@ public:
 
     CallbackType Type;
     PyRunCallBack(): Request(Parts::PYTHON){}
+};
+
+class PyRegisterEA:public Request{
+public:
+    EditArea *ea;
+    std::string FilePath;
+    PyRegisterEA(): Request(Parts::PYTHON){}
+};
+
+class PyCallbackEA:public Request{
+public:
+    enum CallbackType{
+        TEXTCHANGED
+    };
+    EditArea *ea;
+    CallbackType m_CallbackType;
+    unsigned int m_StartLine, m_StartPos;
+    PyCallbackEA(): Request(Parts::PYTHON){}
 };
 
 #endif

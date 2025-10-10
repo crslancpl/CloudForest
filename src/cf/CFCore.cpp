@@ -32,7 +32,7 @@ static void RequestFile(cf_FileRequest_msg *freq){
         std::future<const result::Result*> gettext = std::async(core::Interact, &req);
         result::GetText* text = (result::GetText*)gettext.get();
 
-        fresp.Content = text->Text.c_str();
+        fresp.Content = text->Text;
         fresp.IsPath = false;
         cf_Send_Message(FILERESP, &fresp);
     }
@@ -46,9 +46,6 @@ static void Draw(cf_Highlight_msg* highlight){
         {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
         {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
-
-
-
 
     req.Line = highlight->startline;
     req.Offset = highlight->startlinepos;
