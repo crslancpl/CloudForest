@@ -83,9 +83,30 @@ static PyObject *py_EditArea_AddCallBack(py_EditArea *self, PyObject *args){
 }
 
 static PyObject *py_EditArea_RemoveCallBack(py_EditArea *self, PyObject *args){
-    char *absolutepath, *pyfuncname;
-    if(!PyArg_ParseTuple(args, "ss", &absolutepath, &pyfuncname)){
+    char *eventtype;
+    PyObject *func;
+
+    if(!PyArg_ParseTuple(args, "sO",&eventtype,&func)){
         return nullptr;
+    }
+
+    if(!PyCallable_Check(func)){
+        return nullptr;
+    }
+
+    PyObject *callbacklist;
+    if(strcmp(eventtype, "TEXTCHANGED")){
+        callbacklist = self->TextchangedCallbacks;
+    }else{
+        return nullptr;
+    }
+
+    for (Py_ssize_t itr = 0; itr < PyList_GET_SIZE(callbacklist); itr++) {
+        PyObject *function = PyList_GetItem(callbacklist, itr);
+        if(function == func){
+            PyList_SetItem(callbacklist, itr, nullptr);
+            Py_DecRef(func);
+        }
     }
     /*
     */
@@ -96,7 +117,7 @@ static PyObject *py_EditArea_RemoveCallBack(py_EditArea *self, PyObject *args){
 static PyObject *py_EditArea_HighLight(py_EditArea *self, PyObject *args){
     char *absolutepath, *tagname;
     int line, offset, length;
-    if(!PyArg_ParseTuple(args, "siiis", &absolutepath,&line,&offset,&length,&tagname)){
+    if(!PyArg_ParseTuple(args, "iiis",&line,&offset,&length,&tagname)){
         return nullptr;
     }
 
@@ -205,6 +226,7 @@ PyTypeObject* init_cf_EditArea_class(){
 static PyObject *RegisteredEditAreas = nullptr;
 
 static PyObject *EARegisteredCallbackList = nullptr;
+static PyObject *EALanguageChangedCallbackList = nullptr;
 
 // tools
 static PyObject *FindEditAreaForPython(EditArea *ea){
@@ -230,6 +252,8 @@ static PyObject *cf_EditArea_module_addcallback(PyObject *self, PyObject *args){
 
     if (strcmp(event, "NEWEDITAREA")==0) {
         PyList_Append(EARegisteredCallbackList, callbackfunc);
+    } else if(strcmp(event, "LANGUAGECHANGED")==0){
+        PyList_Append(EALanguageChangedCallbackList, callbackfunc);
     }
 
     Py_RETURN_NONE;

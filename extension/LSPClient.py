@@ -17,6 +17,7 @@ class LSPServer():
         self.Send(message)
 
     def ChangeText(self, file, content):
+
         message = LSPMsg.GetDidOpenMessage(file, content)
         self.Send(message)
 
@@ -32,6 +33,7 @@ class LSPServer():
         if(self.LSP.stdin is None or self.LSP.stdout is None):
             return
         ContentLengthHeader = LSPMsg.GetContentLengthHeader(message)
+
         # print("message: " + message)
         self.LSP.stdout.flush()
         self.LSP.stdin.write(ContentLengthHeader.encode('utf-8'))
@@ -58,9 +60,9 @@ class LSPServer():
 
         while True:
             # The "Content-Length: ...\r\n" message
-            waitforin = timeoutpoll.poll(10)
+            waitforin = timeoutpoll.poll(7)
             if not waitforin:
-                print("[content ended: nothing to poll]\n\n")
+                # print("[content ended: nothing to poll]\n\n")
                 return
 
             msgbytes = self.LSP.stdout.readline()

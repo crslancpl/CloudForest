@@ -51,6 +51,7 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
         gtk_widget_add_css_class(GTK_WIDGET(Parent->m_ParentSwitcher->m_Button), "SwitcherButtonUnsaved");
         gtk_button_set_label(Parent->m_SaveBut, "Save");
     }
+
     Parent->LoadCursorPos();
     Parent->m_IsCurMovedByKey =true;
     Parent->m_IsTextChanged = true;
@@ -93,6 +94,14 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
     } else if (state & GDK_ALT_MASK) {
         if (keyval == GDK_KEY_s) {
             gui::AppSettingPanel.Show();
+        }
+    } else if(Parent->m_Sugpopover->m_IsShowing){
+        if(keyval == GDK_KEY_Up){
+            Parent->m_Sugpopover->SelectUp();
+            return true;
+        }else if(keyval == GDK_KEY_Down){
+            Parent->m_Sugpopover->SelectDown();
+            return true;
         }
     }
 
