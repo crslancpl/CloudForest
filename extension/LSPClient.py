@@ -17,9 +17,9 @@ class LSPServer():
         self.Send(message)
 
     def ChangeText(self, file, content):
-
         message = LSPMsg.GetDidOpenMessage(file, content)
         self.Send(message)
+        self.Read()
 
     def AutoComplete(self, ea:EditAreaMod.EditArea, line, pos):
         self.currentEditArea = ea;
@@ -92,7 +92,7 @@ class LSPServer():
         self.currentEditArea.clearsuggestion()
         if items == []:
             return
-
+        # print(items)
         for item in items:
             range = item.get('textEdit').get('range')
             self.currentEditArea.addsuggestion(
@@ -111,10 +111,13 @@ class LSPServer():
 def NewEACreated(ea:EditAreaMod.EditArea):
     ea.addcallback("TEXTCHANGED", textchanged)
 
+
+
+
 Server = None
 
 
-def textchanged(ea:EditAreaMod.EditArea, cursorline, cursorpos):
+def textchanged(ea:EditAreaMod.EditArea):
     # get the text for didOpen message
     text = ea.getcontent()
     global Server
@@ -125,13 +128,21 @@ def textchanged(ea:EditAreaMod.EditArea, cursorline, cursorpos):
     filepath = ea.getfilepath()
 
     Server.ChangeText(filepath,text)
-    Server.AutoComplete(ea,cursorline-1, cursorpos)
 
+
+def completionrequested(ea:EditAreaMod.EditArea, cursorline, cursorpos):
+    print("autocomplete requested")
+    global Server
+
+    if(Server is None):
+        return
+    Server.AutoComplete(ea,cursorline-1, cursorpos);
 
 
 def EAOpen(ea:EditAreaMod.EditArea):
     if(not ea.getfilepath().endswith(".py")):
         ea.addcallback("TEXTCHANGED", textchanged)
+        ea.addcallback("REQUESTCOMPLETION",completionrequested)
 
 def StartListenEditAreas():
     global Server

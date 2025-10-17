@@ -5,6 +5,7 @@
 #include "../requests/PyRequests.h"
 
 PyMODINIT_FUNC init_cloudforest_module();
-void RunCallback(PyRunCallBack* req);
+void cfmod_RunCallback(PyRunCallBack* req);
+void cfmod_OpenLanguageServer(PyOpenLanguageServer* req);
 
 #endif

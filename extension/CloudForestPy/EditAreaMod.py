@@ -21,8 +21,8 @@ class EditArea():
     # for the edit area that is editing this file
 
     def addcallback(self, type:str, func:Callable):
-        # type should be one of the Event
-        # "OPENNEW", "TEXTCHANGED"
+        # type should be one of the Events:
+        # "REQUESTCOMPLETION", "TEXTCHANGED"
         pass
 
     def addsuggestion(self, text, label, startline, startpos, endline, endpos):

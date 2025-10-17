@@ -35,6 +35,10 @@
     background-color: rgba(179, 233, 196, 0.9);
 }
 
+.normalitem {
+    background-color: transparent;
+}
+
 .selecteditem {
     color: black;
     background-image: none;

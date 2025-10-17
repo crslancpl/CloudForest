@@ -51,7 +51,9 @@ void cfProcessFile(const std::string& filepath, const std::string& language);
 
 void RunPythonCode(std::string& code);
 void PythonRegisterEA(EditArea *self);
+void PythonChangeEALang(EditArea *self);
 void PythonCallbackEATextChanged(EditArea *self);
+void PythonCallbackEAReqCompletion(EditArea *self);
 
 }
 

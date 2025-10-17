@@ -45,6 +45,10 @@ static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint coun
 }
 
 static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Parent){
+    if(Parent->m_PauseTextChangedCallback){
+        return;
+    }
+
     if(Parent->m_IsSaved == true){
         Parent->m_IsSaved = false;
         gtk_widget_remove_css_class(GTK_WIDGET(Parent->m_ParentSwitcher->m_Button), "SwitcherButtonSaved");
@@ -57,24 +61,27 @@ static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* Pare
     Parent->m_IsTextChanged = true;
     Parent->CountLine();
     Parent->HighlightSyntax();
-    Parent->ClearSuggestion();
+    Parent->HideSuggestion();
 
-    if(gtk_text_iter_inside_word(Parent->CursorItr) || gtk_text_iter_ends_word(Parent->CursorItr)){
-        Parent->ShowTip(strdup("show tips"));
-    }else{
-        Parent->HideSuggestion();
-    }
 
     //run the callbacks for python
     gui::PythonCallbackEATextChanged(Parent);
+
+    //see if there is any text before the text iter.
+    //if yes then trigger autocompletion
+    Parent->StartItr = gtk_text_iter_copy(Parent->CursorItr);
+    gtk_text_iter_backward_char(Parent->StartItr);
+    char previouschar = gtk_text_iter_get_text(Parent->StartItr, Parent->CursorItr)[0];
+
+    if(previouschar == ' ' || previouschar == '\t' || previouschar == '\n' || previouschar == '\r' || previouschar == 0){
+        // don't trigger auto completion if there is a space before the cursor
+    }else{
+        gui::PythonCallbackEAReqCompletion(Parent);
+    }
+
 }
 
 static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* Parent){
-    if(keyval == GDK_KEY_Tab){
-        gtk_text_buffer_insert_at_cursor(Parent->m_TextViewBuffer, "    ", 4);
-        return true;
-    }
-
     // Search and replace shortcuts
     if (state & GDK_CONTROL_MASK) {
         if (keyval == GDK_KEY_f) {
@@ -91,7 +98,9 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
         } else if(keyval == GDK_KEY_t){
             //
         }
-    } else if (state & GDK_ALT_MASK) {
+    }
+
+    if (state & GDK_ALT_MASK) {
         if (keyval == GDK_KEY_s) {
             gui::AppSettingPanel.Show();
         }
@@ -102,7 +111,19 @@ static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, G
         }else if(keyval == GDK_KEY_Down){
             Parent->m_Sugpopover->SelectDown();
             return true;
+        }else if(keyval == GDK_KEY_Tab || keyval  == GDK_KEY_Return){
+            // We have to stop autocompletion for blank space
+            // before using Enter key to select the completion.
+            // Else whenever the user spams Enter to create new lines,
+            // the completion will be inserted.
+            Parent->m_Sugpopover->ConfirmSelection();
+            return true;
         }
+    }
+
+    if(keyval == GDK_KEY_Tab){
+        gtk_text_buffer_insert_at_cursor(Parent->m_TextViewBuffer, "    ", 4);
+        return true;
     }
 
     return false;
@@ -195,7 +216,7 @@ void EditArea::LoadGui(){
     m_Tippopover = new TipPopover();
     m_Tippopover->Init(GTK_WIDGET(m_TextView));
     m_Sugpopover = new SuggestionPopover();
-    m_Sugpopover->Init(GTK_WIDGET(m_TextView));
+    m_Sugpopover->Init(this);
 
     CursorItr = new GtkTextIter();
     StartItr = new GtkTextIter();
@@ -282,10 +303,6 @@ const std::string& EditArea::GetContent(){
     gtk_text_buffer_get_end_iter(m_TextViewBuffer, EndItr);
     content = gtk_text_buffer_get_text(m_TextViewBuffer, StartItr, EndItr, true);
     return content;
-}
-
-void EditArea::ShowTip(char *Text){
-    //m_Tippopover->ShowContent(m_CursorRec, Text);
 }
 
 void EditArea::ShowSuggestion(){

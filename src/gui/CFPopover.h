@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../Types.h"
+#include "EditArea.h"
 
 class TipPopover{
 public:
@@ -24,12 +25,15 @@ public:
     GtkScrolledWindow *m_ScrollWin;
     GtkBox *m_Box;
     GtkWidget *m_SelectedItem;
-    //GtkLabel *m_Label;
+    EditArea *m_Parent;
     unsigned int m_SelectedItemItr;
+    int m_ScrolledWinHeight;
+    int m_ScrolledWinWidth;
+    int m_SuggItemHeight;
     bool m_IsShowing;
-    std::vector<std::pair<Suggestion*,GtkWidget*>> m_Suggestions;
+    std::vector<std::pair<Suggestion,GtkWidget*>> m_Suggestions;
 
-    void Init(GtkWidget *parent);
+    void Init(EditArea *parent);
 
     void Show(GdkRectangle* rec);
     void Hide();
@@ -38,7 +42,9 @@ public:
 
     void SelectUp();
     void SelectDown();
+    void ConfirmSelection();
 private:
+    GtkAdjustment *m_ScrolledWindowAdj;
     void Select(unsigned int itemnum);
     void UnSelectSelected();
 };

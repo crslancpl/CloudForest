@@ -2,7 +2,10 @@
 #include <Python.h>
 #include <abstract.h>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <iterobject.h>
 #include <listobject.h>
 #include <longobject.h>
 #include <methodobject.h>
@@ -19,10 +22,15 @@
 class EditArea; //forward definition
 
 typedef struct {
-    PyObject_HEAD
+    PyObject_HEAD;
     char* Filepath;
+    char* Lang;
     EditArea *Editarea;
     PyObject *TextchangedCallbacks;
+    PyObject *RequestCompletionCallbacks;
+    PyObject *LangChangedCallbacks;
+    PyObject *FileSavedCallbacks;
+    PyObject *FilePathAndNameChangedCallbacks;
 }py_EditArea;
 
 static PyObject *py_EditArea_GetFilePath(py_EditArea *self, PyObject *args){
@@ -71,10 +79,21 @@ static PyObject *py_EditArea_AddCallBack(py_EditArea *self, PyObject *args){
         Py_RETURN_NONE;
     }
 
+    if(!PyCallable_Check(func)){
+        return nullptr;
+    }
+
     if(strcmp(eventtype, "TEXTCHANGED")==0){
-        //
-        printf("text changed event\n");
+        // Text changed
         PyList_Append(self->TextchangedCallbacks, func);
+    }else if(strcmp(eventtype, "REQUESTCOMPLETION")== 0){
+        // Request auto completion from language server
+        PyList_Append(self->RequestCompletionCallbacks, func);
+    }else if(strcmp(eventtype, "LANGCHANGED")==0){
+        // Language changed from EditArea. Not from file extension
+        PyList_Append(self->LangChangedCallbacks, func);
+    }else if(strcmp(eventtype, "FILESAVED")==0){
+        PyList_Append(self->FileSavedCallbacks, func);
     }else{
         Py_RETURN_NONE;
     }
@@ -97,6 +116,8 @@ static PyObject *py_EditArea_RemoveCallBack(py_EditArea *self, PyObject *args){
     PyObject *callbacklist;
     if(strcmp(eventtype, "TEXTCHANGED")){
         callbacklist = self->TextchangedCallbacks;
+    }if(strcmp(eventtype, "REQUESTCOMPLETION")){
+        callbacklist = self->RequestCompletionCallbacks;
     }else{
         return nullptr;
     }
@@ -300,7 +321,11 @@ void register_py_EditArea(PyRegisterEA *req){
     PyList_Append(RegisteredEditAreas, (PyObject*)newEa);
     newEa->Editarea = req->ea;
     newEa->Filepath = strdup(req->FilePath.c_str());
-    ((py_EditArea*)newEa)->TextchangedCallbacks = PyList_New(0);
+    newEa->TextchangedCallbacks = PyList_New(0);
+    newEa->RequestCompletionCallbacks = PyList_New(0);
+    newEa->FileSavedCallbacks = PyList_New(0);
+    newEa->LangChangedCallbacks = PyList_New(0);
+
 
     // we are trying to make filepath a variable
     PyObject *filepath = PyUnicode_FromString(req->FilePath.c_str());
@@ -321,13 +346,21 @@ void callback_py_EditArea_object(PyCallbackEA *req){
     py_EditArea *pyeditarea = (py_EditArea*)FindEditAreaForPython(req->ea);
 
     if(req->m_CallbackType == PyCallbackEA::TEXTCHANGED){
+        PyObject *args = PyTuple_Pack(1, pyeditarea);
+
+        for (Py_ssize_t itr = 0; itr < PyList_Size(pyeditarea->TextchangedCallbacks); itr++) {
+            PyObject_CallObject(PyList_GetItem(pyeditarea->TextchangedCallbacks, itr),args);
+        }
+
+        Py_DECREF(args);
+    }else if(req->m_CallbackType == PyCallbackEA::REQUESTCOMPLETION){
         PyObject *args = PyTuple_Pack(3,
             pyeditarea,
             PyLong_FromUnsignedLong(req->m_StartLine),
             PyLong_FromUnsignedLong(req->m_StartPos));
 
-        for (Py_ssize_t itr = 0; itr < PyList_Size(pyeditarea->TextchangedCallbacks); itr++) {
-            PyObject_CallObject(PyList_GetItem(pyeditarea->TextchangedCallbacks, itr),args);
+        for (Py_ssize_t itr = 0; itr < PyList_Size(pyeditarea->RequestCompletionCallbacks); itr++) {
+            PyObject_CallObject(PyList_GetItem(pyeditarea->RequestCompletionCallbacks, itr),args);
         }
 
         Py_DECREF(args);

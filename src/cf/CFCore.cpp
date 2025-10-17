@@ -13,6 +13,7 @@
 #include "../requests/BaseRequest.h"
 #include "../requests/GUIRequests.h"
 #include "../requests/CFRequests.h"
+#include "../requests/PyRequests.h"
 
 static cf_FileResponse_msg fresp;
 static cf_Entry_msg ent;
@@ -67,6 +68,13 @@ static void CfMessageReceiver(cf_MessageType type, void* data){
     }else if(type == DRAW){
         cf_Highlight_msg *highlight =(cf_Highlight_msg*)data;
         Draw(highlight);
+    }else if(type == LANGUAGESERVER){
+        static PyOpenLanguageServer req;
+        cf_LanguageServer_msg *ls = (cf_LanguageServer_msg*)data;
+        req.LanguageServerCommand = ls->LanguageServerCommand;
+        req.CommandOption = ls->CommandOption;
+
+        core::Interact(&req);
     }
 }
 
@@ -85,7 +93,7 @@ void cf::Process(Request* request){
     }else if(auto req = dynamic_cast<CFReadFile*>(request)){
         cf_Send_Message(cf_MessageType::RELOAD, nullptr);
         ent.FileName = strdup(req->Filepath.c_str());
-        ent.language = strdup(req->Language.c_str());
+        ent.Language = strdup(req->Language.c_str());
         cf_Send_Message(cf_MessageType::ENTRYFILE, &ent);
     }
 }

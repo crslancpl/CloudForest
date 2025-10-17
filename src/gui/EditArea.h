@@ -29,6 +29,7 @@ public:
     bool m_IsSaved = true;
     bool m_IsCurMovedByKey = false;
     bool m_IsTextChanged = false;
+    bool m_PauseTextChangedCallback = false;
     unsigned int m_cacheTotalLine = 0;
     unsigned int m_CursorPos;
     unsigned int m_CursorLine;
@@ -68,7 +69,6 @@ public:
     void CountError();
     void LoadCursorPos();
     const std::string& GetContent();
-    void ShowTip(char *Text);// not working
 
     void ClearSuggestion();
     void AddSuggestion(Suggestion* sug);

@@ -19,6 +19,12 @@ public:
     PyRunFile() : Request(Parts::PYTHON) {}
 };
 
+class PyOpenLanguageServer: public Request{
+    public:
+    char *LanguageServerCommand, *CommandOption;
+    PyOpenLanguageServer() : Request(Parts::PYTHON){}
+};
+
 class PyGetLspMessage: public Request{
 public:
     /*
@@ -64,7 +70,7 @@ public:
 class PyCallbackEA:public Request{
 public:
     enum CallbackType{
-        TEXTCHANGED
+        TEXTCHANGED, REQUESTCOMPLETION
     };
     EditArea *ea;
     CallbackType m_CallbackType;

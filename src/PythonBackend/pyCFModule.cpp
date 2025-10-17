@@ -56,15 +56,10 @@ static PyObject *cf_Add_Callback(PyObject *self, PyObject *args){
         printf("error: cf add callback argument is not callable\n");
     }
 
-    if(OpenEditAreaCallbackList == nullptr){
-        // the callback list is not initialized
-        // we have to create the list
-        OpenEditAreaCallbackList = PyList_New(0);
+    PyObject *callbacklist;
 
-        if (OpenEditAreaCallbackList == nullptr) {
-            // failed to create the list
-            return nullptr;
-        }
+    if(std::strcmp(type, "OPENEDITAREA") == 0){
+        callbacklist = OpenEditAreaCallbackList;
     }
 
     PyList_Append(OpenEditAreaCallbackList, callback);
@@ -74,10 +69,26 @@ static PyObject *cf_Add_Callback(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+static PyObject *OpenLanguageServerFunc = nullptr;
+static PyObject *cf_NewLanguageServer(PyObject *self, PyObject *args){
+    PyObject *func;
+    if(!PyArg_ParseTuple(args, "O", func)){
+        return nullptr;
+    }
+
+    if(!PyCallable_Check(func)){
+        return nullptr;
+    }
+
+    OpenLanguageServerFunc = func;
+
+    Py_RETURN_NONE;
+}
 
 static PyMethodDef cf_method[] ={
     {"test",  cf_Test, METH_VARARGS,"test if module available"},
-    {"AddCallback",  cf_Test, METH_VARARGS,"add callback to event"},
+    {"AddCallback",  cf_Add_Callback, METH_VARARGS,"add callback to event"},
+    {"ListenNewLanguageServerReq", cf_NewLanguageServer, METH_VARARGS, "We don't recommend you to open language server yourself"},
     {nullptr, nullptr, 0, nullptr}
 };
 
@@ -91,6 +102,8 @@ static struct PyModuleDef cloudforestmodule = {
 
 
 PyMODINIT_FUNC init_cloudforest_module(void){
+    OpenEditAreaCallbackList = PyList_New(0);
+    OpenLanguageServerFunc = PyList_New(0);
     PyObject *cfmodule = PyModule_Create(&cloudforestmodule);
 
     PyModule_AddObject(cfmodule, "EditAreaMod", (PyObject*)init_cf_EditArea_module());
@@ -98,7 +111,7 @@ PyMODINIT_FUNC init_cloudforest_module(void){
 }
 
 
-void RunCallback(PyRunCallBack* req){
+void cfmod_RunCallback(PyRunCallBack* req){
     PyObject *args;
 
     if(req->Type == PyRunCallBack::NEWEDITAREA){
@@ -109,6 +122,16 @@ void RunCallback(PyRunCallBack* req){
             PyObject_CallObject(func, args);
         }
     }
+
+    Py_DecRef(args);
+}
+
+void cfmod_OpenLanguageServer(PyOpenLanguageServer* req){
+    PyObject *args;
+
+    args = Py_BuildValue("(ss)", req->LanguageServerCommand, req->CommandOption);
+
+    PyObject_CallObject(OpenLanguageServerFunc, args);
 
     Py_DecRef(args);
 }

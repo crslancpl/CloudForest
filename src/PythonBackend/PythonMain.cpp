@@ -40,9 +40,9 @@ void pybackend::Start(){
     InitPythonTool();
     return;
 
-  exception:
-     PyConfig_Clear(&config);
-     Py_ExitStatusException(status);
+exception:
+    PyConfig_Clear(&config);
+    Py_ExitStatusException(status);
 }
 
 void pybackend::End(){
@@ -59,11 +59,13 @@ const result::Result* pybackend::Process(Request* request){
     }else if(auto req = dynamic_cast<PyGetLspMessage*>(request)){
         return GetLspMessage(req);
     }else if(auto req =  dynamic_cast<PyRunCallBack*>(request)){
-        RunCallback(req);
+        cfmod_RunCallback(req);
     }else if(auto req = dynamic_cast<PyRegisterEA*>(request)){
         register_py_EditArea(req);
     }else if(auto req = dynamic_cast<PyCallbackEA*>(request)){
         callback_py_EditArea_object(req);
+    }else if(auto req = dynamic_cast<PyOpenLanguageServer*>(request)){
+        cfmod_OpenLanguageServer(req);
     }
     return nullptr;
 }

@@ -1,4 +1,6 @@
 #TrimSpecialCharacter
+#LanguageServer
+clangd:#
 #Keyword
 if else return while for new
 continue break namespace using switch case
@@ -9,7 +11,7 @@ auto int char class void enum bool unsigned long short struct
 #Value
 true false nullptr NULL
 #Modifier
-static const inline virtual extern friend
+static const inline virtual extern friend template typename
 #AreaModifier
 public private protected
 #SLCmt
@@ -21,7 +23,7 @@ public private protected
 #TagSymbol
 #
 #Tags
-include pragma ifndef ifdef define endif
+include pragma ifndef ifdef define endif if include_next import
 #TextSymbol
 ' "
 #AcceptCharInName

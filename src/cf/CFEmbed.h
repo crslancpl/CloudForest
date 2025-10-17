@@ -5,7 +5,7 @@ extern "C" {
 
 enum cf_MessageType:char{
     CONNECT, DRAW, ERROR, WARN, INFO, DOC, FILEREQ, FILERESP, LANG, ENTRYFILE, RELOAD,
-    FIND, TOGGLEOUTPUT
+    FIND, TOGGLEOUTPUT, LANGUAGESERVER
 };
 
 typedef struct {
@@ -37,8 +37,13 @@ typedef struct {
 
 typedef struct {
     char* FileName;
-    char* language;
+    char* Language;
 }cf_Entry_msg;
+
+typedef struct {
+    char* LanguageServerCommand;
+    char* CommandOption;
+}cf_LanguageServer_msg;
 
 enum cf_HLType{
     CF_TYPE, CF_KEYWORD, CF_FUNCTIONNAME, CF_NONE, CF_MULTCMT, CF_SINGCMT, CF_TEXT, CF_TAG, CF_VALUE,
@@ -59,7 +64,7 @@ void cf_Send_Message(cf_MessageType type, void* data);
 void cf_Post_Message(cf_MessageType type, void *data);
 /*
  * [!NOTE]
- * Post is from cloudyforst to the app
+ * "Post" is from cloudyforst to the app
  */
 
 void cf_Request_File(const char* filepath);
