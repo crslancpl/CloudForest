@@ -39,8 +39,8 @@ static PyObject *py_EditArea_GetFilePath(py_EditArea *self, PyObject *args){
 }
 
 static PyObject *py_EditArea_SetLang(py_EditArea *self, PyObject *args){
-    char* absolutepath, lang;
-    if(!PyArg_ParseTuple(args, "ss", &absolutepath, lang)){
+    char* lang;
+    if(!PyArg_ParseTuple(args, "s", &lang)){
         return nullptr;
     }
 
@@ -270,7 +270,6 @@ static PyObject *cf_EditArea_module_addcallback(PyObject *self, PyObject *args){
         return nullptr;
     }
 
-
     if (strcmp(event, "NEWEDITAREA")==0) {
         PyList_Append(EARegisteredCallbackList, callbackfunc);
     } else if(strcmp(event, "LANGUAGECHANGED")==0){
@@ -316,7 +315,6 @@ void register_py_EditArea(PyRegisterEA *req){
      * instance of the cf_EditArea, so the python extension can
      * manipulate the edit area
      */
-
     py_EditArea *newEa =(py_EditArea*)PyObject_CallObject((PyObject*)&cf_EditArea_class, nullptr);
     PyList_Append(RegisteredEditAreas, (PyObject*)newEa);
     newEa->Editarea = req->ea;
@@ -334,7 +332,6 @@ void register_py_EditArea(PyRegisterEA *req){
     for(unsigned int itr = 0; itr < PyList_Size(EARegisteredCallbackList); itr++){
         //call the callbacks
         PyObject *func = PyList_GetItem(EARegisteredCallbackList, itr);
-
         PyObject_CallObject(func, args);
     }
 

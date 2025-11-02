@@ -78,6 +78,7 @@ void FilePanel::LoadRoot(GFile *file, GFileInfo *fileinfo){
         FPFolderButton &newfolderbut = NewFolder(file, nullptr, nullptr);
     }else if(filetype == G_FILE_TYPE_REGULAR){
         FPFileButton &newfilebut = NewFile(file, nullptr);
+
     }
 }
 
@@ -144,6 +145,7 @@ FPFileButton& FilePanel::NewFile(GFile *file, FPFolderButton* parentfolderbut){
         //show as root
         filebut->init(file, 0);
         AddNewRoot(*filebut.get());
+        filebut->Open();
     }
     return *filebut.get();
 }

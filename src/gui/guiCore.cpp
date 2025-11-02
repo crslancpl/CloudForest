@@ -133,6 +133,8 @@ const result::Result* gui::Process(Request* request){
         req->Parent->HideSuggestion();
     }else if(auto req = dynamic_cast<EAShowSuggestion*>(request)){
         req->Parent->ShowSuggestion();
+    }else if(auto req = dynamic_cast<EASetLang*>(request)){
+        req->Parent->ChangeLanguage(req->Lang, false);
     }
     return nullptr;
 }

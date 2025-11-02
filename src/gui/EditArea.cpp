@@ -179,7 +179,9 @@ EditArea::EditArea(GFile *file){
 
     style::LoadTextTag(m_TextViewBuffer);
     gui::PythonRegisterEA(this);
-    ChangeLanguage("cpp", false);
+    if(m_Language.empty()){
+        ChangeLanguage("demo", false);
+    }
 }
 
 EditArea::~EditArea(){

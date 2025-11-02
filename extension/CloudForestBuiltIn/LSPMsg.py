@@ -3,80 +3,87 @@
 from ast import Num
 import json
 
-InitMessage= {
-    "jsonrpc":"2.0",
-    "id": 1,
-    "method":"initialize",
-    "params":{
-    }
-}
+InitMessage = {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}
 
-ExitMessage = {
-    "jsonrpc":"2.0",
-    "id":1,
-    "method":"exit"
-}
+ExitMessage = {"jsonrpc": "2.0", "id": 1, "method": "exit"}
 
-DidOpenMessage ={
+DidOpenMessage = {
     "jsonrpc": "2.0",
     "method": "textDocument/didOpen",
     "params": {
         "textDocument": {
             "uri": "file:///",
-            "languageId": "cpp",
+            "languageId": "",
             "version": 1,
-            "text": ""
+            "text": "",
         }
-    }
+    },
+}
+
+DidChangeMessage = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": "file:///",
+            "languageId": "",
+            "version": 1,
+            "text": "",
+        }
+    },
 }
 
 AutoCompleteMessage = {
-    "jsonrpc":"2.0",
+    "jsonrpc": "2.0",
     "id": 2,
-    "method":"textDocument/completion",
-    "params":{
-        "textDocument":{},
-        "context":{
-            "triggerKind":1
-        }
-    }
+    "method": "textDocument/completion",
+    "params": {"textDocument": {}, "context": {"triggerKind": 1}},
 }
 
-def GetContentLengthHeader(content:str)->str:
+
+def GetContentLengthHeader(content: str) -> str:
     header = "Content-Length: " + str(len(content)) + "\r\n\r\n"
     return header
 
 
-def GetInitMessage()->str:
+def GetInitMessage() -> str:
     message = json.dumps(InitMessage)
     return message
 
-def GetExitMessage()->str:
+
+def GetExitMessage() -> str:
     message = json.dumps(ExitMessage)
     return message
 
-def GetDidOpenMessage(fileuri:str, content:str):
+
+def GetDidOpenMessage(fileuri: str, content: str, langid: str):
     copied = DidOpenMessage.copy()
-    copied['params']['textDocument']['uri'] = "file:///" + fileuri
-    copied['params']['textDocument']['text'] = content
+    copied["params"]["textDocument"]["languageId"] = langid
+    copied["params"]["textDocument"]["uri"] = "file:///" + fileuri
+    copied["params"]["textDocument"]["text"] = content
     message = json.dumps(copied)
     return message
 
 
-def GetAutoCompMessage(fileuri:str, line:int, char:int)->str:
+def GetDidChangeMessage(fileuri: str, content: str, langid: str):
+    copied = DidChangeMessage.copy()
+    copied["params"]["textDocument"]["languageId"] = langid
+    copied["params"]["textDocument"]["uri"] = "file:///" + fileuri
+    copied["params"]["textDocument"]["text"] = content
+    message = json.dumps(copied)
+    return message
+
+
+def GetAutoCompMessage(fileuri: str, line: int, char: int) -> str:
     copied = AutoCompleteMessage.copy()
-    copied['params']['textDocument'] = {
-        "uri":"file:///" +fileuri
-    }
-    copied['params']['position'] = {
-        "line":line,
-        "character": char
-    }
+    copied["params"]["textDocument"] = {"uri": "file:///" + fileuri}
+    copied["params"]["position"] = {"line": line, "character": char}
 
     message = json.dumps(copied)
     return message
 
-def ReadAutoComplete(message:str):
+
+def ReadAutoComplete(message: str):
     msg = json.loads(message)
 
     result = msg.get("result")
@@ -86,10 +93,11 @@ def ReadAutoComplete(message:str):
         print("no value for item")
 
     for items in result:
-       print(items)
-    #print("id: " + msg['id'])
+        print(items)
+    # print("id: " + msg['id'])
 
-def ReadLSPMessage(message:str)->list|None:
+
+def ReadLSPMessage(message: str) -> list | None:
     # returns a [id, data] pair
     msg = json.loads(message)
 
@@ -100,4 +108,4 @@ def ReadLSPMessage(message:str)->list|None:
         data = msg.get("result").get("items")
     elif id == 1:
         data = "initmessage"
-    return [id,data]
+    return [id, data]
