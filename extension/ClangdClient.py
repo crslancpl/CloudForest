@@ -26,13 +26,13 @@ def Listen(ea: EditArea):
     pass
 
 
-def textchanged(ea: EditArea):
+def textchanged(ea: EditArea, changedline, changedpos):
     # get the text for didChange message
     text = ea.getcontent()
     global Server
 
     filepath = ea.getfilepath()
-    Server.ChangeText(filepath, text)
+    Server.ChangeText(filepath, text, changedline - 1, changedpos)
 
 
 def completionrequested(ea: EditArea, cursorline, cursorpos):

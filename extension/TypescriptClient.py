@@ -18,7 +18,7 @@ def Listen(ea: EditArea):
     if not working:
         start()
 
-    ea.setlanguage("js")
+    ea.setlanguage("typescript")
     ea.addcallback("TEXTCHANGED", textchanged)
     ea.addcallback("REQUESTCOMPLETION", completionrequested)
     pass

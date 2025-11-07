@@ -1,7 +1,9 @@
-import subprocess, select, re
-from extension.CloudForestPy import EditAreaMod
+import re
+import select
+import subprocess
 
 from extension.CloudForestBuiltIn import LSPMsg
+from extension.CloudForestPy import EditAreaMod
 
 
 class LSPServer:
@@ -25,8 +27,8 @@ class LSPServer:
         self.Send(message)
         self.Read()
 
-    def ChangeText(self, file: str, content: str):
-        message = LSPMsg.GetDidChangeMessage(file, content, self.languageId)
+    def ChangeText(self, file: str, content: str, line, char):
+        message = LSPMsg.GetDidChangeMessage(file, content, self.languageId, line, char)
         self.Send(message)
         self.Read()
 
@@ -71,6 +73,8 @@ class LSPServer:
 
             msgbytes = self.LSP.stdout.readline()
             msg = msgbytes.decode()
+
+            print(msg)
 
             if msg.startswith("Content-Length:"):
                 # get content length

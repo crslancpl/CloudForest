@@ -38,14 +38,14 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 * Save file
 * Create file
 * Drag to resize FilePanel
+* Syntax highlight
+* Search
+* Create file in app
 
 ## Planned features:
-* Syntax highlight
 * Language server support
-* Search
 * Settings
 * Extension
-* Create file in app
 * Blur
 * Compile setting
 * Embed webview (I am sure webkitgtk works for linux)
