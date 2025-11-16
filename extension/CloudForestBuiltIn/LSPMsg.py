@@ -27,10 +27,7 @@ DidOpenMessage = {
 DidChangeMessage = {
     **BaseMessage,
     "method": "textDocument/didChange",
-    "params": {
-        "textDocument": TextDocumentProperty,
-        "contentChanges": [{"range": RangeProperty, "text": ""}],
-    },
+    "params": {"textDocument": TextDocumentProperty, "contentChanges": [{"text": ""}]},
 }
 
 AutoCompleteMessage = {
@@ -69,36 +66,18 @@ def GetDidOpenMessage(fileuri: str, content: str, langid: str):
     return message
 
 
-def GetDidChangeMessage(fileuri: str, content: str, langid: str, line, char):
-    copiedTextDoc = TextDocumentProperty.copy()
-    copiedTextDoc["uri"] = "file:///" + fileuri
-    copiedTextDoc["text"] = content
-    copiedTextDoc["languageId"] = langid
-
-    copiedDidOpenMsg = DidOpenMessage.copy()
-    copiedDidOpenMsg["params"]["textDocument"] = copiedTextDoc
-
-    message = json.dumps(copiedDidOpenMsg)
-
-    # The did change message have to be fixed
-    """
+def GetDidChangeMessage(fileuri: str, content: str, langid: str):
     copiedTextDoc = TextDocumentProperty.copy()
     copiedTextDoc["uri"] = "file:///" + fileuri
     copiedTextDoc["text"] = ""
     copiedTextDoc["languageId"] = langid
 
-    range = {
-        "start": {"line": 0, "character": 0},
-        "end": {"line": line, "character": char},
-    }
-
     copiedDidChangeMsg = DidChangeMessage.copy()
     copiedDidChangeMsg["params"]["textDocument"] = copiedTextDoc
-    copiedDidChangeMsg["params"]["contentChanges"][0]["range"] = range
     copiedDidChangeMsg["params"]["contentChanges"][0]["text"] = content
 
     message = json.dumps(copiedDidChangeMsg)
-    """
+
     return message
 
 

@@ -343,10 +343,7 @@ void callback_py_EditArea_object(PyCallbackEA *req){
     py_EditArea *pyeditarea = (py_EditArea*)FindEditAreaForPython(req->ea);
 
     if(req->m_CallbackType == PyCallbackEA::TEXTCHANGED){
-        PyObject *args = PyTuple_Pack(3,
-            pyeditarea,
-            PyLong_FromUnsignedLong(req->m_StartLine),
-            PyLong_FromUnsignedLong(req->m_StartPos));
+        PyObject *args = PyTuple_Pack(1, pyeditarea);
 
         for (Py_ssize_t itr = 0; itr < PyList_Size(pyeditarea->TextchangedCallbacks); itr++) {
             PyObject_CallObject(PyList_GetItem(pyeditarea->TextchangedCallbacks, itr),args);
@@ -364,5 +361,8 @@ void callback_py_EditArea_object(PyCallbackEA *req){
         }
 
         Py_DECREF(args);
+    }else if(req->m_CallbackType == PyCallbackEA::CHANGELANG){
+        // stop the language server from listening to the file
+
     }
 }

@@ -70,7 +70,7 @@ public:
 class PyCallbackEA:public Request{
 public:
     enum CallbackType{
-        TEXTCHANGED, REQUESTCOMPLETION
+        TEXTCHANGED, REQUESTCOMPLETION, CHANGELANG
     };
     EditArea *ea;
     CallbackType m_CallbackType;

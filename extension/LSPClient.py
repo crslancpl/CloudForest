@@ -1,6 +1,7 @@
-from extension.CloudForestBuiltIn.LSPClientClass import LSPServer
-from extension import ClangdClient, PyrightClient, TypescriptClient
 from CloudForestPy import EditAreaMod
+
+from extension import ClangdClient, PyrightClient, TypescriptClient
+from extension.CloudForestBuiltIn.LSPClientClass import LSPServer
 
 
 def NewEACreated(ea: EditAreaMod.EditArea):
@@ -18,7 +19,8 @@ def EAOpen(ea: EditAreaMod.EditArea):
         # PyrightClient.
         pass
     elif filepath.endswith(".js") or filepath.endswith(".ts"):
-        TypescriptClient.Listen(ea)
+        # TypescriptClient.Listen(ea)
+        pass
     elif filepath.endswith(".rs"):
         pass
     else:

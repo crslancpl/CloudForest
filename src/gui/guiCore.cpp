@@ -248,8 +248,6 @@ void gui::PythonCallbackEATextChanged(EditArea *self){
     static PyCallbackEA req;
     req.m_CallbackType = PyCallbackEA::TEXTCHANGED;
     req.ea = self;
-    req.m_StartLine = self->m_CursorLine;
-    req.m_StartPos = self->m_CursorLinePos;
 
     core::Interact(&req);
 }

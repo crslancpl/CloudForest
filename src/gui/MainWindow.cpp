@@ -10,10 +10,6 @@
 #include "../Global.h"
 #include <memory>
 
-static void SeparatorDragUpdate(GtkGestureDrag* self, gdouble x, gdouble y, gpointer user_data){
-    //resize the file panel
-}
-
 void MainWindow::Init(){
     GtkBuilder *builder = gtk_builder_new_from_file("UI/MainWindow.ui");
     Window = GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow"));

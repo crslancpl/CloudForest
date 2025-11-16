@@ -9,8 +9,8 @@ def start():
     working = True
     global Server
     Server = LSPServer("typescript-language-server --stdio", "ts")
+    Server.Start()
     Server.Read()
-    # Server.Start()
 
 
 def Listen(ea: EditArea):
