@@ -22,6 +22,7 @@ public:
     GtkOrientation Orientation;
     void Init(GtkOrientation orientation);
     void InsertChild(GtkWidget *child);
+    void InsertChildWithScrolledWindow(GtkWidget *child);
     void RemoveChild(GtkWidget *child);
     LayoutNeighbor GetNeighbors(GtkWidget *widget);
 private:
@@ -32,7 +33,6 @@ class LayoutNeighbor{
 public:
     /*
      * This is for GetNeighbors functon
-     *
      */
     int Prevpos = -1, Nextpos = -1;
     GtkWidget *PrevWid = nullptr, *NextWid = nullptr;

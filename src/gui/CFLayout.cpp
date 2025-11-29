@@ -14,14 +14,16 @@ static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, CFSepar
         return;
     }
 
+
     if(cfsep->parent->Orientation == GTK_ORIENTATION_HORIZONTAL){
         gtk_widget_set_size_request(neighbors.PrevWid,
                 gtk_widget_get_width(neighbors.PrevWid) + x,
                 gtk_widget_get_height(neighbors.PrevWid));
 
         gtk_widget_set_size_request(neighbors.NextWid,
-                gtk_widget_get_width(neighbors.NextWid) - x,
+                gtk_widget_get_width(neighbors.NextWid) -x,
                 gtk_widget_get_height(neighbors.NextWid));
+
     }else{
         gtk_widget_set_size_request(neighbors.PrevWid,
                 gtk_widget_get_width(neighbors.PrevWid),
@@ -79,6 +81,14 @@ void CFLayout::InsertChild(GtkWidget *child){
     gtk_box_append(BaseBox, child);
 }
 
+void CFLayout::InsertChildWithScrolledWindow(GtkWidget *child){
+    GtkScrolledWindow *wrapper = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
+    gtk_scrolled_window_set_child(wrapper, child);
+    gtk_widget_set_hexpand(GTK_WIDGET(wrapper), gtk_widget_get_hexpand(child));
+    gtk_widget_set_vexpand(GTK_WIDGET(wrapper), gtk_widget_get_hexpand(child));
+    InsertChild(GTK_WIDGET(wrapper));
+}
+
 void CFLayout::RemoveChild(GtkWidget *child){
     /*
      * Warning: Don't remove separator manually.
@@ -115,8 +125,15 @@ GtkSeparator *CFLayout::NewSeparator(){
 
     cfsep->separator = GTK_SEPARATOR(gtk_separator_new(Orientation));
     cfsep->parent = this;
+
     gtk_widget_add_css_class(GTK_WIDGET(cfsep->separator), "Separator");
-    gtk_widget_set_size_request(GTK_WIDGET(cfsep->separator), 5, 0);// height will be expanded
+
+    if(Orientation == GTK_ORIENTATION_HORIZONTAL){
+        gtk_widget_set_size_request(GTK_WIDGET(cfsep->separator), 5, 0);// height will be expanded
+    }else{
+        gtk_widget_set_size_request(GTK_WIDGET(cfsep->separator), 0, 5);// width will be expanded
+    }
+
     gtk_widget_add_controller(GTK_WIDGET(cfsep->separator), GTK_EVENT_CONTROLLER(drag));// connect drag and separator
     g_signal_connect(drag, "drag-update", G_CALLBACK(SeparatorDragged), cfsep);
 

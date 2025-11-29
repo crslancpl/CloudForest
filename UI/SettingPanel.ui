@@ -29,7 +29,7 @@
         </child>
         <child>
             <object class="GtkButton" id="CloseButton">
-                <property name="hexpand">true</property>
+                <property name="hexpand">false</property>
                 <property name="label">Close</property>
             </object>
         </child>

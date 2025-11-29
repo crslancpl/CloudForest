@@ -40,8 +40,10 @@ void SettingPanel::Init(){
 
     BaseLayout.InsertChild(GTK_WIDGET(TabButtonBox));
     Stack = GTK_STACK(gtk_stack_new());
+    gtk_widget_set_hexpand(GTK_WIDGET(Stack), true);
     gtk_widget_add_css_class(GTK_WIDGET(Stack), "SettingPage");
-    BaseLayout.InsertChild(GTK_WIDGET(Stack));
+
+    BaseLayout.InsertChildWithScrolledWindow(GTK_WIDGET(Stack));
     gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
     gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
 }
@@ -51,6 +53,8 @@ void SettingPanel::BindTabButtons(GtkBuilder* builder){
      * The left hand side of the setting panel
      */
     TabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
+
+    gtk_widget_set_hexpand(GTK_WIDGET(TabButtonBox), false);
 
     EditAreaSettingButton = GTK_BUTTON(gtk_builder_get_object(builder, "EditAreaButton"));
     ExtensionsButton = GTK_BUTTON(gtk_builder_get_object(builder, "ExtensionButton"));
@@ -88,7 +92,7 @@ void SettingPanel::Show(){
     int w = gtk_widget_get_width(GTK_WIDGET(gui::AppWindow.Window))/1.5;
     int h = gtk_widget_get_height(GTK_WIDGET(gui::AppWindow.Window))/1.5;
 
-    gtk_widget_set_size_request(GTK_WIDGET(Stack), w*0.7, 0);
+    gtk_widget_set_size_request(GTK_WIDGET(TabButtonBox), w*0.3, 0);
     gtk_window_set_default_size(Window, w,h);
     gtk_widget_set_visible(GTK_WIDGET(Window), true);
 }
