@@ -1,3 +1,3 @@
 #include "Global.h"
 
-GtkApplication *global::GtkApp = nullptr;
+GtkApplication *global::g_gtkApplication = nullptr;

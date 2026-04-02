@@ -3,7 +3,7 @@ import select
 import subprocess
 
 from extension.CloudForestBuiltIn import LSPMsg
-from extension.CloudForestPy import EditAreaMod
+from extension.CloudForestMod import EditAreaMod
 
 
 class LSPServer:
@@ -34,7 +34,7 @@ class LSPServer:
 
     def AutoComplete(self, ea: EditAreaMod.EditArea, line: int, pos: int):
         self.currentEditArea = ea
-        message = LSPMsg.GetAutoCompMessage(ea.getfilepath(), line, pos - 1)
+        message = LSPMsg.GetAutoCompMessage(ea.get_filepath(), line, pos - 1)
         self.Send(message)
         self.Read()
 
@@ -43,7 +43,7 @@ class LSPServer:
             return
         ContentLengthHeader = LSPMsg.GetContentLengthHeader(message)
 
-        print("message: " + message)
+        # print("message: " + message)
         self.LSP.stdout.flush()
         _ = self.LSP.stdin.write(ContentLengthHeader.encode("utf-8"))
         self.LSP.stdin.flush()
@@ -94,13 +94,13 @@ class LSPServer:
                     pass
 
     def ReadAutoComplete(self, items) -> None:
-        self.currentEditArea.clearsuggestion()
+        self.currentEditArea.clear_suggestion()
         if items == []:
             return
         # print(items)
         for item in items:
             range = item.get("textEdit").get("range")
-            self.currentEditArea.addsuggestion(
+            self.currentEditArea.add_suggestion(
                 item.get("insertText"),
                 item.get("label"),
                 range.get("start").get("line"),
@@ -109,4 +109,4 @@ class LSPServer:
                 range.get("end").get("character"),
             )
 
-        self.currentEditArea.showsuggestion()
+        self.currentEditArea.show_suggestion()

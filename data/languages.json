@@ -1,0 +1,22 @@
+{
+  "C++": {
+    "file-extensions": ["cpp", "cxx", "cc", "h", "hh", "hpp"],
+    "lsp-comment": "clangd",
+    "syntax-file": "cpp.txt"
+  },
+
+  "C": {
+    "file-extensions": ["c"],
+    "syntax-file": "c.txt"
+  },
+
+  "JavaScript": {
+    "file-extensions": ["js", "mjs"],
+    "syntax-file": "js.txt"
+  },
+
+  "Python": {
+    "file-extensions": ["py"],
+    "syntax-file": "py.txt"
+  }
+}

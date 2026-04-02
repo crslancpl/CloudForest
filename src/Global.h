@@ -2,34 +2,9 @@
 #define GLOBAL_H_
 
 #include <gtk/gtk.h>
-#include <string>
-#include <vector>
-#include "Classes.h"
-#include "Types.h"
-
-
-
-
-
-namespace result{
-class Result{
-//nothing
-};
-
-class GetText: public Result{
-public:
-    const char* Text;
-};
-
-class GetAllEditAreaPath: public Result{
-public:
-    const std::vector<std::string>* Text;
-};
-
-}
 
 namespace global{
-extern GtkApplication *GtkApp;
+extern GtkApplication *g_gtkApplication;
 }
 
 

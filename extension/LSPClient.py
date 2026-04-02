@@ -1,21 +1,20 @@
-from CloudForestPy import EditAreaMod
+from CloudForestMod import EditAreaMod
 
-from extension import ClangdClient, PyrightClient, TypescriptClient
 from extension.CloudForestBuiltIn.LSPClientClass import LSPServer
 
 
-def NewEACreated(ea: EditAreaMod.EditArea):
+def new_ea_created(ea: EditAreaMod.EditArea):
     pass
 
 
-def EAOpen(ea: EditAreaMod.EditArea):
-    print("open")
-    filepath = ea.getfilepath()
-    print(filepath)
+def ea_open(ea: EditAreaMod.EditArea):
+    filepath = ea.get_file_path()
+    # print(filepath)
     if filepath.endswith(".cpp") or filepath.endswith(".h"):
-        ClangdClient.Listen(ea)
+        print("C++ open")
+        # ClangdClient.Listen(ea)
     elif filepath.endswith(".py"):
-        ea.setlanguage("py")
+        ea.set_language("py")
         # PyrightClient.
         pass
     elif filepath.endswith(".js") or filepath.endswith(".ts"):
@@ -27,8 +26,8 @@ def EAOpen(ea: EditAreaMod.EditArea):
         print("unknown")
 
 
-def StartListenEditAreas():
-    EditAreaMod.addcallback("NEWEDITAREA", EAOpen)
+def start_listen_editareas():
+    EditAreaMod.add_callback("NEWEDITAREA", ea_open)
 
 
 # StartListenEditAreas() is called by init.py

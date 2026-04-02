@@ -47,14 +47,18 @@
 }
 
 .SwitcherBaseBox:hover {
-    border: deepskyblue 1px solid;
+    border: deepskyblue 2px solid;
+}
+
+.SwitcherBaseBox button {
+    border: none;
+    background-image: none;
+    background-color: transparent;
 }
 
 .SwitcherButtonSaved {
     color: white;
     border: none;
-    background-image: none;
-    background-color: transparent;
 }
 
 .SwitcherButtonUnsaved {
