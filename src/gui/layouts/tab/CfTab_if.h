@@ -3,15 +3,18 @@
 
 #include <gtk/gtk.h>
 
-#include "CfTabLayout.h"
 #include "../../components/CfContent.h"
 
+class CfTabLayout;
+class CfTabSwitcher;
 
 namespace tablayout {
     CfTabLayout* NewTabLayout();
-    void Show(CfContent *page);
-    void SwitchTo(CfContent *page);
-    void MovePage(CfContent *page, CfTabLayout *newtab);
+    void Show(CfContent *content);
+    void SwitchTo(CfContent *content);
+    void MovePage(CfContent *content, CfTabLayout *newtab);
+    CfTabSwitcher* GetSwitcher(CfContent *content);
+    void AddContentSwitcherPair(CfContent *content, CfTabSwitcher *switcher);
 }
 
 #endif

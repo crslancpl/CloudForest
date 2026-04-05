@@ -38,7 +38,7 @@ TextArea::TextArea(){
     g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(TextChangedCallback), this);
 
     g_object_ref(m_baseBox);
-    SetContentWidget(GTK_WIDGET(m_baseBox));
+    setContentWidget(GTK_WIDGET(m_baseBox));
     CountLines();
 
     g_object_unref(builder);

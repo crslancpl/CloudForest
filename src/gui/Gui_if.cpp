@@ -8,10 +8,13 @@
 #include "editarea/LspPopovers_if.h"
 #include "filepanel/FilePanel_if.h"
 #include "filepanel/FilePanel.h"
+#include "src/gui/components/CfContent.h"
 #include "windows/MainWindow_if.h"
 #include "windows/MainWindow.h"
 #include "style/Style.h"
 #include "layouts/tab/CfTab_if.h"
+#include "layouts/tab/CfTabLayout.h"
+
 
 
 MainWindow* gui::g_mainwindow;

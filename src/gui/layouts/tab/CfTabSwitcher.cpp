@@ -1,6 +1,8 @@
 #include "CfTabSwitcher.h"
 
 #include "CfTabLayout.h"
+#include "src/gui/components/CfContent.h"
+
 
 
 static void SwitchButtonClicked(GtkButton *self, CfTabSwitcher *switchbutton){
@@ -17,7 +19,6 @@ CfTabSwitcher::CfTabSwitcher(CfContent *content,CfTabLayout *parent){
     m_switchButton = GTK_BUTTON(gtk_button_new());
     m_baseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     m_parentTabLayout = parent;
-
 
     gtk_button_set_icon_name(m_closeButton, "window-close-symbolic");
 

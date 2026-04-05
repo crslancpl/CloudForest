@@ -13,7 +13,9 @@ public:
     void ChangeLayout(TabSwitcherTypes layouttype);
     void Show(CfContent *content);
     void Remove(CfContent *content);
-    void ShowBlank();
+
+    void ChildDataChanged(CfContent* child) override;
+
 private:
     std::unordered_map<CfContent*, CfTabSwitcher*> m_switcherMap;
     TabSwitcherTypes m_tabSwitcherType;

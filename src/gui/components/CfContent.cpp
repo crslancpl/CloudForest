@@ -2,6 +2,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <string>
 
 
 CfContent::CfContent(){
@@ -27,25 +28,61 @@ void CfContent::SetDefaultSize(int width, int height){
     gtk_widget_set_size_request(GTK_WIDGET(m_base), width, height);
 }
 
-void CfContent::SetContentWidget(GtkWidget *child){
-    gtk_viewport_set_child(m_viewport, child);
-    m_child = child;
+GtkWidget *CfContent::getContentWidget(){
+    return m_contentWidget;
 }
 
-GtkWidget *CfContent::GetContentWidget(){
-    return m_child;
+void CfContent::setContentWidget(GtkWidget *widget){
+    gtk_viewport_set_child(m_viewport, widget);
+    m_contentWidget = widget;
 }
 
-std::string &CfContent::GetContentName(){
+std::string &CfContent::getContentName(){
     return m_contentName;
 }
 
-void CfContent::SetContentName(const std::string &name){
-    m_contentName = name;
-    //call event callbacks
+CfContent *CfContent::getParent(){
+    return m_parent;
 }
 
+void CfContent::setParent(CfContent* parent){
+    m_parent = parent;
+}
+
+CfContent *CfContent::getChild(){
+    return m_child;
+}
+
+void CfContent::setChild(CfContent* child){
+    m_child = child;
+}
+
+void CfContent::setContentName(const std::string &name){
+    m_contentName = name;
+    //call event callbacks
+    for (void (*callback)(const std::string&, CfContent*) : m_nameChangedCallbacks) {
+        callback(name, this);
+    }
+}
+
+void CfContent::AddNameChangedCallback(void (*callback)(const std::string&, CfContent*)){
+    m_nameChangedCallbacks.emplace(callback);
+}
+
+void CfContent::RemoveNameChangedCallback(void (*callback)(const std::string&, CfContent*)){
+    m_nameChangedCallbacks.erase(callback);
+}
+
+//virtual
 void CfContent::Destroy(){
     //call event callbacks
     delete this;
+}
+
+void CfContent::ParentDataChanged(CfContent *parent){
+    //
+}
+
+void CfContent::ChildDataChanged(CfContent *child){
+    //
 }

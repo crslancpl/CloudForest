@@ -11,12 +11,13 @@
 #include "LspPopovers_if.h"
 
 #include <glib.h>
+#include <functional>
 
 /*
  * EditArea class
  */
 
-static void unfocused(GtkEventControllerFocus* self, EditArea* parent){
+static void Unfocused(GtkEventControllerFocus* self, EditArea* parent){
     parent->UnfocusedCallback();
 }
 
@@ -47,6 +48,12 @@ static void LangButtonClicked(GtkButton *self, EditArea *parent){
 static void LangChangedCallback(TextArea *parent, const char* lang){
     EditArea *ea = (EditArea*)parent;
     syntaxprovider::FastHighlight(ea);
+}
+
+static EditArea *saving_editarea;// cache the edit area that is waiting for saving
+static void FileSaved(GFile* file){
+    saving_editarea->FileSavedCallback(file);
+    saving_editarea = nullptr;
 }
 
 EditArea::EditArea(GFile* file){
@@ -100,7 +107,7 @@ void EditArea::LoadGui(){
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_locationBut),
         m_editingFile ? g_file_get_path(m_editingFile) : "New file");
 
-    this->SetContentWidget(GTK_WIDGET(m_baseGrid));
+    this->setContentWidget(GTK_WIDGET(m_baseGrid));
     gtk_grid_attach(m_baseGrid, GTK_WIDGET(m_baseBox), 0, 2, 1, 1);
 
     g_object_unref(builder);
@@ -110,7 +117,7 @@ void EditArea::LoadGui(){
 void EditArea::ConnectSignals(){
     g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), GTK_EVENT_CONTROLLER(m_keyDownEventCtrl));
-    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(unfocused), this);
+    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(Unfocused), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_focusEventCtrl);
     g_signal_connect(m_textView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
     g_signal_connect_after(m_textViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
@@ -179,8 +186,8 @@ void EditArea::LoadFile(GFile* newfile){
         m_fileName = "untitled";
         m_absoPath = tools::GenerateId().c_str();
     }else{
-        m_fileName = g_file_get_basename(newfile);
-        m_absoPath = g_file_get_path(newfile);
+        m_fileName = g_file_get_basename(m_editingFile);
+        m_absoPath = g_file_get_path(m_editingFile);
 
         char *content;
         filemanagement::ReadFileText(m_editingFile, &content);
@@ -189,21 +196,23 @@ void EditArea::LoadFile(GFile* newfile){
         gtk_text_buffer_set_text(m_textViewBuffer, content, -1);
         g_free(content);
     }
+
     gtk_button_set_label(m_locationBut, m_absoPath.c_str());
-    this->SetContentName(m_fileName);
+    this->setContentName(m_fileName);
     editarea_py_invoke_filedata_changed(this);
+
+    if(m_parent){
+        m_parent->ChildDataChanged(this);
+    }
+    if(m_child){
+        m_child->ParentDataChanged(this);
+    }
 }
 
 
 
 void EditArea::Destroy(){
     editarea::CloseFile(m_editingFile);
-}
-
-static EditArea *saving_editarea;// cache the edit area that is waiting for saving
-static void FileSaved(GFile* file){
-    saving_editarea->FileSavedCallback(file);
-    saving_editarea = nullptr;
 }
 
 void EditArea::Save(){
@@ -336,8 +345,10 @@ void EditArea::FileSavedCallback(GFile *file){
         //saving cancelled
         return;
     }
+    if(file != m_editingFile){
+        this->LoadFile(file);
+    }
 
-    this->LoadFile(file);
     m_isSaved = true;
     gtk_button_set_label(m_saveBut, "Saved");
 

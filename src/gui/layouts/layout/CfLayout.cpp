@@ -43,7 +43,7 @@ CfLayout::CfLayout(GtkOrientation orientation){
     m_baseBox = GTK_BOX(gtk_box_new(orientation, 0));
     m_orientation = orientation;
     gtk_widget_set_overflow(GTK_WIDGET(m_baseBox), GTK_OVERFLOW_HIDDEN);
-    SetContentWidget(GTK_WIDGET(m_baseBox));
+    setContentWidget(GTK_WIDGET(m_baseBox));
 }
 
 LayoutNeighbor CfLayout::GetNeighbors(GtkWidget* widget){

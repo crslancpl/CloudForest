@@ -17,14 +17,12 @@ namespace filemanagement{
     //defined in
     void ChooseFile();
     void ChooseFolder();
-    void ChooseFile(void (*callback)(GFile*, GFileInfo*));
-    void ChooseFolder(void (*callback)(GFile*, GFileInfo*));
 
     //defined in FileOperation
-    GFile* CreateFile(char* name, GFile* parentfolder);
+    GFile* CreateFile(char* name, GFile* parentfolder);//create file in file panel
     void SaveFile(GFile* file, char* content, void (*savedcallback)(GFile*));
 
-    //ddefined in FileReader
+    //defined in FileReader
     void EnumerateFolderChild(GFile* folder, void (*callback)(GFile*, GFileInfo*));
     datatypes::FileData* LoadFileData(GFile* file);
     void ReadFileText(GFile* file, char** output);

@@ -27,7 +27,7 @@ FilePanel::FilePanel(){
     gtk_widget_set_vexpand(GTK_WIDGET(m_fileTree), true);
     gtk_box_set_spacing(m_fileTree, 5);
     gtk_widget_add_css_class(GTK_WIDGET(m_fileTree), "file-tree");
-    SetContentWidget(GTK_WIDGET(m_fileTree));
+    setContentWidget(GTK_WIDGET(m_fileTree));
     g_object_unref(builder);
 }
 

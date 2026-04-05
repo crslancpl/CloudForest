@@ -5,8 +5,11 @@
 #include "src/gui/windows/MainWindow.h"
 
 #include <gio/gio.h>
+#include <gtk/gtk.h>
 
 static GtkFileDialog *file_dialog;
+static char *file_content;
+static void (*file_saved_callback)(GFile*);
 
 void FileOperationInit(){
     file_dialog = gtk_file_dialog_new();
@@ -42,7 +45,7 @@ static void FileSaved(GObject *source, GAsyncResult *result, void* content){
     GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
 
     if(file != nullptr){
-        //filemanag::Save(file, nullptr);
+        filemanagement::SaveFile(file, file_content, file_saved_callback);
     }else{
         //Callback(nullptr, nullptr);
     }
@@ -59,13 +62,19 @@ void filemanagement::ChooseFolder(){
 }
 
 /*
-void filemanagement::SaveFile(){
+void filemanagement::CreateFile(GFile* file){
     gtk_file_dialog_set_title(file_dialog, "Save file");
-    gtk_file_dialog_save(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSaved, gpointer user_data)
+    gtk_file_dialog_save(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSaved, nullptr);
 }
 */
+
+
 void filemanagement::SaveFile(GFile *file, char *content, void (*savedcallback)(GFile*)){
     if(!file){
+        file_content = content;
+        file_saved_callback = savedcallback;
+        gtk_file_dialog_set_title(file_dialog, "Save file");
+        gtk_file_dialog_save(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSaved, nullptr);
         return;
     }
 
@@ -80,5 +89,7 @@ void filemanagement::SaveFile(GFile *file, char *content, void (*savedcallback)(
         nullptr,
         nullptr);
 
-    savedcallback(file);
+    if(savedcallback){
+        savedcallback(file);
+    }
 }

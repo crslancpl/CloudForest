@@ -1,5 +1,9 @@
 #include "CfTabLayout.h"
 
+
+#include "CfTabSwitcher.h"
+#include "CfTab_if.h"
+
 #include <gtk/gtk.h>
 
 
@@ -13,18 +17,20 @@ CfTabLayout::CfTabLayout(){
     gtk_scrolled_window_set_child(m_switcherScrolledWindow, GTK_WIDGET(m_switcherArea));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_switcherScrolledWindow));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_stack));
-    SetContentWidget(GTK_WIDGET(m_base));
+    setContentWidget(GTK_WIDGET(m_base));
 }
 
 
 void CfTabLayout::Show(CfContent *content){
     GtkStackPage* page = gtk_stack_get_page(m_stack, content->GetBaseWidget());
     if(page == nullptr){
-        auto newswitcher = new CfTabSwitcher(content,this);
-        m_switcherMap.insert({content, newswitcher});
-        newswitcher->SetText(content->GetContentName().c_str());
-        gtk_box_append(m_switcherArea, GTK_WIDGET(newswitcher->GetBaseWidget()));
+        auto switcher = new CfTabSwitcher(content,this);
+        m_switcherMap.insert({content, switcher});
+        switcher->SetText(content->getContentName().c_str());
+        gtk_box_append(m_switcherArea, GTK_WIDGET(switcher->GetBaseWidget()));
         gtk_stack_add_child(m_stack, content->GetBaseWidget());
+        content->setParent(this);
+        tablayout::AddContentSwitcherPair(content, switcher);
     }
 
     gtk_stack_set_visible_child(m_stack, content->GetBaseWidget());
@@ -35,6 +41,10 @@ void CfTabLayout::Remove(CfContent *content){
     gtk_box_remove(m_switcherArea, m_switcherMap.find(content)->second->GetBaseWidget());
 }
 
-void CfTabLayout::ShowBlank(){
-    //
+void CfTabLayout::ChildDataChanged(CfContent* child){
+    auto switcher = tablayout::GetSwitcher(child);
+
+    if(switcher){
+        switcher->SetText(child->getContentName().c_str());
+    }
 }
