@@ -11,6 +11,5 @@ The source codes are classified in 4 main directories.
 
 Other directories:
 * `styles` : for CSS files
-* `syntax` : templates for syntax highlighting
 * `ui` : GTK builder `.ui` files
 * `data` : app data.

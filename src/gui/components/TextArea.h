@@ -1,11 +1,11 @@
 #ifndef TEXTAREA_H_
 #define TEXTAREA_H_
 
-#include <gtk/gtk.h>
-#include <string>
-#include <unordered_set>
-
 #include "CfContent.h"
+#include "datatypes/language.h"
+
+#include <gtk/gtk.h>
+#include <unordered_set>
 
 class TextArea : public CfContent{
 public:
@@ -16,13 +16,13 @@ public:
     char* getContent();
     void setEditable(bool editable);
     void setFirstLineNumber(int number);
-    std::string &getLanguage();
-    virtual void setLanguage(const char *lang);
+    datatypes::Language* getLanguage();
+    virtual void setLanguage(datatypes::Language *lang);
 
 
 
-    void AddLangChangedCallback(void (*callback)(TextArea*,const char*));
-    void RemoveLangChangedCallback(void (*callback)(TextArea*,const char*));
+    void AddLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*));
+    void RemoveLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*));
 
     void ClearHighlight();
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
@@ -32,9 +32,9 @@ public:
     void CountLines();
 
 protected:
-    std::unordered_set<void (*)(TextArea*,const char*)> m_langChangedCallbacks;
+    std::unordered_set<void (*)(TextArea*, datatypes::Language*)> m_langChangedCallbacks;
 
-    std::string m_language;
+    datatypes::Language* m_language = nullptr;
     int m_firstLineNumber = 1;
     unsigned int m_totalLines = 0;
 

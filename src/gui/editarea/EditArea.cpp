@@ -1,21 +1,23 @@
 #include "EditArea.h"
 
 #include "EditArea_if.h"
+#include "datatypes/language.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/text_tool.h"
-
 #include "src/filemanagement/FileManagement_if.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
+#include "src/languages/LanguageManager_if.h"
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
 #include "LspPopovers_if.h"
 
 #include <glib.h>
-#include <functional>
 
 /*
  * EditArea class
  */
+
+static EditArea *saving_editarea;// cache the edit area that is waiting for saving
 
 static void Unfocused(GtkEventControllerFocus* self, EditArea* parent){
     parent->UnfocusedCallback();
@@ -45,12 +47,11 @@ static void LangButtonClicked(GtkButton *self, EditArea *parent){
     langpanel::ChooseLanguage(parent);
 }
 
-static void LangChangedCallback(TextArea *parent, const char* lang){
+static void LangChangedCallback(TextArea *parent, datatypes::Language* lang){
     EditArea *ea = (EditArea*)parent;
     syntaxprovider::FastHighlight(ea);
 }
 
-static EditArea *saving_editarea;// cache the edit area that is waiting for saving
 static void FileSaved(GFile* file){
     saving_editarea->FileSavedCallback(file);
     saving_editarea = nullptr;
@@ -73,8 +74,8 @@ EditArea::EditArea(GFile* file){
     this->LoadCursorPos();
     this->ConnectSignals();
 
-    if(m_language.empty()){
-        setLanguage("demo");
+    if(m_language == nullptr){
+        setLanguage(langmanager::FindLanguage("Unknown"));
     }
 }
 
@@ -171,9 +172,9 @@ const char* EditArea::getFilePath(){
     return m_absoPath.c_str();
 }
 
-void EditArea::setLanguage(const char* lang){
+void EditArea::setLanguage(datatypes::Language* lang){
     m_language = lang;
-    gtk_button_set_label(m_langBut, m_language.c_str());
+    gtk_button_set_label(m_langBut, m_language->name.c_str());
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {
         callback(this, lang);

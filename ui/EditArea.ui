@@ -61,7 +61,7 @@
                 <child>
                     <object id="LangBut" class="GtkButton">
                         <property name="name">LangBut</property>
-                        <property name="label">none</property>
+                        <property name="label">Unknown</property>
                     </object>
                 </child>
                 <child>

@@ -1,4 +1,4 @@
-from CloudForestMod import EditAreaMod
+from cloudforest import EditAreaMod
 
 from extension.CloudForestBuiltIn.LSPClientClass import LSPServer
 

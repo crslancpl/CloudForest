@@ -4,19 +4,10 @@
 >If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
 
 
-This is the source code of the code editor, using GTK4 C library in C++. The source code is now messy.
+This is the source code of the code editor, using GTK4 C library in C++.
 <br/>
-
->[!NOTE]
->Read the documentation in [Notion](https://branch-sand-75d.notion.site/2538420fb7f28032ab16d8be325ff0b2?v=2538420fb7f2804bb28a000c6ac5fdd1) even though it is not finished yet.
+Read the docs in [quickstart](quickstart) for an overview.
 <br/>
-
->[!NOTE]
->For libCFEmbed (syntax highlighter):
->* Check out how to create a syntax template in notion doc. You can see the source code in CloudyForest repo
->* Linux version libCFEmbed.so is always the latest.
->* Windows version libCFEmbed.dll is not updated regularly.
->* Mac version is not available, but you can build it and modify the cmake file to find it.
 
 ## Depenencies:
 1. [CMake](https://cmake.org/download/)   **The minimum version is 3.5**
@@ -33,6 +24,13 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 1. Run `make` if the cmake generates `Makefile` or `ninja` if generates `ninja build` depends on your system. Check for those files in the folder.
 1. Then run the app in File Explorer or run it in terminal `./CloudForest`.
 
+>[!NOTE]
+>For libCFEmbed (syntax highlighter):
+>* Check out how to create a syntax template in notion doc. You can see the source code in CloudyForest repo
+>* Linux version libCFEmbed.so is always the latest.
+>* Windows version libCFEmbed.dll is not updated regularly.
+>* Mac version is not available, but you can build it and modify the cmake file to find it.
+
 ## Available features:
 * Open file/folder
 * Save file
@@ -48,10 +46,7 @@ This is the source code of the code editor, using GTK4 C library in C++. The sou
 * Extension
 * Blur
 * Compile setting
-* Embed webview (I am sure webkitgtk works for linux)
+* Embed webview
 * Move widgets to an individual window
-
->[!NOTE]
->We hope to create a basic and unified platform that links all features in the app (extensions, webview, settings, core app, lsp). Since C++ is not extensible, we may have to create a language that works like command line
 
 Repository created: 7/7

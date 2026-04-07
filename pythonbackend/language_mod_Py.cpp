@@ -1,5 +1,7 @@
 #include "language_mod_Py.h"
 
+#include "src/languages/LanguageManager_if.h"
+
 #include <object.h>
 #include <pytypedefs.h>
 
@@ -8,6 +10,14 @@ static PyObject *language_module_clear_data(PyObject *self, PyObject *args){
 }
 
 static PyObject *language_module_add_language(PyObject *self, PyObject *args){
+    char* langname;
+    char* id;
+    char* syntaxfile;
+    if(!PyArg_ParseTuple(args, "ssO", &langname, &id, &syntaxfile)){
+        return nullptr;
+    }
+
+    langmanager::NewLanguage(langname, id, syntaxfile);
     Py_RETURN_NONE;
 }
 
@@ -19,7 +29,7 @@ static PyMethodDef language_module_method[] = {
 
 static struct PyModuleDef language_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "language_mod",
+    .m_name = "language",
     .m_size = 0,
     .m_methods = language_module_method,
     .m_slots = nullptr

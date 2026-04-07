@@ -1,11 +1,12 @@
 #include "TextArea.h"
 
+#include "src/gui/style/Style.h"
+
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <string>
 
-#include "src/gui/style/Style.h"
 /*
  * Static
  */
@@ -66,11 +67,11 @@ void TextArea::setFirstLineNumber(int number){
     CountLines();
 }
 
-std::string &TextArea::getLanguage(){
+datatypes::Language *TextArea::getLanguage(){
     return m_language;
 }
 
-void TextArea::setLanguage(const char *lang){
+void TextArea::setLanguage(datatypes::Language *lang){
     m_language = lang;
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {
@@ -78,11 +79,11 @@ void TextArea::setLanguage(const char *lang){
     }
 }
 
-void TextArea::AddLangChangedCallback(void (*callback)(TextArea*,const char*)){
+void TextArea::AddLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*)){
     m_langChangedCallbacks.insert(callback);
 }
 
-void TextArea::RemoveLangChangedCallback(void (*callback)(TextArea*,const char*)){
+void TextArea::RemoveLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*)){
     m_langChangedCallbacks.erase(callback);
 }
 

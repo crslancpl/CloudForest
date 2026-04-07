@@ -1,7 +1,7 @@
 #include "FileManagement_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 
-#include "datatypes/file_data.h"
+#include "datatypes/file.h"
 
 void filemanagement::EnumerateFolderChild(GFile* folder, void (*callback)(GFile*, GFileInfo*)){
     /*

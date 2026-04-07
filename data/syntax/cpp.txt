@@ -1,6 +1,4 @@
 #TrimSpecialCharacter
-#LanguageServer
-clangd:#
 #Keyword
 if else return while for new
 continue break namespace using switch case

@@ -1,14 +1,14 @@
 #include "syntax_provider.h"
 
-#include <unordered_map>
 
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/editarea/EditArea.h"
-
 #include "CFCore.h"
 
-static std::unordered_map<TextArea*, SyntaxProvider*> ProviderMap;
-static std::unordered_map<const char*, SyntaxProvider*> LangToProviderMap;
+#include <unordered_map>
+
+static std::unordered_map<TextArea*, SyntaxProvider*> provider_map;
+static std::unordered_map<datatypes::Language*, SyntaxProvider*> lang_to_provider_map;
 
 static void EditAreaCreated(EditArea* ea){
     ea->AddLangChangedCallback(syntaxprovider::SetLanguage);
@@ -23,15 +23,15 @@ void syntaxprovider::Highlight(TextArea *ta){
     //ProviderMap.find(ta)->second->Highlight(ta);
 }
 
-void syntaxprovider::SetLanguage(TextArea *ta, const char* language){
-    auto result = LangToProviderMap.find(language);
-    if(result == LangToProviderMap.end()){
-        cf::LoadTemplate(language);
+void syntaxprovider::SetLanguage(TextArea *ta, datatypes::Language* language){
+    auto result = lang_to_provider_map.find(language);
+    if(result == lang_to_provider_map.end()){
+        cf::LoadTemplate(language->id.c_str());
     }
 
     //ProviderMap.insert({ta, })
 }
 
 void syntaxprovider::FastHighlight(EditArea* ea){
-    cf::ReadFile(ea->getFilePath(), ea->getLanguage().c_str());
+    cf::ReadFile(ea->getFilePath(), ea->getLanguage()->id.c_str());
 }

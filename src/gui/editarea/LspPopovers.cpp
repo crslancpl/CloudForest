@@ -1,5 +1,6 @@
 #include "LspPopovers.h"
-#include "datatypes/lsp_data.h"
+
+#include "datatypes/lsp.h"
 
 TipPopover::TipPopover(){
     m_tipLabel = GTK_LABEL(gtk_label_new(""));

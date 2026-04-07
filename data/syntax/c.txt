@@ -1,0 +1,26 @@
+#TrimSpecialCharacter
+#LanguageServer
+clangd:#
+#Keyword
+if else return while for continue break switch case do
+typedef default
+#Type
+auto bool int char void enum unsigned long short struct float
+#Value
+true false NULL
+#Modifier
+static const extern
+#SLCmt
+//
+#MLCmtS
+/*
+#MLCmtE
+*/
+#TagSymbol
+#
+#Tags
+include pragma ifndef ifdef define endif if include_next import
+#TextSymbol
+' "
+#AcceptCharInName
+_

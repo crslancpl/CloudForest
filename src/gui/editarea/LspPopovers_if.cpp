@@ -2,36 +2,36 @@
 
 #include "LspPopovers.h"
 #include "EditArea.h"
-#include "datatypes/lsp_data.h"
+#include "datatypes/lsp.h"
 
-static SuggestionPopover* ActiveSuggestionPopover;
+static SuggestionPopover* ative_suggestion_popover;
 static TipPopover* ActiveTipPopover;
 
 namespace lsppopovers{
 void Construct(){
-    ActiveSuggestionPopover = new SuggestionPopover();
+    ative_suggestion_popover = new SuggestionPopover();
     ActiveTipPopover = new TipPopover();
 }
 
 void suggestion::SetTargetEditArea(EditArea* target){
-    ActiveSuggestionPopover->setTargetBuffer(target->getTextBuffer());
-    ActiveSuggestionPopover->setCursorRect(target->getCursorRectangle());
+    ative_suggestion_popover->setTargetBuffer(target->getTextBuffer());
+    ative_suggestion_popover->setCursorRect(target->getCursorRectangle());
 }
 
 void suggestion::Show(){
-    ActiveSuggestionPopover->Show();
+    ative_suggestion_popover->Show();
 }
 
 void suggestion::Hide(){
-    ActiveSuggestionPopover->Hide();
+    ative_suggestion_popover->Hide();
 }
 
 void suggestion::Add(datatypes::Suggestion *item){
-    ActiveSuggestionPopover->Add(item);
+    ative_suggestion_popover->Add(item);
 }
 
 void suggestion::Clear(){
-    ActiveSuggestionPopover->Clear();
+    ative_suggestion_popover->Clear();
 }
 
 void tip::SetTargetEditArea(EditArea* target){

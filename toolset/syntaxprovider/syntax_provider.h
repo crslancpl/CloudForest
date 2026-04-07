@@ -1,7 +1,8 @@
 #ifndef SYNTAX_PROVIDER_H_
 #define SYNTAX_PROVIDER_H_
 
-#include "datatypes/language_data.h"
+#include "datatypes/language.h"
+
 // Forward declaration
 class TextArea;
 class EditArea;
@@ -17,7 +18,7 @@ private:
 
 namespace syntaxprovider{
     void Init();
-    void SetLanguage(TextArea* ta, const char* language);
+    void SetLanguage(TextArea* ta, datatypes::Language* language);
     void Highlight(TextArea* ta);
     void FastHighlight(EditArea* ea);
 }

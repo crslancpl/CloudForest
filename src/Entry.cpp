@@ -1,13 +1,13 @@
 /*
  * Entry.cpp consist the entry function
  */
-#include <gtk/gtk.h>
-
 #include "filemanagement/FileManagement_if.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "gui/Gui_if.h"
 #include "pythonbackend/python_if.h"
 #include "Global.h"
+
+#include <gtk/gtk.h>
 
 static void AppActivated (GtkApplication *app, gpointer user_data);
 static void AppClosed (GtkApplication *app, gpointer user_data);
@@ -29,8 +29,8 @@ int main (int argc,char *argv[]){
 static void AppActivated (GtkApplication *app, gpointer user_data){
     global::g_gtkApplication = app;
     syntaxprovider::Init();
-    pybackend::Start();
     gui::Init();
+    pybackend::Start();
     filemanagement::Init();
 }
 

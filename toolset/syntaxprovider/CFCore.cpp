@@ -21,7 +21,7 @@ static void RequestFile(cf_FileRequest_msg *freq){
     fresp.FilePath = freq->FilePath;
     if (tools::StartWith(freq->FilePath, "syntax/")) {
         fresp.IsPath = true;
-        fresp.Content = freq->FilePath;
+        fresp.Content = strcat(strdup(std::string("data/").c_str()) , freq->FilePath);
         cf_Send_Message(FILERESP, &fresp);
     }else{
         auto targetEditArea = editarea::FindEditArea(freq->FilePath);

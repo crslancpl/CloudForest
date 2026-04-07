@@ -12,6 +12,7 @@ namespace datatypes{
 
 typedef struct Language{
     std::string name;
+    std::string id;
     std::unordered_set<std::string> fileExtensions;
     std::string syntaxTemplateFile;
 }Language;

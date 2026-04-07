@@ -6,7 +6,8 @@
 #include "src/gui/editarea/LspPopovers_if.h"
 #include "src/gui/editarea/LspPopovers.h"
 #include "src/gui/editarea/EditArea.h"
-#include "datatypes/lsp_data.h"
+#include "datatypes/lsp.h"
+#include "src/languages/LanguageManager_if.h"
 
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){
@@ -20,7 +21,7 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    self->Editarea->setLanguage(lang);
+    self->Editarea->setLanguage(langmanager::FindLanguage(lang));
 
     Py_RETURN_NONE;
 }

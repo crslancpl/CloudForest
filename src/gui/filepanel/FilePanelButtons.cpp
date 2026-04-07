@@ -1,7 +1,7 @@
 #include "FilePanelButtons.h"
 
 #include "../editarea/EditArea_if.h"
-#include "datatypes/file_data.h"
+#include "datatypes/file.h"
 
 #include "FilePanel.h"
 #include "../Gui_if.h"

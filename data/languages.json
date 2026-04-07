@@ -1,21 +1,43 @@
 {
+  "Unknown": {
+    "id": "unknown",
+    "file-extensions": [],
+    "syntax-file": "unknown.txt"
+  },
+
+  "Text": {
+    "id": "txt",
+    "file-extensions": ["txt"],
+    "syntax-file": "txt.txt"
+  },
+
   "C++": {
+    "id": "cpp",
     "file-extensions": ["cpp", "cxx", "cc", "h", "hh", "hpp"],
     "lsp-comment": "clangd",
     "syntax-file": "cpp.txt"
   },
 
   "C": {
+    "id": "c",
     "file-extensions": ["c"],
     "syntax-file": "c.txt"
   },
 
+  "CSS": {
+    "id": "css",
+    "file-extensions": ["css"],
+    "syntax-file": "css.txt"
+  },
+
   "JavaScript": {
+    "id": "js",
     "file-extensions": ["js", "mjs"],
     "syntax-file": "js.txt"
   },
 
   "Python": {
+    "id": "py",
     "file-extensions": ["py"],
     "syntax-file": "py.txt"
   }
