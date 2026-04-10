@@ -13,7 +13,7 @@
 #include "src/Global.h"
 
 MainWindow::MainWindow(){
-    GtkBuilder *builder = gtk_builder_new_from_file("ui/MainWindow.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("data/ui/MainWindow.ui");
     m_window = GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow"));
     m_layout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);
     gtk_window_set_child(m_window, GTK_WIDGET(m_layout->GetBaseWidget()));

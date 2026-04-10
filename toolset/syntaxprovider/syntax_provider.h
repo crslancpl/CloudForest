@@ -9,11 +9,11 @@ class EditArea;
 
 class SyntaxProvider{
 public:
-    SyntaxProvider();
+    SyntaxProvider(datatypes::Language *language);
     ~SyntaxProvider();
     void Highlight(TextArea* ta);
 private:
-    datatypes::Language m_language;
+    datatypes::Language* m_language;
 };
 
 namespace syntaxprovider{

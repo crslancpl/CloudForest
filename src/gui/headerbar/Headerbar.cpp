@@ -56,7 +56,7 @@ static GActionEntry app_entries[] =
 
 
 HeaderBar::HeaderBar(){
-    GtkBuilder *builder = gtk_builder_new_from_file("ui/HeaderBar.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("data/ui/HeaderBar.ui");
 
     m_headerBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
     m_fileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "FileBut"));

@@ -13,11 +13,12 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
     char* langname;
     char* id;
     char* syntaxfile;
-    if(!PyArg_ParseTuple(args, "ssO", &langname, &id, &syntaxfile)){
+    char* fileextension;
+    if(!PyArg_ParseTuple(args, "ssss", &langname, &id, &syntaxfile, &fileextension)){
         return nullptr;
     }
 
-    langmanager::NewLanguage(langname, id, syntaxfile);
+    langmanager::NewLanguage(langname, id, syntaxfile, fileextension);
     Py_RETURN_NONE;
 }
 

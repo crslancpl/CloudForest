@@ -20,7 +20,7 @@ static void TextChangedCallback(GtkTextBuffer *textviewbuffer, TextArea *textare
  */
 
 TextArea::TextArea(){
-    GtkBuilder *builder = gtk_builder_new_from_file("ui/TextArea.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("data/ui/TextArea.ui");
 
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "BaseBox"));
     m_textView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));
@@ -39,7 +39,7 @@ TextArea::TextArea(){
     g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(TextChangedCallback), this);
 
     g_object_ref(m_baseBox);
-    setContentWidget(GTK_WIDGET(m_baseBox));
+    SetContentWidget(GTK_WIDGET(m_baseBox));
     CountLines();
 
     g_object_unref(builder);
@@ -49,29 +49,29 @@ TextArea::~TextArea(){
     //
 }
 
-void TextArea::setContent(char *content){
+void TextArea::SetContent(char *content){
     gtk_text_buffer_set_text(m_textViewBuffer, content, -1);
 }
 
-char* TextArea::getContent(){
+char* TextArea::GetContent(){
     gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
     return gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 }
 
-void TextArea::setEditable(bool editable){
+void TextArea::SetEditable(bool editable){
     gtk_text_view_set_editable(m_textView, editable);
 }
 
-void TextArea::setFirstLineNumber(int number){
+void TextArea::SetFirstLineNumber(int number){
     m_firstLineNumber = number;
     CountLines();
 }
 
-datatypes::Language *TextArea::getLanguage(){
+datatypes::Language *TextArea::GetLanguage(){
     return m_language;
 }
 
-void TextArea::setLanguage(datatypes::Language *lang){
+void TextArea::SetLanguage(datatypes::Language *lang){
     m_language = lang;
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {
@@ -117,9 +117,9 @@ void TextArea::ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned i
      * of the first character in the line So line and position shouldn't
      * be less then 1.
      */
-
     line--;// change the lines that starts from 1 to 0
-    if (pos <= 0 ||strcmp(tagname, "none") == 0) {
+
+    if (pos <= 0 || strcmp(tagname, "invisible")== 0) {
         return;
     }
 
@@ -131,6 +131,7 @@ void TextArea::ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned i
 
 void TextArea::CountLines(){
     int NewLineCount = gtk_text_buffer_get_line_count(m_textViewBuffer);
+    m_totalChars = gtk_text_buffer_get_char_count(m_textViewBuffer);
 
     if(NewLineCount != m_totalLines){
 

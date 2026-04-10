@@ -13,8 +13,7 @@ static std::vector<GtkButton*> lang_buttons;
 static GtkBox* lang_but_box;
 
 static void LangChoosen(GtkButton* self, void* data){
-    editarea_to_chonge_lang->setLanguage((datatypes::Language*)data);
-    editarea_to_chonge_lang = nullptr;
+    editarea_to_chonge_lang->SetLanguage((datatypes::Language*)data);
 }
 
 static void CreateButton(datatypes::Language* lang){

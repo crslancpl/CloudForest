@@ -16,7 +16,8 @@ namespace editarea {
     EditArea* GetFocusedEditArea();
     void SetFocusedEditArea(EditArea* editarea);
 
-    void NewEditArea();
+    void InsertToEditAreaList(EditArea* ea);
+    void RemoveFromEditAreaList(EditArea* ea);
     EditArea *FindEditArea(const char* absopath);
 
     void AddNewEditAreaCallback(void (*callback)(EditArea*));

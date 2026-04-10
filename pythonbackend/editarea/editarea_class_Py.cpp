@@ -21,14 +21,14 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    self->Editarea->setLanguage(langmanager::FindLanguage(lang));
+    self->Editarea->SetLanguage(langmanager::FindLanguage(lang));
 
     Py_RETURN_NONE;
 }
 
 //async
 static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
-    std::string text = self->Editarea->getContent();
+    std::string text = self->Editarea->GetContent();
 
     if(text.empty()){
         Py_RETURN_NONE;

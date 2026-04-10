@@ -125,12 +125,12 @@ void editarea_py_register(EditArea *ea){
     py_EditArea *newEa = py_EditArea_create_object();
 
     newEa->Editarea = ea;
-    newEa->Filepath = strdup(ea->getFilePath());
+    newEa->Filepath = strdup(ea->GetFilePath());
 
 
 
     // we are trying to make filepath a variable
-    PyObject *filepath = PyUnicode_FromString(ea->getFilePath());
+    PyObject *filepath = PyUnicode_FromString(ea->GetFilePath());
     PyObject *args = PyTuple_Pack(1, newEa);
     PyList_Append(registered_editareas, (PyObject*)newEa);
     RunCallback(ea_registered_callback_list, args);

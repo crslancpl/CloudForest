@@ -12,12 +12,12 @@ public:
     TextArea();
     ~TextArea();
 
-    void setContent(char *content);
-    char* getContent();
-    void setEditable(bool editable);
-    void setFirstLineNumber(int number);
-    datatypes::Language* getLanguage();
-    virtual void setLanguage(datatypes::Language *lang);
+    char* GetContent();
+    void SetContent(char *content);
+    void SetEditable(bool editable);
+    void SetFirstLineNumber(int number);
+    datatypes::Language* GetLanguage();
+    virtual void SetLanguage(datatypes::Language *lang);
 
 
 
@@ -37,6 +37,7 @@ protected:
     datatypes::Language* m_language = nullptr;
     int m_firstLineNumber = 1;
     unsigned int m_totalLines = 0;
+    unsigned int m_totalChars = 0;
 
     GtkTextView *m_textView;
     GtkTextBuffer *m_textViewBuffer;// contains file content

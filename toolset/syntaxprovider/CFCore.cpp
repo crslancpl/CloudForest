@@ -28,7 +28,7 @@ static void RequestFile(cf_FileRequest_msg *freq){
         if(!targetEditArea){
             return;
         }
-        auto text = targetEditArea->getContent();
+        auto text = targetEditArea->GetContent();
 
         fresp.Content = text;
         fresp.IsPath = false;
@@ -38,10 +38,10 @@ static void RequestFile(cf_FileRequest_msg *freq){
 
 static void Draw(cf_Highlight_msg* highlight){
     //static request::EADrawByPos req;
-    static std::pmr::unordered_map<cf_HLType, const char*> tagnames = {
+    static std::unordered_map<cf_HLType, const char*> tagnames = {
         {CF_TYPE, "type"},{CF_KEYWORD, "keyword"},{CF_SINGCMT, "scmt"},{CF_MULTCMT, "mcmt"},
         {CF_TEXT, "text"},{CF_TAG, "tag"},{CF_FUNCTIONNAME, "func"},{CF_VALUE, "value"},
-        {CF_NEWLINE, "none"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
+        {CF_NEWLINE, "invisible"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
     auto targetEditArea = editarea::FindEditArea(highlight->file);
@@ -63,15 +63,6 @@ static void CfMessageReceiver(cf_MessageType type, void* data){
     }else if(type == DRAW){;
         cf_Highlight_msg *highlight =(cf_Highlight_msg*)data;
         Draw(highlight);
-    }else if(type == LANGUAGESERVER){
-        /*
-        static PyOpenLanguageServer req;
-        cf_LanguageServer_msg *ls = (cf_LanguageServer_msg*)data;
-        req.LanguageServerCommand = ls->LanguageServerCommand;
-        req.CommandOption = ls->CommandOption;
-
-        core::Interact(&req);
-        */
     }
 }
 

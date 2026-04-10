@@ -15,22 +15,24 @@ public:
     EditArea(GFile* file);
     ~EditArea();
 
-    bool m_isSaved = true;
+    bool isSaved = true;
 
     void CountError();
     void LoadCursorPos();
     void LoadFile(GFile *file);
 
-    GtkTextBuffer* getTextBuffer();
-    GdkRectangle* getCursorRectangle();
-    const char* getFilePath();
+    GtkTextBuffer* GetTextBuffer();
+    GdkRectangle* GetCursorRectangle();
+    const char* GetFilePath();
 
-    void setLanguage(datatypes::Language*) override;
+    void SetLanguage(datatypes::Language*) override;
 
     void Destroy() override;
     void Save();
     void ShowSearchDialog();
     void ShowReplaceDialog();
+    void Insert(unsigned int line, unsigned int column, const char* text);
+    void InsertAtCursor(const char* text);
 
     //callbacks
     void UnfocusedCallback();
@@ -47,7 +49,9 @@ private:
 
     bool m_isCurMovedByKey = false;
     bool m_isTextChanged = false;
-    bool m_pauseTextChangedCallback = false;
+
+    char *m_originalContent = nullptr;
+    unsigned int m_originalLength = 0;
 
     std::string m_fileName;
     std::string m_absoPath;

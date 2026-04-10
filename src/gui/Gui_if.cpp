@@ -8,7 +8,6 @@
 #include "editarea/LspPopovers_if.h"
 #include "filepanel/FilePanel_if.h"
 #include "filepanel/FilePanel.h"
-#include "src/gui/components/CfContent.h"
 #include "windows/MainWindow_if.h"
 #include "windows/MainWindow.h"
 #include "style/Style.h"
@@ -24,7 +23,7 @@ FilePanel* gui::g_filepanel;
 
 
 void gui::Init(){
-    style::LoadCssFromPath("styles/DefaultDarkTheme.css");
+    style::LoadCssFolder("data/styles/DefaultDarkTheme");
 
     mainwindow::Construct();
     filepanel::Construct();
@@ -34,7 +33,7 @@ void gui::Init(){
     gui::g_mainwindow->Insert(gui::g_filepanel);
     gui::g_mainwindow->Insert(tablayout::NewTabLayout());
 
-    editarea::NewEditArea();
+    editarea::CreateEmptyFile();
 
     gui::g_mainwindow->Show();
 }

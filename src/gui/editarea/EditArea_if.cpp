@@ -7,13 +7,8 @@
 #include <unordered_set>
 
 
-typedef struct{
-
-    EditArea* editarea;
-}EditAreaData;
-
-static std::unordered_map<GFile*, EditAreaData*> open_editareas;
-static std::unordered_map<const char*, EditAreaData*> file_path_to_editarea_map;
+static std::unordered_map<GFile*, EditArea*> open_editareas;
+static std::unordered_map<std::string, EditArea*> editarea_list;
 
 //callbacks
 static std::unordered_set<void(*)(EditArea*)> new_editarea_callbacks;
@@ -30,14 +25,10 @@ void editarea::SetFocusedEditArea(EditArea* editarea){
     }
 }
 
-void editarea::NewEditArea(){
-    auto newdata = new EditAreaData();
+void editarea::CreateEmptyFile(){
     auto neweditarea = new EditArea(nullptr);
 
-    newdata->editarea = neweditarea;
-
     editarea::SetFocusedEditArea(neweditarea);
-    file_path_to_editarea_map.insert({neweditarea->getFilePath(), newdata});
 
     for(auto cb : new_editarea_callbacks){
         cb(neweditarea);
@@ -49,18 +40,15 @@ void editarea::NewEditArea(){
 void editarea::OpenFile(GFile *file){
     auto result = open_editareas.find(file);
     if(result != open_editareas.end()){
-        tablayout::Show((CfContent*)result->second->editarea);
-        //result->second->container->Show(result->second->editor);
+        tablayout::Show((CfContent*)result->second);
         return;
     }
 
-    auto newdata = new EditAreaData();
+
     auto neweditarea = new EditArea(file);
-    newdata->editarea = neweditarea;
 
     editarea::SetFocusedEditArea(neweditarea);
-    open_editareas.emplace(file, newdata);
-    file_path_to_editarea_map.insert({neweditarea->getFilePath(), newdata});
+    open_editareas.emplace(file, neweditarea);
 
     for(auto cb : new_editarea_callbacks){
         cb(neweditarea);
@@ -73,16 +61,17 @@ void editarea::CloseFile(GFile *file){
     open_editareas.erase(file);
 }
 
-EditArea* editarea::FindEditArea(const char* absopath){
-    for(auto item : file_path_to_editarea_map){
-        if(strcmp(item.first, absopath) == 0){
-            return item.second->editarea;
-        }
-    }
+void editarea::InsertToEditAreaList(EditArea *ea){
+    editarea_list.emplace(ea->GetFilePath(), ea);
+}
 
-    auto itr = file_path_to_editarea_map.find(absopath);
-    if(itr != file_path_to_editarea_map.end()) return itr->second->editarea;
-    return nullptr;
+void editarea::RemoveFromEditAreaList(EditArea* ea){
+    editarea_list.erase(ea->GetFilePath());
+}
+
+EditArea* editarea::FindEditArea(const char* absopath){
+    auto result = editarea_list.find(absopath);
+    return result == editarea_list.end() ? nullptr : result->second;
 }
 
 void editarea::AddNewEditAreaCallback(void (*callback)(EditArea*)){

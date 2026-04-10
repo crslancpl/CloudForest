@@ -40,5 +40,11 @@
     "id": "py",
     "file-extensions": ["py"],
     "syntax-file": "py.txt"
+  },
+
+  "Lua": {
+    "id": "lua",
+    "file-extensions": ["lua"],
+    "syntax-file": "lua.txt"
   }
 }

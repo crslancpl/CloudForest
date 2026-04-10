@@ -17,15 +17,6 @@ For functions and methods, use CamalCap. Name the parameters/arguments with lowe
 void NormalFunction(void* argname);
 void MyClass::ClassMethod(void* argname);
 ```
-If the method is a setter or getter, use `setProperty` and `getProperty`
-```cpp
-class MyClass{
-    int m_number;
-};
-
-int MyClass::getNumber();
-void MyClass::setNumber(int value);
-```
 
 `struct` is always with `typedef` keyword. Stuct name isn't necessary. But, if the name is defined, name it as same as the typedef. The variables inside the sturct have CamalCap name. `struct` will be treated as C. C++ struct features like **access specifiers** and **inheritance** are generally discouraged.
 ```cpp

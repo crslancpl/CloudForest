@@ -2,7 +2,7 @@ headerbar {
     background-image: none;
     background-color: rgb(0, 0, 0);
     color: red;
-    box-shadow: 1px 5px 5px purple;
+    border-bottom: solid 3px purple;
 }
 
 #headerbarbuttonbox button {

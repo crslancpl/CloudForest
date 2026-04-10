@@ -14,8 +14,8 @@ void Construct(){
 }
 
 void suggestion::SetTargetEditArea(EditArea* target){
-    ative_suggestion_popover->setTargetBuffer(target->getTextBuffer());
-    ative_suggestion_popover->setCursorRect(target->getCursorRectangle());
+    ative_suggestion_popover->setTargetBuffer(target->GetTextBuffer());
+    ative_suggestion_popover->setCursorRect(target->GetCursorRectangle());
 }
 
 void suggestion::Show(){
@@ -35,7 +35,7 @@ void suggestion::Clear(){
 }
 
 void tip::SetTargetEditArea(EditArea* target){
-    ActiveTipPopover->setCursorRect(target->getCursorRectangle());
+    ActiveTipPopover->setCursorRect(target->GetCursorRectangle());
 }
 
 void tip::Show(const char* content){

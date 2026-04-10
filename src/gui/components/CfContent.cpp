@@ -28,36 +28,36 @@ void CfContent::SetDefaultSize(int width, int height){
     gtk_widget_set_size_request(GTK_WIDGET(m_base), width, height);
 }
 
-GtkWidget *CfContent::getContentWidget(){
+GtkWidget *CfContent::GetContentWidget(){
     return m_contentWidget;
 }
 
-void CfContent::setContentWidget(GtkWidget *widget){
+void CfContent::SetContentWidget(GtkWidget *widget){
     gtk_viewport_set_child(m_viewport, widget);
     m_contentWidget = widget;
 }
 
-std::string &CfContent::getContentName(){
+std::string &CfContent::GetContentName(){
     return m_contentName;
 }
 
-CfContent *CfContent::getParent(){
+CfContent *CfContent::GetParent(){
     return m_parent;
 }
 
-void CfContent::setParent(CfContent* parent){
+void CfContent::SetParent(CfContent* parent){
     m_parent = parent;
 }
 
-CfContent *CfContent::getChild(){
+CfContent *CfContent::GetChild(){
     return m_child;
 }
 
-void CfContent::setChild(CfContent* child){
+void CfContent::SetChild(CfContent* child){
     m_child = child;
 }
 
-void CfContent::setContentName(const std::string &name){
+void CfContent::SetContentName(const std::string &name){
     m_contentName = name;
     //call event callbacks
     for (void (*callback)(const std::string&, CfContent*) : m_nameChangedCallbacks) {

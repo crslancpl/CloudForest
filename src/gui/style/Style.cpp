@@ -3,9 +3,15 @@
 
 
 
-void style::LoadCssFromPath(const std::string &path){
+void style::LoadCssFile(const std::string &path){
     GtkCssProvider *CssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(CssProvider, path.c_str());
+    gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(CssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+}
+
+void style::LoadCssFolder(const std::string &path){
+    GtkCssProvider *CssProvider = gtk_css_provider_new();
+    gtk_css_provider_load_from_path(CssProvider, (path + "/main.css").c_str());
     gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(CssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 

@@ -17,14 +17,14 @@ public:
     void SetVerticalExpand(bool expand);
     void SetDefaultSize(int width, int height);
 
-    GtkWidget *getContentWidget();
-    void setContentWidget(GtkWidget* widget);
-    std::string &getContentName();
-    void setContentName(const std::string &name);
-    CfContent *getParent();
-    void setParent(CfContent* parent);
-    CfContent *getChild();
-    void setChild(CfContent* child);
+    GtkWidget *GetContentWidget();
+    void SetContentWidget(GtkWidget* widget);
+    std::string &GetContentName();
+    void SetContentName(const std::string &name);
+    CfContent *GetParent();
+    void SetParent(CfContent* parent);
+    CfContent *GetChild();
+    void SetChild(CfContent* child);
 
     void AddNameChangedCallback(void (*callback)(const std::string&, CfContent*));
     void RemoveNameChangedCallback(void (*callback)(const std::string&, CfContent*));

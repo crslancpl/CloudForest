@@ -1,0 +1,26 @@
+#TrimSpecialCharacter
+#Keyword
+and break do else elseif for function if in not or
+repeat return then until while end
+#Type
+
+#Value
+false nil true
+#Modifier
+local
+#AreaModifier
+
+#SLCmt
+
+#MLCmtS
+
+#MLCmtE
+
+#TagSymbol
+
+#Tags
+
+#TextSymbol
+
+#AcceptCharInName
+_

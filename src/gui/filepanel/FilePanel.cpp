@@ -17,7 +17,7 @@
 unsigned short FilePanel::Offset = 20;
 
 FilePanel::FilePanel(){
-    GtkBuilder *builder =  gtk_builder_new_from_file("ui/FilePanel.ui");
+    GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_fileTree = GTK_BOX(gtk_builder_get_object(builder, "FileTree"));
 
     SetDefaultSize(270, 20);
@@ -27,7 +27,7 @@ FilePanel::FilePanel(){
     gtk_widget_set_vexpand(GTK_WIDGET(m_fileTree), true);
     gtk_box_set_spacing(m_fileTree, 5);
     gtk_widget_add_css_class(GTK_WIDGET(m_fileTree), "file-tree");
-    setContentWidget(GTK_WIDGET(m_fileTree));
+    SetContentWidget(GTK_WIDGET(m_fileTree));
     g_object_unref(builder);
 }
 

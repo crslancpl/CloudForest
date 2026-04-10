@@ -17,7 +17,7 @@ CfTabLayout::CfTabLayout(){
     gtk_scrolled_window_set_child(m_switcherScrolledWindow, GTK_WIDGET(m_switcherArea));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_switcherScrolledWindow));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_stack));
-    setContentWidget(GTK_WIDGET(m_base));
+    SetContentWidget(GTK_WIDGET(m_base));
 }
 
 
@@ -26,10 +26,10 @@ void CfTabLayout::Show(CfContent *content){
     if(page == nullptr){
         auto switcher = new CfTabSwitcher(content,this);
         m_switcherMap.insert({content, switcher});
-        switcher->SetText(content->getContentName().c_str());
+        switcher->SetText(content->GetContentName().c_str());
         gtk_box_append(m_switcherArea, GTK_WIDGET(switcher->GetBaseWidget()));
         gtk_stack_add_child(m_stack, content->GetBaseWidget());
-        content->setParent(this);
+        content->SetParent(this);
         tablayout::AddContentSwitcherPair(content, switcher);
     }
 
@@ -45,6 +45,6 @@ void CfTabLayout::ChildDataChanged(CfContent* child){
     auto switcher = tablayout::GetSwitcher(child);
 
     if(switcher){
-        switcher->SetText(child->getContentName().c_str());
+        switcher->SetText(child->GetContentName().c_str());
     }
 }

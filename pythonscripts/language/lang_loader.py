@@ -10,4 +10,6 @@ def load_language_settings():
         # print(data)
         for langname in data:
             lang = data[langname]
-            language.add_language(langname, lang["id"], lang["file-extensions"])
+            language.add_language(
+                langname, lang["id"], lang["syntax-file"], str(lang["file-extensions"])
+            )

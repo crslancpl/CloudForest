@@ -11,7 +11,10 @@
 #include "LangPanel.h"
 #include "LspPopovers_if.h"
 
+#include <cstring>
+#include <gdk/gdkkeysyms.h>
 #include <glib.h>
+#include <gtk/gtk.h>
 
 /*
  * EditArea class
@@ -58,6 +61,8 @@ static void FileSaved(GFile* file){
 }
 
 EditArea::EditArea(GFile* file){
+    editarea::InsertToEditAreaList(this);
+
     /* Load gui */
     this->LoadGui();
     this->LoadFile(file);
@@ -75,7 +80,7 @@ EditArea::EditArea(GFile* file){
     this->ConnectSignals();
 
     if(m_language == nullptr){
-        setLanguage(langmanager::FindLanguage("Unknown"));
+        SetLanguage(langmanager::FindLanguage("Unknown"));
     }
 }
 
@@ -85,7 +90,7 @@ EditArea::~EditArea(){
 //private
 void EditArea::LoadGui(){
     /* Loading EditArea from UI/EditArea.ui */
-    GtkBuilder *builder = gtk_builder_new_from_file("ui/EditArea.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("data/ui/EditArea.ui");
 
     /* Binding */
     m_baseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
@@ -108,7 +113,7 @@ void EditArea::LoadGui(){
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_locationBut),
         m_editingFile ? g_file_get_path(m_editingFile) : "New file");
 
-    this->setContentWidget(GTK_WIDGET(m_baseGrid));
+    this->SetContentWidget(GTK_WIDGET(m_baseGrid));
     gtk_grid_attach(m_baseGrid, GTK_WIDGET(m_baseBox), 0, 2, 1, 1);
 
     g_object_unref(builder);
@@ -133,7 +138,14 @@ void EditArea::CountError(){
     int err = 0;
     int warn = 0;
     int info = 0;
-    std::string s = "<span color=\"red\">⚠" + std::to_string(err) + "</span> <span color=\"yellow\">⚠" + std::to_string(warn)+ "</span> <span color=\"greenyellow\">⚠"+ std::to_string(info)+"</span>";
+    std::string s =
+        "<span color=\"red\">⚠"
+        + std::to_string(err)
+        + "</span> <span color=\"yellow\">⚠"
+        + std::to_string(warn)
+        + "</span> <span color=\"greenyellow\">⚠"
+        + std::to_string(info)
+        +"</span>";
     gtk_label_set_markup(m_errorButLabel, s.c_str());
 }
 
@@ -143,14 +155,15 @@ void EditArea::LoadCursorPos(){
     gtk_text_buffer_get_iter_at_offset(m_textViewBuffer, &m_cursorItr, m_cursorPos);
     m_cursorLine = gtk_text_iter_get_line(&m_cursorItr) + 1;
     m_cursorColumn = gtk_text_iter_get_line_offset(&m_cursorItr) + 1;
-    std::string Pos =
+    std::string pos =
         "Line: "
         + std::to_string(m_cursorLine)
         + '/'
         + std::to_string(m_totalLines)
         + " Column: "
         + std::to_string(m_cursorColumn);
-    gtk_button_set_label(m_cursorPosBut, Pos.c_str());
+
+    gtk_button_set_label(m_cursorPosBut, pos.c_str());
 
     /*
      * Set rectangle
@@ -160,21 +173,22 @@ void EditArea::LoadCursorPos(){
         m_cursorRec.x, m_cursorRec.y, &m_cursorRec.x, &m_cursorRec.y);
 }
 
-GtkTextBuffer* EditArea::getTextBuffer(){
+GtkTextBuffer* EditArea::GetTextBuffer(){
     return m_textViewBuffer;
 }
 
-GdkRectangle* EditArea::getCursorRectangle(){
+GdkRectangle* EditArea::GetCursorRectangle(){
     return &m_cursorRec;
 }
 
-const char* EditArea::getFilePath(){
+const char* EditArea::GetFilePath(){
     return m_absoPath.c_str();
 }
 
-void EditArea::setLanguage(datatypes::Language* lang){
+void EditArea::SetLanguage(datatypes::Language* lang){
     m_language = lang;
     gtk_button_set_label(m_langBut, m_language->name.c_str());
+    syntaxprovider::FastHighlight(this);
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {
         callback(this, lang);
@@ -182,32 +196,37 @@ void EditArea::setLanguage(datatypes::Language* lang){
 }
 
 void EditArea::LoadFile(GFile* newfile){
+    editarea::RemoveFromEditAreaList(this);
     m_editingFile = newfile;
     if(m_editingFile == nullptr){
         m_fileName = "untitled";
         m_absoPath = tools::GenerateId().c_str();
+        m_originalContent = strdup("\0");
+        m_originalLength = 0;
     }else{
         m_fileName = g_file_get_basename(m_editingFile);
         m_absoPath = g_file_get_path(m_editingFile);
 
-        char *content;
-        filemanagement::ReadFileText(m_editingFile, &content);
+        filemanagement::ReadFileText(m_editingFile, &m_originalContent);
+        m_originalLength = strlen(m_originalContent);
 
-        gtk_button_set_label(m_locationBut, m_fileName.c_str());
-        gtk_text_buffer_set_text(m_textViewBuffer, content, -1);
-        g_free(content);
+        gtk_text_buffer_set_text(m_textViewBuffer, m_originalContent, -1);
     }
 
-    gtk_button_set_label(m_locationBut, m_absoPath.c_str());
-    this->setContentName(m_fileName);
-    editarea_py_invoke_filedata_changed(this);
+    editarea::InsertToEditAreaList(this);
 
+    gtk_button_set_label(m_locationBut, m_absoPath.c_str());
+
+    this->SetLanguage(langmanager::FindFileLanguage(m_fileName.c_str()));
+    this->SetContentName(m_fileName);
     if(m_parent){
         m_parent->ChildDataChanged(this);
     }
     if(m_child){
         m_child->ParentDataChanged(this);
     }
+
+    editarea_py_invoke_filedata_changed(this);
 }
 
 
@@ -239,6 +258,15 @@ void EditArea::ShowReplaceDialog() {
     searchDialog->Show();
 }
 
+void EditArea::Insert(unsigned int line, unsigned int column, const char* text){
+    gtk_text_iter_set_line(&m_startItr, line);
+    gtk_text_iter_set_line_offset(&m_startItr, column);
+    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
+}
+
+void EditArea::InsertAtCursor(const char* text){
+    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
+}
 
 //callbacks
 void EditArea::UnfocusedCallback(){
@@ -251,26 +279,23 @@ void EditArea::CursorMovedByKeyCallback(){
 }
 
 void EditArea::TextChangedCallback(){
-    if(m_pauseTextChangedCallback){
-        return;
-    }
+    this->LoadCursorPos();
 
-    if(m_isSaved == true){
-        m_isSaved = false;
+    if(isSaved == true){
+        isSaved = false;
         gtk_button_set_label(m_saveBut, "Save");
     }
 
-    this->LoadCursorPos();
     m_isCurMovedByKey =true;
     m_isTextChanged = true;
 
-    lsppopovers::suggestion::Hide();
     syntaxprovider::FastHighlight(this);
 
-    //editarea_py_invoke_text_changed(this);
+    editarea_py_invoke_text_changed(this);
 
     //see if there is any text before the text iter.
     //if yes then trigger autocompletion
+    /*
     m_startItr = *gtk_text_iter_copy(&m_cursorItr);
     gtk_text_iter_backward_char(&m_startItr);
     char previouschar = gtk_text_iter_get_text(&m_startItr, &m_cursorItr)[0];
@@ -280,23 +305,27 @@ void EditArea::TextChangedCallback(){
     }else{
         editarea_py_invoke_completion_requested(this);
     }
+    */
 }
+
 bool EditArea::KeyInputCallback(guint keyval, guint keycode, GdkModifierType state){
     // Search and replace shortcuts
     if (state & GDK_CONTROL_MASK) {
-        if (keyval == GDK_KEY_f) {
+        switch (keyval) {
+        case GDK_KEY_f:
             this->ShowSearchDialog();
             return true;
-        } else if (keyval == GDK_KEY_h) {
+        case GDK_KEY_h:
             this->ShowReplaceDialog();
             return true;
-        } else if (keyval == GDK_KEY_s){
+        case GDK_KEY_s:
             this->Save();
             return true;
-        } else if (keyval == GDK_KEY_o){
-            //filemanager::ChooseFile();
-        } else if(keyval == GDK_KEY_t){
-            //
+        case GDK_KEY_o:
+            filemanagement::ChooseFile();
+            return true;
+        default:
+            break;
         }
     }
 
@@ -304,6 +333,14 @@ bool EditArea::KeyInputCallback(guint keyval, guint keycode, GdkModifierType sta
         if (keyval == GDK_KEY_s) {
             //gui::AppSettingPanel.Show();
         }
+    }
+
+    switch (keyval) {
+    case GDK_KEY_Tab:
+        this->InsertAtCursor("    ");
+        return true;
+    default:
+        break;
     }
 /*
     else if(m_sugPopover->m_isShowing){
@@ -348,14 +385,16 @@ void EditArea::FileSavedCallback(GFile *file){
     }
     if(file != m_editingFile){
         this->LoadFile(file);
+    }else{
+        gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
+        m_originalContent = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
     }
 
-    m_isSaved = true;
+    isSaved = true;
     gtk_button_set_label(m_saveBut, "Saved");
 
     editarea_py_invoke_file_saved(this);
-    //gtk_widget_remove_css_class(GTK_WIDGET(EditAreacache->m_parentSwitcher->m_Button), "SwitcherButtonUnsaved");
-    //gtk_widget_add_css_class(GTK_WIDGET(EditAreacache->m_parentSwitcher->m_Button), "SwitcherButtonSaved");
+
 }
 
 /*
