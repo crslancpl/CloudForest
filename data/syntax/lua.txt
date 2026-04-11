@@ -11,16 +11,16 @@ local
 #AreaModifier
 
 #SLCmt
-
+--
 #MLCmtS
-
+--[[
 #MLCmtE
-
+]]
 #TagSymbol
 
 #Tags
 
 #TextSymbol
-
+" '
 #AcceptCharInName
 _
