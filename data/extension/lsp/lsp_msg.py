@@ -5,35 +5,18 @@ import json
 
 BaseMessage = {"jsonrpc": "2.0"}
 
-InitMessage = {
-    **BaseMessage,
-    "id": 1,
-    "method": "initialize",
-    "params": {}
-}
+InitMessage = {**BaseMessage, "id": 1, "method": "initialize", "params": {}}
 
-ExitMessage = {
-    **BaseMessage,
-    "id": 1,
-    "method": "exit"
-}
+ExitMessage = {**BaseMessage, "id": 1, "method": "exit"}
 
-PositionProperty = {
-    "line": 0,
-    "character": 0
-}
+PositionProperty = {"line": 0, "character": 0}
 
 RangeProperty = {
     "start": PositionProperty,
     "end": PositionProperty,
 }
 
-TextDocumentProperty = {
-    "uri": "file:///",
-    "languageId": "",
-    "version": 0,
-    "text": ""
-}
+TextDocumentProperty = {"uri": "file:///", "languageId": "", "version": 0, "text": ""}
 
 DidOpenMessage = {
     **BaseMessage,
@@ -55,22 +38,22 @@ AutoCompleteMessage = {
 }
 
 
-def GetContentLengthHeader(content: str) -> str:
+def content_length_header(content: str) -> str:
     header = "Content-Length: " + str(len(content)) + "\r\n\r\n"
     return header
 
 
-def GetInitMessage() -> str:
+def init_message() -> str:
     message = json.dumps(InitMessage)
     return message
 
 
-def GetExitMessage() -> str:
+def exit_message() -> str:
     message = json.dumps(ExitMessage)
     return message
 
 
-def GetDidOpenMessage(fileuri: str, content: str, langid: str):
+def did_open_message(fileuri: str, content: str, langid: str):
     copiedTextDoc = TextDocumentProperty.copy()
     copiedTextDoc["uri"] = "file:///" + fileuri
     copiedTextDoc["text"] = content
@@ -83,7 +66,7 @@ def GetDidOpenMessage(fileuri: str, content: str, langid: str):
     return message
 
 
-def GetDidChangeMessage(fileuri: str, content: str, langid: str):
+def did_change_message(fileuri: str, content: str, langid: str):
     copiedTextDoc = TextDocumentProperty.copy()
     copiedTextDoc["uri"] = "file:///" + fileuri
     copiedTextDoc["text"] = ""
@@ -98,7 +81,7 @@ def GetDidChangeMessage(fileuri: str, content: str, langid: str):
     return message
 
 
-def GetAutoCompMessage(fileuri: str, line: int, char: int) -> str:
+def completion_message(fileuri: str, line: int, char: int) -> str:
     copied = AutoCompleteMessage.copy()
     copied["params"]["textDocument"] = {"uri": "file:///" + fileuri}
     copied["params"]["position"] = {"line": line, "character": char}
@@ -107,7 +90,7 @@ def GetAutoCompMessage(fileuri: str, line: int, char: int) -> str:
     return message
 
 
-def ReadAutoComplete(message: str):
+def read_completion(message: str):
     msg = json.loads(message)
 
     result = msg.get("result")
@@ -118,9 +101,10 @@ def ReadAutoComplete(message: str):
 
     for items in result:
         print(items)
+    # print("id: " + msg['id'])
 
 
-def ReadLSPMessage(message: str) -> list | None:
+def read_lsp_message(message: str) -> list | None:
     # returns a [id, data] pair
     msg = json.loads(message)
 

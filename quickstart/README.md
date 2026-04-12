@@ -10,10 +10,10 @@ Executables and libraries are generated in root directiory.
 * `pythonbackend` : C++ codes using Python C API to interact between `src` folder and `pythonscripts` folder.
 * `pythonscripts` : Python scripts which are required to run the app.
 * `toolset` : C++ codes for helpers.
-* `extension` : Extensions.
-* `data` : app data, including settings and assets.
+* `data` : app data, including settings, extensions and assets.
 
 ## *data* Directory:
+* `extension` : extensions (Python)
 * `styles` : for CSS files
 * `syntax` : templates for syntax provider
 * `ui` : GTK builder `.ui` files

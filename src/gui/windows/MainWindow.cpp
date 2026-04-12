@@ -39,3 +39,7 @@ void MainWindow::Show(){
 void MainWindow::Insert(CfContent *content){
     m_layout->InsertChild(content);
 }
+
+GtkWindow* MainWindow::GetGtkWindow(){
+    return m_window;
+}

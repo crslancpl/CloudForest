@@ -34,11 +34,11 @@ static void CreateButton(datatypes::Language* lang){
 void langpanel::Construct(){
     /*
      * Create the language choosing window and set it as
-     * the flyout of the AppWindow.
+     * the flyout of g_mainwindow->m_window.
      */
     lang_choosing_window = GTK_WINDOW(gtk_window_new());
     focus_event_ctrl = gtk_event_controller_focus_new();
-    gtk_window_set_transient_for(lang_choosing_window, gui::g_mainwindow->m_window);
+    gtk_window_set_transient_for(lang_choosing_window, gui::g_mainwindow->GetGtkWindow());
     gtk_window_set_decorated(lang_choosing_window, false);
     gtk_window_set_default_size(lang_choosing_window, 200, 100);
     g_signal_connect(focus_event_ctrl, "leave", G_CALLBACK(FocusLost), nullptr);

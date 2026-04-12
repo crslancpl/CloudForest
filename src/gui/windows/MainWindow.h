@@ -13,9 +13,10 @@ public:
     void Show();
     void SetHeaderBar(HeaderBar *headerbar);
     void Insert(CfContent *content);
+    GtkWindow* GetGtkWindow();
 
-    GtkWindow *m_window;
 private:
+    GtkWindow *m_window;
     CfLayout *m_layout;
 };
 

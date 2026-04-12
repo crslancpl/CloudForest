@@ -2,46 +2,47 @@ import re
 import select
 import subprocess
 
-from extension.CloudForestBuiltIn import LSPMsg
-from extension.CloudForestMod import EditAreaMod
+from cloudforest import EditAreaMod
+
+from . import lsp_msg
 
 
-class LSPServer:
+class LspClient:
     def __init__(self, lspcommand: str, languageId: str) -> None:
         self.LSP = subprocess.Popen(
             lspcommand.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
         self.languageId: str = languageId
 
-    def Start(self):
-        message = LSPMsg.GetInitMessage()
-        self.Send(message)
-        self.Read()
+    def start(self):
+        message = lsp_msg.init_message()
+        self.send(message)
+        self.read()
 
-    def End(self):
-        message = LSPMsg.GetExitMessage()
-        self.Send(message)
+    def end(self):
+        message = lsp_msg.exit_message()
+        self.send(message)
 
-    def OpenFile(self, file: str, content: str):
-        message = LSPMsg.GetDidOpenMessage(file, content, self.languageId)
-        self.Send(message)
-        self.Read()
+    def open_file(self, file: str, content: str):
+        message = lsp_msg.did_open_message(file, content, self.languageId)
+        self.send(message)
+        self.read()
 
-    def ChangeText(self, file: str, content: str):
-        message = LSPMsg.GetDidChangeMessage(file, content, self.languageId)
-        self.Send(message)
-        self.Read()
+    def change_text(self, file: str, content: str):
+        message = lsp_msg.did_change_message(file, content, self.languageId)
+        self.send(message)
+        self.read()
 
-    def AutoComplete(self, ea: EditAreaMod.EditArea, line: int, pos: int):
+    def get_completion(self, ea: EditAreaMod.EditArea, line: int, pos: int):
         self.currentEditArea = ea
-        message = LSPMsg.GetAutoCompMessage(ea.get_filepath(), line, pos - 1)
-        self.Send(message)
-        self.Read()
+        message = lsp_msg.completion_message(ea.get_filepath(), line, pos - 1)
+        self.send(message)
+        self.read()
 
-    def Send(self, message: str):
+    def send(self, message: str):
         if self.LSP.stdin is None or self.LSP.stdout is None:
             return
-        ContentLengthHeader = LSPMsg.GetContentLengthHeader(message)
+        ContentLengthHeader = lsp_msg.content_length_header(message)
 
         # print("message: " + message)
         self.LSP.stdout.flush()
@@ -50,7 +51,7 @@ class LSPServer:
         _ = self.LSP.stdin.write(message.encode("utf-8"))
         self.LSP.stdin.flush()
 
-    def Read(self):
+    def read(self):
         # [!NOTE]
         # We cannot guarantee how long is the message from
         # LSP. There may be a lots of messages one after another.
@@ -82,18 +83,18 @@ class LSPServer:
                 message = self.LSP.stdout.read(int(contentlength[0])).decode()
 
                 # print("lsp message: ", message)
-                content = LSPMsg.ReadLSPMessage(message)
+                content = lsp_msg.read_lsp_message(message)
                 if content is None:
                     pass
                 elif content[0] == 1:
                     pass
                 elif content[0] == 2:
-                    self.ReadAutoComplete(content[1])
+                    self.read_completion(content[1])
                     pass
                 else:
                     pass
 
-    def ReadAutoComplete(self, items) -> None:
+    def read_completion(self, items) -> None:
         self.currentEditArea.clear_suggestion()
         if items == []:
             return

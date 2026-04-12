@@ -53,12 +53,12 @@ static void FileSaved(GObject *source, GAsyncResult *result, void* content){
 
 void filemanagement::ChooseFile(){
     gtk_file_dialog_set_title(file_dialog, "choose a file");
-    gtk_file_dialog_open(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSelected, nullptr);
+    gtk_file_dialog_open(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FileSelected, nullptr);
 }
 
 void filemanagement::ChooseFolder(){
     gtk_file_dialog_set_title(file_dialog, "Choose a folder");
-    gtk_file_dialog_select_folder(file_dialog, gui::g_mainwindow->m_window, nullptr, FolderSelected, nullptr);
+    gtk_file_dialog_select_folder(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FolderSelected, nullptr);
 }
 
 /*
@@ -74,7 +74,7 @@ void filemanagement::SaveFile(GFile *file, char *content, void (*savedcallback)(
         file_content = content;
         file_saved_callback = savedcallback;
         gtk_file_dialog_set_title(file_dialog, "Save file");
-        gtk_file_dialog_save(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSaved, nullptr);
+        gtk_file_dialog_save(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FileSaved, nullptr);
         return;
     }
 
