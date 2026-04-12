@@ -2,7 +2,7 @@ import re
 import select
 import subprocess
 
-from cloudforest import EditAreaMod
+from cloudforest import editarea
 
 from . import lsp_msg
 

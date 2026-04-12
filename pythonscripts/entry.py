@@ -1,4 +1,3 @@
-from pythonscripts import editarea, initializer, language
+from pythonscripts import editarea, language
 
-initializer.initialize()
 language.load_language_settings()

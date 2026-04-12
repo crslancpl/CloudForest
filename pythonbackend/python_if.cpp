@@ -34,8 +34,11 @@ void pybackend::Start(){
     }
     PyConfig_Clear(&config);
 
-    ExecuteFile("extension/init.py");
+
+    ExecuteFile("pythonscripts/init.py");
     ExecuteFile("pythonscripts/entry.py");
+
+    ExecuteFile("data/extension/init.py");
 
     return;
 
