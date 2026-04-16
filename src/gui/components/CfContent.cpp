@@ -86,3 +86,11 @@ void CfContent::ParentDataChanged(CfContent *parent){
 void CfContent::ChildDataChanged(CfContent *child){
     //
 }
+
+
+
+CfContent* cfcontent::PackAsCfContent(GtkWidget *widget){
+    auto content = new CfContent();
+    content->SetContentWidget(widget);
+    return content;
+}

@@ -5,19 +5,19 @@
 #ifndef GUI_IF_H_
 #define GUI_IF_H_
 
-
 #include <gtk/gtk.h>
 
 class MainWindow;
 class HeaderBar;
 class FilePanel;
+class SettingPanel;
 
 namespace gui{
 
 extern MainWindow* g_mainwindow;
 extern HeaderBar* g_headerbar;
 extern FilePanel* g_filepanel;
-//extern SettingPanel* e_settingpanel;
+extern SettingPanel* g_settingpanel;
 
 void OpenSettingPanel();
 void Init();

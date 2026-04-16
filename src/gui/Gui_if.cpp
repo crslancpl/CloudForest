@@ -8,8 +8,10 @@
 #include "editarea/LspPopovers_if.h"
 #include "filepanel/FilePanel_if.h"
 #include "filepanel/FilePanel.h"
+#include "src/gui/settingpanel/SettingPanel_if.h"
 #include "windows/MainWindow_if.h"
 #include "windows/MainWindow.h"
+#include "settingpanel/SettingPanel.h"
 #include "style/Style.h"
 #include "layouts/tab/CfTab_if.h"
 #include "layouts/tab/CfTabLayout.h"
@@ -17,7 +19,7 @@
 
 
 MainWindow* gui::g_mainwindow;
-//SettingPanel gui::e_settingpanel;
+SettingPanel* gui::g_settingpanel;
 HeaderBar* gui::g_headerbar;
 FilePanel* gui::g_filepanel;
 
@@ -29,6 +31,7 @@ void gui::Init(){
     filepanel::Construct();
     langpanel::Construct();
     lsppopovers::Construct();
+    settingpanel::Construct();
 
     gui::g_mainwindow->Insert(gui::g_filepanel);
     gui::g_mainwindow->Insert(tablayout::NewTabLayout());

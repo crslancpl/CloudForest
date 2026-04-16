@@ -10,11 +10,13 @@ static std::vector<std::unique_ptr<CfSeparator>> cache_separators;//For callback
 static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, CfSeparator* cfsep){
     LayoutNeighbor neighbors = cfsep->parent->GetNeighbors(GTK_WIDGET(cfsep->separator));
 
+
     if(neighbors.prevWid == nullptr || neighbors.nextWid == nullptr){
         return;
     }
 
-    if(gtk_widget_get_width(neighbors.prevWid) + x <= 0 && gtk_widget_get_width(neighbors.nextWid) - x <= 0){
+
+    if(gtk_widget_get_width(neighbors.prevWid) + x <= 0 || gtk_widget_get_width(neighbors.nextWid) - x <= 0){
         return;
     }
 
@@ -36,7 +38,6 @@ static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, CfSepar
                 gtk_widget_get_width(neighbors.nextWid),
                 gtk_widget_get_height(neighbors.nextWid) - y);
     }
-
 }
 
 CfLayout::CfLayout(GtkOrientation orientation){

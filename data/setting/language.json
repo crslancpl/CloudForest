@@ -31,15 +31,15 @@
   },
 
   "JavaScript": {
-    "id": "js",
+    "id": "javascript",
     "file-extensions": ["js", "mjs"],
-    "syntax-file": "js.txt"
+    "syntax-file": "javascript.txt"
   },
 
   "Python": {
-    "id": "py",
+    "id": "python",
     "file-extensions": ["py"],
-    "syntax-file": "py.txt"
+    "syntax-file": "python.txt"
   },
 
   "Lua": {

@@ -22,6 +22,35 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+static PyObject *language_module_add_callback(PyObject *self, PyObject *args){
+    char* event;
+    PyObject* callback;
+    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
+        return nullptr;
+    }
+
+    if(strcmp(event, "new-editarea") == 0){
+        //l
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *language_module_listen_language(PyObject *self, PyObject *args){
+    char* lang;
+    PyObject* callback;
+    if(!PyArg_ParseTuple(args, "sO", &lang, &callback)){
+        return nullptr;
+    }
+
+    if(strcmp(lang, "new-editarea") == 0){
+        //l
+    }
+
+    Py_RETURN_NONE;
+}
+
+
 static PyMethodDef language_module_method[] = {
     {"clear_data",  language_module_clear_data, METH_VARARGS,"clear language datas. call this before reloading the language panel"},
     {"add_language",  language_module_add_language, METH_VARARGS,"add a language to the language list."},

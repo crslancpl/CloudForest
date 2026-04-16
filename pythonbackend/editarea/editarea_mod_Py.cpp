@@ -82,7 +82,7 @@ void editarea_py_invoke_filedata_changed(EditArea *editarea){
     Py_DECREF((PyObject*) args);
 }
 
-static PyObject *editarea_module_addcallback(PyObject *self, PyObject *args){
+static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
     char* event;
     PyObject* callbackfunc;
     if(!PyArg_ParseTuple(args, "sO", &event, &callbackfunc)){
@@ -92,9 +92,9 @@ static PyObject *editarea_module_addcallback(PyObject *self, PyObject *args){
         return nullptr;
     }
 
-    if (strcmp(event, "NEWEDITAREA") == 0) {
+    if (strcmp(event, "new-editarea") == 0) {
         PyList_Append(ea_registered_callback_list, callbackfunc);
-    } else if(strcmp(event, "LANGUAGECHANGED") == 0){
+    } else if(strcmp(event, "language-changed") == 0){
         PyList_Append(ea_language_changed_callback_list, callbackfunc);
     }
 
@@ -104,13 +104,13 @@ static PyObject *editarea_module_addcallback(PyObject *self, PyObject *args){
 
 
 static PyMethodDef editarea_module_methods[]={
-    {"add_callback", editarea_module_addcallback, METH_VARARGS, "add callback for event"},
+    {"add_callback", editarea_module_add_callback, METH_VARARGS, "add callback for event"},
     {nullptr, nullptr, 0, nullptr}
 };
 
 static PyModuleDef editarea_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "editarea_mod",
+    .m_name = "editarea",
     .m_size = 0,
     .m_methods = editarea_module_methods,
     .m_slots = nullptr,

@@ -3,37 +3,30 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkdropdown.h>
-#include "../GUIClasses.h"
+#include <gtk/gtkshortcut.h>
+
+//forward declaration
+class CfLayout;
 
 class SettingPanel{
 public:
-    void Init();
+    SettingPanel();
+
     void Show();
+    void SwitchPage();
+    void AddTabButton(const char* name);
+    GtkWindow* GetWindowWidget();
 
-    GtkWindow *Window;
-    CFLayout *BaseLayout;// Saperates TabButtonBox and Stack
-
-    GtkBox *TabButtonBox;// left-hand side
-
-    GtkButton *EditAreaSettingButton;
-    GtkButton *ExtensionsButton;
-    GtkGrid *TabButtonBoxSeparator;
-    GtkButton *CloseButton;
-
-    GtkStack *Stack;// right-hand side
-    GtkBox *EditAreaSettingPage;
-    GtkBox *ExtensionsPage;
-
-    /*
-     * Edit area setting page
-     */
-    GtkDropDown* TabBehaviorChooser;//determine whether showing tab or space when the tab button is clicked
-    GtkSpinButton* TabSizeSetter;
 
 private:
+    GtkWindow *m_window;
+    CfLayout *m_baseLayout;// Saperates TabButtonBox and Stack
+    GtkBox *m_tabButtonBox;// left-hand side
+    GtkGrid *m_tabButtonBoxSeparator;
+    GtkButton *m_closeButton;
+    GtkStack *m_stack;// right-hand side
+
     void BindTabButtons(GtkBuilder* builder);
-    void BindEditAreaSettingPage(GtkBuilder* builder);
-    void BindExtensionSettingPage(GtkBuilder* builder);
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "cloudforest_mod_Py.h"
 
 #include "editarea/editarea_mod_Py.h"
+#include "settingpanel/setting_panel_mod_Py.h"
 #include "language_mod_Py.h"
 
 static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
@@ -25,6 +26,7 @@ static struct PyModuleDef cloudforest_module = {
 PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyObject *cfmodule = PyModule_Create(&cloudforest_module);
     PyModule_AddObject(cfmodule, "editarea", (PyObject*)PyInit_editarea_module());
+    PyModule_AddObject(cfmodule, "setting_panel", (PyObject*)PyInit_setting_panel_module());
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     return cfmodule;
 }

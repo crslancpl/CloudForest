@@ -1,18 +1,23 @@
 #include "SettingPanel.h"
-#include "../layout/CFLayout.h"
-#include "../guiCore.h"
-#include "MainWindow.h"
+
+#include "src/gui/layouts/layout/CfLayout.h"
+#include "src/gui/components/CfContent.h"
+#include "src/gui/Gui_if.h"
+#include "src/gui/windows/MainWindow.h"
+#include <glib-object.h>
+#include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 
 static void CloseClicked(GtkButton *self, gpointer data){
-    gtk_widget_set_visible(GTK_WIDGET(gui::AppSettingPanel.Window), false);
+    gtk_widget_set_visible(GTK_WIDGET(gui::g_settingpanel->GetWindowWidget()), false);
 }
 
 static void SwitchTab(GtkButton *self, GtkBox* page){
-    gtk_stack_set_visible_child(gui::AppSettingPanel.Stack, GTK_WIDGET(page));
+    gui::g_settingpanel->SwitchPage();
 }
 
 
-void SettingPanel::Init(){
+SettingPanel::SettingPanel(){
     /*
      * The ui is constructed from UI/SettingPanel.ui
      *
@@ -25,61 +30,51 @@ void SettingPanel::Init(){
      * the setting to look like a list.
      */
 
-    GtkBuilder *builder = gtk_builder_new_from_file("ui/SettingPanel.ui");
+    GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
 
-    Window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
-    BaseLayout->Init(GTK_ORIENTATION_HORIZONTAL);
-    gtk_window_set_child(Window, GTK_WIDGET(BaseLayout->BaseBox));
+    m_window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
+    m_baseLayout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);
+    gtk_window_set_child(m_window, GTK_WIDGET(m_baseLayout->GetBaseWidget()));
+    gtk_window_set_decorated(m_window, false);
+    gtk_window_set_transient_for(m_window, gui::g_mainwindow->GetGtkWindow());
 
     BindTabButtons(builder);
-    BindEditAreaSettingPage(builder);
-    BindExtensionSettingPage(builder);
 
-    gtk_window_set_decorated(Window, false);
-    gtk_window_set_transient_for(Window, gui::AppWindow.Window);
+    auto tabbutboxcontent = cfcontent::PackAsCfContent(GTK_WIDGET(m_tabButtonBox));
+    tabbutboxcontent->SetDefaultSize(200, 0);
+    m_baseLayout->InsertChild(tabbutboxcontent);
 
-    BaseLayout->InsertChild(GTK_WIDGET(TabButtonBox));
-    Stack = GTK_STACK(gtk_stack_new());
-    gtk_widget_set_hexpand(GTK_WIDGET(Stack), true);
-    gtk_widget_add_css_class(GTK_WIDGET(Stack), "SettingPage");
+    m_stack = GTK_STACK(gtk_stack_new());
+    gtk_widget_set_hexpand(GTK_WIDGET(m_stack), true);
+    gtk_widget_add_css_class(GTK_WIDGET(m_stack), "SettingPage");
+    auto stack = cfcontent::PackAsCfContent(GTK_WIDGET(m_stack));
+    stack->SetHorizontalExpand(false);
+    stack->SetVerticalExpand(true);
+    stack->SetDefaultSize(270, 270);
 
-    BaseLayout->InsertChildWithScrolledWindow(GTK_WIDGET(Stack));
-    gtk_stack_add_child(Stack, GTK_WIDGET(EditAreaSettingPage));
-    gtk_stack_add_child(Stack, GTK_WIDGET(ExtensionsPage));
+    m_baseLayout->InsertChild(stack);
+    g_object_unref(builder);
 }
 
 void SettingPanel::BindTabButtons(GtkBuilder* builder){
     /*
      * The left hand side of the setting panel
      */
-    TabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
+    m_tabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
 
-    gtk_widget_set_hexpand(GTK_WIDGET(TabButtonBox), false);
+    gtk_widget_set_hexpand(GTK_WIDGET(m_tabButtonBox), false);
 
-    EditAreaSettingButton = GTK_BUTTON(gtk_builder_get_object(builder, "EditAreaButton"));
-    ExtensionsButton = GTK_BUTTON(gtk_builder_get_object(builder, "ExtensionButton"));
-    CloseButton = GTK_BUTTON(gtk_builder_get_object(builder,"CloseButton"));
+    m_closeButton = GTK_BUTTON(gtk_builder_get_object(builder,"CloseButton"));
 
-    gtk_widget_add_css_class(GTK_WIDGET(Window), "SettingPanel");
-    gtk_widget_add_css_class(GTK_WIDGET(TabButtonBox), "SettingTabButtonBox");
-    gtk_widget_add_css_class(GTK_WIDGET(CloseButton), "CloseButton");
+    gtk_widget_add_css_class(GTK_WIDGET(m_window), "SettingPanel");
+    gtk_widget_add_css_class(GTK_WIDGET(m_tabButtonBox), "SettingTabButtonBox");
+    gtk_widget_add_css_class(GTK_WIDGET(m_closeButton), "CloseButton");
 
-    g_signal_connect(EditAreaSettingButton, "clicked", G_CALLBACK(SwitchTab), EditAreaSettingPage);
-    g_signal_connect(ExtensionsButton, "clicked", G_CALLBACK(SwitchTab), ExtensionsPage);
-    g_signal_connect(CloseButton, "clicked", G_CALLBACK(CloseClicked), nullptr);
+    g_signal_connect(m_closeButton, "clicked", G_CALLBACK(CloseClicked), nullptr);
 }
 
-void SettingPanel::BindEditAreaSettingPage(GtkBuilder* builder){
-    EditAreaSettingPage = GTK_BOX(gtk_builder_get_object(builder, "EditAreaSettingPage"));
-
-    TabBehaviorChooser = GTK_DROP_DOWN(gtk_builder_get_object(builder, "tabbehavchooser"));
-    TabSizeSetter = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "tabsizesetter"));
-    GtkAdjustment *adj = gtk_adjustment_new(0, 0, 16, 1, 1, 0);
-    gtk_spin_button_set_adjustment(TabSizeSetter, adj);
-}
-
-void SettingPanel::BindExtensionSettingPage(GtkBuilder* builder){
-    ExtensionsPage = GTK_BOX(gtk_builder_get_object(builder, "ExtensionsPage"));
+GtkWindow* SettingPanel::GetWindowWidget(){
+    return m_window;
 }
 
 void SettingPanel::Show(){
@@ -88,11 +83,19 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
+    GtkWidget *mainwindow = GTK_WIDGET(gui::g_mainwindow->GetGtkWindow());
+    int w = gtk_widget_get_width(mainwindow)/1.5;
+    int h = gtk_widget_get_height(mainwindow)/1.5;
 
-    int w = gtk_widget_get_width(GTK_WIDGET(gui::AppWindow.Window))/1.5;
-    int h = gtk_widget_get_height(GTK_WIDGET(gui::AppWindow.Window))/1.5;
+    gtk_widget_set_size_request(GTK_WIDGET(m_tabButtonBox), w*0.3, 0);
+    gtk_window_set_default_size(m_window, w,h);
+    gtk_widget_set_visible(GTK_WIDGET(m_window), true);
+}
 
-    gtk_widget_set_size_request(GTK_WIDGET(TabButtonBox), w*0.3, 0);
-    gtk_window_set_default_size(Window, w,h);
-    gtk_widget_set_visible(GTK_WIDGET(Window), true);
+void SettingPanel::SwitchPage(){
+    //
+}
+
+void SettingPanel::AddTabButton(const char* name){
+    gtk_box_prepend(m_tabButtonBox, gtk_button_new_with_label(name));
 }

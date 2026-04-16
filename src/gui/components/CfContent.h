@@ -47,7 +47,7 @@ private:
 };
 
 namespace cfcontent{
-    CfContent *PackAsCFContent(GtkWidget *widget);
+    CfContent *PackAsCfContent(GtkWidget *widget);
 }
 
 #endif

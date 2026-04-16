@@ -38,6 +38,7 @@ set(MAINWINDOW
 
 set(SETTINGPANEL
     settingpanel/SettingPanel.cpp
+    settingpanel/SettingPanel_if.cpp
 )
 
 set(STYLE
@@ -51,7 +52,7 @@ add_library(${PROJECT_NAME} STATIC
     ${HEADERBAR}
     ${LAYOUTS}
     ${MAINWINDOW}
-    #${SETTINGPANEL}
+    ${SETTINGPANEL}
     ${STYLE}
 
     Gui_if.cpp

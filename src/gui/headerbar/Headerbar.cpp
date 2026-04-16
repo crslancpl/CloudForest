@@ -8,7 +8,7 @@
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/Gui_if.h"
-//#include "../settingpanel/SettingPanel.h"
+#include "../settingpanel/SettingPanel.h"
 
 
 
@@ -21,7 +21,7 @@ static void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpoint
 }
 
 static void IdeButtonClicked(GtkButton *self, void* userdata){
-    //gui::AppSettingPanel.Show();
+    gui::g_settingpanel->Show();
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {

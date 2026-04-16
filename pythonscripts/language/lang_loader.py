@@ -5,7 +5,7 @@ from cloudforest import editarea, language
 
 def load_language_settings():
     #
-    with open("data/languages.json") as languagefile:
+    with open("data/setting/language.json") as languagefile:
         data = json.load(languagefile)
         # print(data)
         for langname in data:
