@@ -4,8 +4,11 @@
 #include <Python.h>
 
 class EditArea;
+typedef struct py_EditArea py_EditArea;
 
 PyMODINIT_FUNC PyInit_editarea_module();
+
+py_EditArea* find_editarea_py(const EditArea *ea);
 
 void editarea_py_invoke_text_changed(EditArea *editarea);
 void editarea_py_invoke_cursor_moved(EditArea *editarea, int line, int column);

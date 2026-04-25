@@ -7,8 +7,11 @@ namespace datatypes{
 typedef struct Language Language;
 }
 
-void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang);
+void LanguageListenerStart();
 
-void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(EditArea*));
+void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang);
+void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const char*, EditArea*));
+
+
 
 #endif

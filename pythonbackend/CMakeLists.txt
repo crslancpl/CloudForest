@@ -13,6 +13,7 @@ add_library(${PROJECT_NAME} STATIC
     cloudforest_mod_Py.cpp
     language_mod_Py.cpp
     python_if.cpp
+    python_tool.cpp
     ${EDITAREA}
     ${SETTINGPANEL}
 )

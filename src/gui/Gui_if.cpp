@@ -32,7 +32,9 @@ void gui::Init(){
     langpanel::Construct();
     lsppopovers::Construct();
     settingpanel::Construct();
+}
 
+void gui::Start(){
     gui::g_mainwindow->Insert(gui::g_filepanel);
     gui::g_mainwindow->Insert(tablayout::NewTabLayout());
 

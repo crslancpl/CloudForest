@@ -21,6 +21,7 @@ extern SettingPanel* g_settingpanel;
 
 void OpenSettingPanel();
 void Init();
+void Start();
 
 }
 

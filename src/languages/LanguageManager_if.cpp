@@ -2,10 +2,11 @@
 
 #include "datatypes/language.h"
 #include "toolset/tools/text_tool.h"
+#include "LanguageListener.h"
 
-#include <cstdio>
 #include <unordered_map>
 #include <string>
+
 
 static std::unordered_set<void(*)(datatypes::Language*)> new_lang_callback_list = {};
 
@@ -21,6 +22,10 @@ static std::unordered_map<std::string, datatypes::Language*> language_list = {
 };
 
 static std::unordered_map<std::string, datatypes::Language*> extension_map = {};
+
+void langmanager::Init(){
+    LanguageListenerStart();
+}
 
 void langmanager::Clear(){
     language_list.clear();

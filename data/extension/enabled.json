@@ -1,0 +1,5 @@
+{
+  "clangd": {
+    "location": "data/extension/lsp/clients/clangd.py"
+  }
+}

@@ -1,6 +1,11 @@
 #include "LanguageListener.h"
 
 #include "LanguageManager_if.h"
+#include "datatypes/language.h"
+#include "pythonbackend/language_mod_Py.h"
+#include "src/gui/editarea/EditArea.h"
+#include "src/gui/editarea/EditArea_if.h"
+
 
 #include <unordered_map>
 #include <unordered_set>
@@ -11,22 +16,34 @@ public:
         m_lang = lang;
     }
 
-    void InsertCallback(void(*callback)(EditArea*) ){
+    void InsertCallback(void(*callback)(const char*, EditArea*) ){
         m_callbacks.insert(callback);
     }
 
     void Run(EditArea* ea){
         for(auto cb : m_callbacks){
-            cb(ea);
+            cb(m_lang->name.c_str(), ea);
         }
     }
 
 private:
     datatypes::Language *m_lang;
-    std::unordered_set<void(*)(EditArea*)> m_callbacks = {};
+    std::unordered_set<void(*)(const char*, EditArea*)> m_callbacks = {};
 };
 
 static std::unordered_map<datatypes::Language*, LangCallback*> lang_and_callbacks_map;
+
+
+static void UpdateTextAreaLanguage(TextArea* ta, datatypes::Language* lang){
+    // the callback for EditArea->SetLanguage
+    language_module_invoke_new_editarea(lang->name.c_str(), (EditArea*)ta);
+}
+
+static void EditAreaCreated(EditArea* ea){
+    // pass to editarea::AddNewEditAreaCallback()
+    ea->AddLangChangedCallback(UpdateTextAreaLanguage);
+    language_module_invoke_new_editarea(ea->GetLanguage()->name.c_str(), ea);
+}
 
 void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang){
     auto l = lang_and_callbacks_map.find(lang);
@@ -41,7 +58,7 @@ void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang){
    langcallback->Run(ea);
 }
 
-void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(EditArea*)){
+void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const char*, EditArea*)){
     const auto lang = langmanager::FindLanguage(langname);
     if(!lang){
         return;
@@ -57,4 +74,8 @@ void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(EditAre
     }
 
     langcallback->InsertCallback(callback);
+}
+
+void LanguageListenerStart(){
+    editarea::AddNewEditAreaCallback(EditAreaCreated);
 }

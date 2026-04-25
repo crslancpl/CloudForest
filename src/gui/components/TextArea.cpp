@@ -83,7 +83,7 @@ void TextArea::AddLangChangedCallback(void (*callback)(TextArea*, datatypes::Lan
     m_langChangedCallbacks.insert(callback);
 }
 
-void TextArea::RemoveLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*)){
+void TextArea::RemoveLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*)){
     m_langChangedCallbacks.erase(callback);
 }
 

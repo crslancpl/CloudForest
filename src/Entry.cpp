@@ -2,6 +2,7 @@
  * Entry.cpp consist the entry function
  */
 #include "filemanagement/FileManagement_if.h"
+#include "src/languages/LanguageManager_if.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "gui/Gui_if.h"
 #include "pythonbackend/python_if.h"
@@ -29,9 +30,11 @@ int main (int argc,char *argv[]){
 static void AppActivated (GtkApplication *app, gpointer user_data){
     global::g_gtkApplication = app;
     syntaxprovider::Init();
+    langmanager::Init();
     gui::Init();
     pybackend::Start();
     filemanagement::Init();
+    gui::Start();
 }
 
 static void AppClosed (GtkApplication *app, gpointer user_data){

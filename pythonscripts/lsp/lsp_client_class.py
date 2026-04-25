@@ -9,9 +9,11 @@ from . import lsp_msg
 
 class LspClient:
     def __init__(self, lspcommand: str, languageId: str) -> None:
+        print("aldha")
         self.LSP = subprocess.Popen(
             lspcommand.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
+        print("sta")
         self.languageId: str = languageId
 
     def start(self):
@@ -33,7 +35,7 @@ class LspClient:
         self.send(message)
         self.read()
 
-    def get_completion(self, ea: EditAreaMod.EditArea, line: int, pos: int):
+    def get_completion(self, ea: editarea.EditArea, line: int, pos: int):
         self.currentEditArea = ea
         message = lsp_msg.completion_message(ea.get_filepath(), line, pos - 1)
         self.send(message)

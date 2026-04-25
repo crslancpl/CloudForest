@@ -66,7 +66,7 @@ static void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
 FPFolderButton::FPFolderButton(GFile *folder, int level){
     Level=level;
     /* binding */
-    builder = gtk_builder_new_from_file("ui/FPFolderButton.ui");
+    builder = gtk_builder_new_from_file("data/ui/FPFolderButton.ui");
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
     m_folderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "FolderToggleBut"));
     m_content = GTK_BOX(gtk_builder_get_object(builder, "Content"));

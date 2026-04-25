@@ -21,8 +21,8 @@ public:
 
 
 
-    void AddLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*));
-    void RemoveLangChangedCallback(void (*callback)(TextArea*,datatypes::Language*));
+    void AddLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*));
+    void RemoveLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*));
 
     void ClearHighlight();
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);

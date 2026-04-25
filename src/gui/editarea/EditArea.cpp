@@ -186,6 +186,10 @@ const char* EditArea::GetFilePath(){
 }
 
 void EditArea::SetLanguage(datatypes::Language* lang){
+    if (lang == m_language) {
+        return;
+    }
+
     m_language = lang;
     gtk_button_set_label(m_langBut, m_language->name.c_str());
     syntaxprovider::FastHighlight(this);

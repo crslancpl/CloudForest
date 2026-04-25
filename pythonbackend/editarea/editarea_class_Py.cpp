@@ -6,13 +6,24 @@
 #include "src/gui/editarea/LspPopovers_if.h"
 #include "src/gui/editarea/LspPopovers.h"
 #include "src/gui/editarea/EditArea.h"
-#include "datatypes/lsp.h"
 #include "src/languages/LanguageManager_if.h"
+#include "datatypes/lsp.h"
 
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){
     PyObject* path = PyUnicode_FromString(self->Filepath);
     return path;
+}
+
+static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
+    std::string text = self->Editarea->GetLanguage()->name.c_str();
+
+    if(text.empty()){
+        Py_RETURN_NONE;
+    }else{
+        return PyUnicode_FromString(text.c_str());
+    }
+    Py_RETURN_NONE;
 }
 
 static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
@@ -26,7 +37,6 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-//async
 static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
     std::string text = self->Editarea->GetContent();
 
@@ -143,6 +153,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"rm_callback", (PyCFunction)py_EditArea_remove_callback, METH_VARARGS, "remove callback"},
     {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
     {"set_language", (PyCFunction)py_EditArea_set_lang, METH_VARARGS, "set the language of edit area"},
+    {"get_language", (PyCFunction)py_EditArea_get_lang, METH_VARARGS, "get the language of edit area"},
     {"add_suggestion", (PyCFunction)py_EditArea_add_suggestion, METH_VARARGS, "add a suggestion to the autocomplete"},
     {"clear_suggestion", (PyCFunction)py_EditArea_clear_suggestion, METH_VARARGS, "clear the suggestions of the edit area"},
     {"hide_suggestion", (PyCFunction)py_EditArea_hide_suggestion, METH_VARARGS, "hide the suggestion popover"},
