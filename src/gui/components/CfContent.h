@@ -26,8 +26,12 @@ public:
     CfContent *GetChild();
     void SetChild(CfContent* child);
 
-    void AddNameChangedCallback(void (*callback)(const std::string&, CfContent*));
-    void RemoveNameChangedCallback(void (*callback)(const std::string&, CfContent*));
+    enum Event{
+        CFCONTENT_CLASS_NAME_CHANGED
+    };
+
+    void ListenEvent(Event event, void (*callback)());
+    void StopListenEvent(Event event, void (*callback)());
 
     virtual void Destroy();
     virtual void ChildDataChanged(CfContent* child);
@@ -47,7 +51,7 @@ private:
 };
 
 namespace cfcontent{
-    CfContent *PackAsCfContent(GtkWidget *widget);
+CfContent *PackAsCfContent(GtkWidget *widget);
 }
 
 #endif

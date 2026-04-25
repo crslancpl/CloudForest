@@ -9,12 +9,12 @@ class CfTabLayout;
 class CfTabSwitcher;
 
 namespace tablayout {
-    CfTabLayout* NewTabLayout();
-    void Show(CfContent *content);
-    void SwitchTo(CfContent *content);
-    void MovePage(CfContent *content, CfTabLayout *newtab);
-    CfTabSwitcher* GetSwitcher(CfContent *content);
-    void AddContentSwitcherPair(CfContent *content, CfTabSwitcher *switcher);
+CfTabLayout* NewTabLayout();
+void Show(CfContent *content);
+void SwitchTo(CfContent *content);
+void MovePage(CfContent *content, CfTabLayout *newtab);
+CfTabSwitcher* GetSwitcher(CfContent *content);
+void AddContentSwitcherPair(CfContent *content, CfTabSwitcher *switcher);
 }
 
 #endif

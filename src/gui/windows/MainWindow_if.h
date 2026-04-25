@@ -2,7 +2,7 @@
 #define MAIN_WINDOW_IF_H_
 
 namespace mainwindow {
-    void Construct();
+void Construct();
 }
 
 #endif

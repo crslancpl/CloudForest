@@ -74,26 +74,34 @@ EditArea* editarea::FindEditArea(const char* absopath){
     return result == editarea_list.end() ? nullptr : result->second;
 }
 
-void editarea::AddNewEditAreaCallback(void (*callback)(EditArea*)){
-    new_editarea_callbacks.insert(callback);
+void editarea::ListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case EDITAREA_CREATED:
+        new_editarea_callbacks.insert((void (*)(EditArea*))callback);
+        break;
+    case EDITAREA_FOCUSED_CHANGED:
+        focus_changed_callbacks.insert((void (*)(EditArea*))callback);
+        break;
+    case EDITAREA_LANG_CHANGED:
+        lang_changed_callbacks.insert((void (*)(EditArea*, const char*))callback);
+        break;
+    default:
+        break;
+    }
 }
 
-void editarea::RemoveNewEditAreaCallback(void (*callback)(EditArea*)){
-    new_editarea_callbacks.erase(callback);
-}
-
-void editarea::AddFocusChangedCallback(void (*callback)(EditArea*)){
-    focus_changed_callbacks.insert(callback);
-}
-
-void editarea::RemoveFocusChangedCallback(void (*callback)(EditArea*)){
-    focus_changed_callbacks.erase(callback);
-}
-
-void editarea::AddLangChangedCallback(void (*callback)(EditArea*,const char*)){
-    lang_changed_callbacks.insert(callback);
-}
-
-void editarea::RemoveLangChangedCallback(void (*callback)(EditArea*, const char*)){
-    lang_changed_callbacks.erase(callback);
+void editarea::StopListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case EDITAREA_CREATED:
+        new_editarea_callbacks.erase((void (*)(EditArea*))callback);
+        break;
+    case EDITAREA_FOCUSED_CHANGED:
+        focus_changed_callbacks.erase((void (*)(EditArea*))callback);
+        break;
+    case EDITAREA_LANG_CHANGED:
+        lang_changed_callbacks.erase((void (*)(EditArea*, const char*))callback);
+        break;
+    default:
+        break;
+    }
 }

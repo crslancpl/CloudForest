@@ -6,9 +6,9 @@
 class FPFolderButton;
 
 namespace filepanel{
-    void LoadAsRoot(GFile *file, GFileInfo *fileinfo);
-    void Construct();
-    FPFolderButton* GetFolderButton(const GFile *folder);
+void LoadAsRoot(GFile *file, GFileInfo *fileinfo);
+void Construct();
+FPFolderButton* GetFolderButton(const GFile *folder);
 }
 
 #endif

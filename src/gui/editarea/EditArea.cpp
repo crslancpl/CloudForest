@@ -2,6 +2,7 @@
 
 #include "EditArea_if.h"
 #include "datatypes/language.h"
+#include "src/gui/components/TextArea.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/text_tool.h"
 #include "src/filemanagement/FileManagement_if.h"
@@ -131,7 +132,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(LangButtonClicked), this);//Choose language is done by TextTag.cpp
 
-    AddLangChangedCallback(LangChangedCallback);
+    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(void(*)())LangChangedCallback);
 }
 
 void EditArea::CountError(){

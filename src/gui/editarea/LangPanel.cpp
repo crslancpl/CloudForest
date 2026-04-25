@@ -47,7 +47,7 @@ void langpanel::Construct(){
     lang_but_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
     gtk_window_set_child(lang_choosing_window, GTK_WIDGET(lang_but_box));
 
-    langmanager::AddNewLangCallback(CreateButton);
+    langmanager::ListenEvent(langmanager::LANG_MANAGER_NEW_LANG, (void(*)())CreateButton);
 }
 
 void langpanel::ChooseLanguage(EditArea *editarea){

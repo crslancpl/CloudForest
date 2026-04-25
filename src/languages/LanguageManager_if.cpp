@@ -64,9 +64,22 @@ datatypes::Language* langmanager::FindFileLanguage(const char* filename){
     return result != language_list.end() ? result->second : &unknow_lang;
 }
 
-void langmanager::AddNewLangCallback(void (*callback)(datatypes::Language*)){
-    new_lang_callback_list.emplace(callback);
+void langmanager::ListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case LANG_MANAGER_NEW_LANG:
+        new_lang_callback_list.emplace((void(*)(datatypes::Language*))callback);
+        break;
+    default:
+        break;
+    }
 }
-void langmanager::RemoveNewLangCallback(void (*callback)(datatypes::Language*)){
-    new_lang_callback_list.erase(callback);
+
+void langmanager::StopListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case LANG_MANAGER_NEW_LANG:
+        new_lang_callback_list.erase((void(*)(datatypes::Language*))callback);
+        break;
+    default:
+        break;
+    }
 }

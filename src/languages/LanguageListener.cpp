@@ -41,7 +41,7 @@ static void UpdateTextAreaLanguage(TextArea* ta, datatypes::Language* lang){
 
 static void EditAreaCreated(EditArea* ea){
     // pass to editarea::AddNewEditAreaCallback()
-    ea->AddLangChangedCallback(UpdateTextAreaLanguage);
+    ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (void(*)())UpdateTextAreaLanguage);
     language_module_invoke_new_editarea(ea->GetLanguage()->name.c_str(), ea);
 }
 
@@ -77,5 +77,5 @@ void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const c
 }
 
 void LanguageListenerStart(){
-    editarea::AddNewEditAreaCallback(EditAreaCreated);
+    editarea::ListenEvent(editarea::EDITAREA_CREATED, (void (*)())EditAreaCreated);
 }

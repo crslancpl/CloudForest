@@ -65,13 +65,26 @@ void CfContent::SetContentName(const std::string &name){
     }
 }
 
-void CfContent::AddNameChangedCallback(void (*callback)(const std::string&, CfContent*)){
-    m_nameChangedCallbacks.emplace(callback);
+void CfContent::ListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case CFCONTENT_CLASS_NAME_CHANGED:
+        m_nameChangedCallbacks.emplace((void(*)(const std::string&, CfContent*))callback);
+        break;
+    default:
+        break;
+    }
 }
 
-void CfContent::RemoveNameChangedCallback(void (*callback)(const std::string&, CfContent*)){
-    m_nameChangedCallbacks.erase(callback);
+void CfContent::StopListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case CFCONTENT_CLASS_NAME_CHANGED:
+        m_nameChangedCallbacks.erase((void(*)(const std::string&, CfContent*))callback);
+        break;
+    default:
+        break;
+    }
 }
+
 
 //virtual
 void CfContent::Destroy(){

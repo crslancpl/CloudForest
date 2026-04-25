@@ -15,8 +15,12 @@ void NewLanguage(const std::string& langname, const std::string& id, const std::
 datatypes::Language* FindLanguage(const char* langname);
 datatypes::Language* FindFileLanguage(const char* filename);
 
-void AddNewLangCallback(void (*callback)(datatypes::Language*));
-void RemoveNewLangCallback(void (*callback)(datatypes::Language*));
+enum Event{
+    LANG_MANAGER_NEW_LANG,
+};
+
+void ListenEvent(Event event, void (*callback)());
+void StopListenEvent(Event event, void (*callback)());
 
 }
 

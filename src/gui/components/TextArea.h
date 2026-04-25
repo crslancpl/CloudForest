@@ -3,6 +3,7 @@
 
 #include "CfContent.h"
 #include "datatypes/language.h"
+#include "src/gui/editarea/EditArea_if.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>
@@ -19,17 +20,18 @@ public:
     datatypes::Language* GetLanguage();
     virtual void SetLanguage(datatypes::Language *lang);
 
-
-
-    void AddLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*));
-    void RemoveLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*));
-
     void ClearHighlight();
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
     void ApplyTagByPos(unsigned int textstartpos, unsigned int textendpos, const char *tagname);
     void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,const char *tagname);
-
     void CountLines();
+
+    enum Event{
+        TEXTAREA_CLASS_LANG_CHANGED
+    };
+
+    void ListenEvent(Event event, void (*callback)());
+    void StopListenEvent(Event event, void (*callback)());
 
 protected:
     std::unordered_set<void (*)(TextArea*, datatypes::Language*)> m_langChangedCallbacks;
@@ -55,8 +57,8 @@ protected:
 };
 
 namespace text_editor {
-    void NewEmptyEditor();
-    void NewEditor(GFile *file);
+void NewEmptyEditor();
+void NewEditor(GFile *file);
 }
 
 #endif

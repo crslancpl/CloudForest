@@ -1,5 +1,6 @@
 #include "TextArea.h"
 
+#include "datatypes/language.h"
 #include "src/gui/style/Style.h"
 
 #include <glib-object.h>
@@ -79,14 +80,6 @@ void TextArea::SetLanguage(datatypes::Language *lang){
     }
 }
 
-void TextArea::AddLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*)){
-    m_langChangedCallbacks.insert(callback);
-}
-
-void TextArea::RemoveLangChangedCallback(void (*callback)(TextArea*, datatypes::Language*)){
-    m_langChangedCallbacks.erase(callback);
-}
-
 void TextArea::ClearHighlight(){
     gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
     gtk_text_buffer_remove_all_tags(m_textViewBuffer, &m_startItr, &m_endItr);
@@ -150,6 +143,24 @@ void TextArea::CountLines(){
     }
 }
 
-/*
- * Protected
- */
+
+
+void TextArea::ListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case TEXTAREA_CLASS_LANG_CHANGED:
+        m_langChangedCallbacks.insert((void(*)(TextArea*, datatypes::Language*))callback);
+        break;
+    default:
+        break;
+    }
+}
+
+void TextArea::StopListenEvent(Event event, void (*callback)()){
+    switch (event) {
+    case TEXTAREA_CLASS_LANG_CHANGED:
+        m_langChangedCallbacks.erase((void(*)(TextArea*, datatypes::Language*))callback);
+        break;
+    default:
+        break;
+    }
+}
