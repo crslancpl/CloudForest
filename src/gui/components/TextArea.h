@@ -17,8 +17,8 @@ public:
     void SetContent(char *content);
     void SetEditable(bool editable);
     void SetFirstLineNumber(int number);
-    datatypes::Language* GetLanguage();
-    virtual void SetLanguage(datatypes::Language *lang);
+    Language* GetLanguage();
+    virtual void SetLanguage(Language *lang);
 
     void ClearHighlight();
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
@@ -34,9 +34,9 @@ public:
     void StopListenEvent(Event event, void (*callback)());
 
 protected:
-    std::unordered_set<void (*)(TextArea*, datatypes::Language*)> m_langChangedCallbacks;
+    std::unordered_set<void (*)(TextArea*, Language*)> m_langChangedCallbacks;
 
-    datatypes::Language* m_language = nullptr;
+    Language* m_language = nullptr;
     int m_firstLineNumber = 1;
     unsigned int m_totalLines = 0;
     unsigned int m_totalChars = 0;

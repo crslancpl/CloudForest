@@ -1,6 +1,7 @@
 #include "FilePanel_if.h"
 
 #include "FilePanel.h"
+#include "datatypes/common.h"
 #include "../Gui_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 
@@ -21,7 +22,7 @@ void filepanel::LoadAsRoot(GFile *file, GFileInfo *fileinfo){
 void filepanel::Construct(){
     if(!gui::g_filepanel){
         gui::g_filepanel = new FilePanel();
-        filemanagement::AddCallback(filemanagement::FILE_EVENT_FOLDER_CHOOSEN, filepanel::LoadAsRoot);
-        filemanagement::AddCallback(filemanagement::FILE_EVENT_FILE_CHOOSEN, filepanel::LoadAsRoot);
+        filemanagement::ListenEvent(filemanagement::FILE_EVENT_FOLDER_CHOOSEN, (EventCallback)filepanel::LoadAsRoot);
+        filemanagement::ListenEvent(filemanagement::FILE_EVENT_FILE_CHOOSEN, (EventCallback)filepanel::LoadAsRoot);
     }
 }

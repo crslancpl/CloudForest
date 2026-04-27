@@ -5,8 +5,6 @@
 
 class EditArea;
 
-namespace datatypes{
-
 typedef struct FileData{
     GFile *file;
     GFileInfo *fileInfo;
@@ -16,5 +14,4 @@ typedef struct FileData{
     GIcon *icon;
 }FileData;
 
-}
 #endif

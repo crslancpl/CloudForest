@@ -10,13 +10,13 @@
 #include <unordered_map>
 
 static std::unordered_map<TextArea*, SyntaxProvider*> provider_map;
-static std::unordered_map<datatypes::Language*, SyntaxProvider*> lang_to_provider_map;
+static std::unordered_map<Language*, SyntaxProvider*> lang_to_provider_map;
 
 static void EditAreaCreated(EditArea* ea){
     ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (void(*)())syntaxprovider::SetLanguage);
 }
 
-SyntaxProvider::SyntaxProvider(datatypes::Language* language){
+SyntaxProvider::SyntaxProvider(Language* language){
     m_language = language;
 }
 
@@ -33,7 +33,7 @@ void syntaxprovider::Highlight(TextArea *ta){
     provider_map.find(ta)->second->Highlight(ta);
 }
 
-void syntaxprovider::SetLanguage(TextArea *ta, datatypes::Language* language){
+void syntaxprovider::SetLanguage(TextArea *ta, Language* language){
     auto result = lang_to_provider_map.find(language);
     SyntaxProvider *provider;
     if(result == lang_to_provider_map.end()){

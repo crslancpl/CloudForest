@@ -12,7 +12,7 @@
  * For FPFileButton and FPFolderButton. It will load the icon and the file name of
  * the GFile *file and place it into GtkButton *button.
  */
-static void ButtonLoadFileNameAndIcon(GtkButton *button,datatypes::FileData *filedata, int level){
+static void ButtonLoadFileNameAndIcon(GtkButton *button,FileData *filedata, int level){
     GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
     GtkWidget *image = gtk_image_new_from_gicon(filedata->icon);

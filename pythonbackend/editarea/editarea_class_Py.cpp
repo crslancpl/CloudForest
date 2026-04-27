@@ -114,7 +114,7 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    datatypes::Suggestion* sug = new datatypes::Suggestion();
+    Suggestion* sug = new Suggestion();
     sug->insertText = suggestion;
     sug->label = label;
     sug->range.startLine = startline;

@@ -25,7 +25,7 @@ public:
     GdkRectangle* GetCursorRectangle();
     const char* GetFilePath();
 
-    void SetLanguage(datatypes::Language*) override;
+    void SetLanguage(Language*) override;
 
     void Destroy() override;
     void Save();

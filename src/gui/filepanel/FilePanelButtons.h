@@ -7,12 +7,11 @@
 class FPFolderButton;
 class FPFileButton;
 
-namespace datatypes{
 typedef struct FileData FileData;
-}
+
 
 class FPButtons{
-    datatypes::FileData *m_fildData;
+    FileData *m_fildData;
 };
 
 /* File panel folder button */
@@ -20,7 +19,7 @@ class FPFolderButton {
 public:
     FPFolderButton(GFile *folder, int level);
     ~FPFolderButton();
-    datatypes::FileData *m_fileData;
+    FileData *m_fileData;
 
     GtkBuilder *builder;// unref by UnrefBuilder();
     GtkBox *m_baseBox;// Containing FolderToggleBut and Content
@@ -44,7 +43,7 @@ public:
     FPFileButton(GFile *file, int level);// the level of Root folder is 0
     ~FPFileButton();
 
-    datatypes::FileData *m_fileData;
+    FileData *m_fileData;
     GtkButton *m_button;
 
     void Open();

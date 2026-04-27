@@ -9,18 +9,18 @@ class EditArea;
 
 class SyntaxProvider{
 public:
-    SyntaxProvider(datatypes::Language *language);
+    SyntaxProvider(Language *language);
     ~SyntaxProvider();
     void Highlight(TextArea* ta);
 private:
-    datatypes::Language* m_language;
+    Language* m_language;
 };
 
 namespace syntaxprovider{
-    void Init();
-    void SetLanguage(TextArea* ta, datatypes::Language* language);
-    void Highlight(TextArea* ta);
-    void FastHighlight(EditArea* ea);
+void Init();
+void SetLanguage(TextArea* ta, Language* language);
+void Highlight(TextArea* ta);
+void FastHighlight(EditArea* ea);
 }
 
 #endif

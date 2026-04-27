@@ -68,11 +68,11 @@ void TextArea::SetFirstLineNumber(int number){
     CountLines();
 }
 
-datatypes::Language *TextArea::GetLanguage(){
+Language *TextArea::GetLanguage(){
     return m_language;
 }
 
-void TextArea::SetLanguage(datatypes::Language *lang){
+void TextArea::SetLanguage(Language *lang){
     m_language = lang;
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {
@@ -148,7 +148,7 @@ void TextArea::CountLines(){
 void TextArea::ListenEvent(Event event, void (*callback)()){
     switch (event) {
     case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.insert((void(*)(TextArea*, datatypes::Language*))callback);
+        m_langChangedCallbacks.insert((void(*)(TextArea*, Language*))callback);
         break;
     default:
         break;
@@ -158,7 +158,7 @@ void TextArea::ListenEvent(Event event, void (*callback)()){
 void TextArea::StopListenEvent(Event event, void (*callback)()){
     switch (event) {
     case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.erase((void(*)(TextArea*, datatypes::Language*))callback);
+        m_langChangedCallbacks.erase((void(*)(TextArea*, Language*))callback);
         break;
     default:
         break;

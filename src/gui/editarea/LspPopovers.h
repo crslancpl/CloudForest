@@ -6,9 +6,8 @@
 
 #include <vector>
 
-namespace datatypes{
 typedef struct Suggestion Suggestion;
-}
+
 
 class TipPopover{
 public:
@@ -32,7 +31,7 @@ public:
     void setCursorRect(GdkRectangle *cursorrect);
     void Show();
     void Hide();
-    void Add(datatypes::Suggestion *item);
+    void Add(Suggestion *item);
     void Clear();
 
 private:
@@ -46,7 +45,7 @@ private:
     int m_scrolledWinWidth;
     int m_suggItemHeight;
     bool m_isShowing;
-    std::vector<std::pair<datatypes::Suggestion,GtkWidget*>> m_suggestions;
+    std::vector<std::pair<Suggestion,GtkWidget*>> m_suggestions;
     GtkAdjustment *m_scrolledWindowAdj;
 
     // from caller

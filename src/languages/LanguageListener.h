@@ -3,13 +3,12 @@
 
 class EditArea;
 
-namespace datatypes{
 typedef struct Language Language;
-}
+
 
 void LanguageListenerStart();
 
-void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang);
+void LanguageNewEditArea(EditArea* ea, Language* lang);
 void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const char*, EditArea*));
 
 

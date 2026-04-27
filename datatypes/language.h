@@ -8,7 +8,6 @@
 
 #include <unordered_set>
 #include <string>
-namespace datatypes{
 
 typedef struct Language{
     std::string name;
@@ -17,5 +16,4 @@ typedef struct Language{
     std::string syntaxTemplateFile;
 }Language;
 
-}
 #endif

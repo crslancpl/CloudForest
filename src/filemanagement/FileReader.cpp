@@ -1,5 +1,4 @@
-#include "FileManagement_if.h"
-#include "src/filemanagement/FileManagement_if.h"
+#include "FileReader.h"
 
 #include "datatypes/file.h"
 
@@ -23,8 +22,8 @@ void filemanagement::EnumerateFolderChild(GFile* folder, void (*callback)(GFile*
     callback(nullptr, nullptr);
 }
 
-datatypes::FileData* filemanagement::LoadFileData(GFile *file){
-    datatypes::FileData *result = new datatypes::FileData();
+FileData* filemanagement::LoadFileData(GFile *file){
+    FileData *result = new FileData();
     result->file = file;
     result->icon = g_file_query_info(file,
         "standard::icon",

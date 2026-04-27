@@ -16,14 +16,14 @@ static GtkBox* lang_but_box;
 static GtkEventController *focus_event_ctrl;
 
 static void LangChoosen(GtkButton* self, void* data){
-    editarea_to_chonge_lang->SetLanguage((datatypes::Language*)data);
+    editarea_to_chonge_lang->SetLanguage((Language*)data);
 }
 
 static void FocusLost(GtkEventControllerFocus* self, void* data){
     gtk_widget_set_visible(GTK_WIDGET(lang_choosing_window), false);
 }
 
-static void CreateButton(datatypes::Language* lang){
+static void CreateButton(Language* lang){
     GtkButton *newlangbut = GTK_BUTTON(gtk_button_new_with_label(lang->name.c_str()));
     lang_buttons.push_back(newlangbut);
     gtk_box_append(lang_but_box, GTK_WIDGET(newlangbut));

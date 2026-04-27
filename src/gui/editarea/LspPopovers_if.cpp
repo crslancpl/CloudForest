@@ -26,7 +26,7 @@ void suggestion::Hide(){
     ative_suggestion_popover->Hide();
 }
 
-void suggestion::Add(datatypes::Suggestion *item){
+void suggestion::Add(Suggestion *item){
     ative_suggestion_popover->Add(item);
 }
 

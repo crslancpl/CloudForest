@@ -3,8 +3,6 @@
 
 #include <string>
 
-namespace datatypes{
-
 typedef struct SuggestionRange{
     unsigned int startLine, startColumn;
     unsigned int endLine, endColumn;
@@ -18,6 +16,4 @@ typedef struct Suggestion{
     SuggestionRange range;// where to insert the text
 }Suggestion;
 
-
-}
 #endif

@@ -51,7 +51,7 @@ static void LangButtonClicked(GtkButton *self, EditArea *parent){
     langpanel::ChooseLanguage(parent);
 }
 
-static void LangChangedCallback(TextArea *parent, datatypes::Language* lang){
+static void LangChangedCallback(TextArea *parent, Language* lang){
     EditArea *ea = (EditArea*)parent;
     syntaxprovider::FastHighlight(ea);
 }
@@ -186,7 +186,7 @@ const char* EditArea::GetFilePath(){
     return m_absoPath.c_str();
 }
 
-void EditArea::SetLanguage(datatypes::Language* lang){
+void EditArea::SetLanguage(Language* lang){
     if (lang == m_language) {
         return;
     }

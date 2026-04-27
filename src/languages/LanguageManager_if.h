@@ -3,17 +3,16 @@
 
 #include <string>
 
-namespace datatypes{
 typedef struct Language Language;
-}
+
 
 namespace langmanager{
 void Init();
 
 void Clear();
 void NewLanguage(const std::string& langname, const std::string& id, const std::string& syntaxfile, const std::string& fileextensions);//called by python srcipt `pythonscripts/language/lang_loader.py"
-datatypes::Language* FindLanguage(const char* langname);
-datatypes::Language* FindFileLanguage(const char* filename);
+Language* FindLanguage(const char* langname);
+Language* FindFileLanguage(const char* filename);
 
 enum Event{
     LANG_MANAGER_NEW_LANG,

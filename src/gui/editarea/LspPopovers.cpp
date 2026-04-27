@@ -93,7 +93,7 @@ void SuggestionPopover::Hide(){
     m_isShowing = false;
 }
 
-void SuggestionPopover::Add(datatypes::Suggestion *item){
+void SuggestionPopover::Add(Suggestion *item){
     if (item == nullptr) {
         g_print("null suggestion\n");
     }
@@ -143,7 +143,7 @@ void SuggestionPopover::SelectDown(){
 
 void SuggestionPopover::ConfirmSelection(){
     // trigger suggestion selected event
-    datatypes::Suggestion sug = m_suggestions[m_selectedItemItr].first;
+    Suggestion sug = m_suggestions[m_selectedItemItr].first;
     std::string sugtext = sug.insertText + " ";
     gtk_text_buffer_get_iter_at_line_offset(
         m_targetTextBuffer, &m_startItr,sug.range.startLine, sug.range.startColumn);

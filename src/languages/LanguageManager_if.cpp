@@ -8,20 +8,20 @@
 #include <string>
 
 
-static std::unordered_set<void(*)(datatypes::Language*)> new_lang_callback_list = {};
+static std::unordered_set<void(*)(Language*)> new_lang_callback_list = {};
 
-datatypes::Language unknow_lang = {
+Language unknow_lang = {
     .name = "Unknown",
     .id = "unknown",
     .fileExtensions = {},
     .syntaxTemplateFile = "unknown.txt"
 };
 
-static std::unordered_map<std::string, datatypes::Language*> language_list = {
+static std::unordered_map<std::string, Language*> language_list = {
     {"Unknown", &unknow_lang}
 };
 
-static std::unordered_map<std::string, datatypes::Language*> extension_map = {};
+static std::unordered_map<std::string, Language*> extension_map = {};
 
 void langmanager::Init(){
     LanguageListenerStart();
@@ -32,7 +32,7 @@ void langmanager::Clear(){
 }
 
 void langmanager::NewLanguage(const std::string& langname, const std::string& id, const std::string& syntaxfile, const std::string& fileextensions){
-    datatypes::Language *lang = new datatypes::Language();
+    Language *lang = new Language();
     lang->name = langname;
     lang->id = id;
     lang->syntaxTemplateFile = syntaxfile;
@@ -48,12 +48,12 @@ void langmanager::NewLanguage(const std::string& langname, const std::string& id
     }
 }
 
-datatypes::Language* langmanager::FindLanguage(const char* langname){
+Language* langmanager::FindLanguage(const char* langname){
     auto result = language_list.find(langname);
     return result != language_list.end() ? result->second : &unknow_lang;
 }
 
-datatypes::Language* langmanager::FindFileLanguage(const char* filename){
+Language* langmanager::FindFileLanguage(const char* filename){
     auto file_ext_pair = tools::TrimText(filename, ".");//"/path/file.txt" -> "/path/file" and "txt"
 
     if(file_ext_pair.size() != 2){
@@ -67,7 +67,7 @@ datatypes::Language* langmanager::FindFileLanguage(const char* filename){
 void langmanager::ListenEvent(Event event, void (*callback)()){
     switch (event) {
     case LANG_MANAGER_NEW_LANG:
-        new_lang_callback_list.emplace((void(*)(datatypes::Language*))callback);
+        new_lang_callback_list.emplace((void(*)(Language*))callback);
         break;
     default:
         break;
@@ -77,7 +77,7 @@ void langmanager::ListenEvent(Event event, void (*callback)()){
 void langmanager::StopListenEvent(Event event, void (*callback)()){
     switch (event) {
     case LANG_MANAGER_NEW_LANG:
-        new_lang_callback_list.erase((void(*)(datatypes::Language*))callback);
+        new_lang_callback_list.erase((void(*)(Language*))callback);
         break;
     default:
         break;

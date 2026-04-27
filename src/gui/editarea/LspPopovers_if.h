@@ -2,9 +2,8 @@
 #define LSPPOPOVERS_IF_H_
 
 #include <gtk/gtk.h>
-namespace datatypes{
-struct Suggestion;
-}
+
+typedef struct Suggestion Suggestion;
 
 class EditArea;
 
@@ -15,7 +14,7 @@ namespace suggestion{
 void SetTargetEditArea(EditArea* target);
 void Show();
 void Hide();
-void Add(datatypes::Suggestion *item);
+void Add(Suggestion *item);
 void Clear();
 }
 

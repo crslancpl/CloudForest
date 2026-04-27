@@ -12,7 +12,7 @@
 
 class LangCallback{
 public:
-    LangCallback(datatypes::Language* lang){
+    LangCallback(Language* lang){
         m_lang = lang;
     }
 
@@ -27,14 +27,14 @@ public:
     }
 
 private:
-    datatypes::Language *m_lang;
+    Language *m_lang;
     std::unordered_set<void(*)(const char*, EditArea*)> m_callbacks = {};
 };
 
-static std::unordered_map<datatypes::Language*, LangCallback*> lang_and_callbacks_map;
+static std::unordered_map<Language*, LangCallback*> lang_and_callbacks_map;
 
 
-static void UpdateTextAreaLanguage(TextArea* ta, datatypes::Language* lang){
+static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
     // the callback for EditArea->SetLanguage
     language_module_invoke_new_editarea(lang->name.c_str(), (EditArea*)ta);
 }
@@ -45,7 +45,7 @@ static void EditAreaCreated(EditArea* ea){
     language_module_invoke_new_editarea(ea->GetLanguage()->name.c_str(), ea);
 }
 
-void LanguageNewEditArea(EditArea* ea, datatypes::Language* lang){
+void LanguageNewEditArea(EditArea* ea, Language* lang){
     auto l = lang_and_callbacks_map.find(lang);
     LangCallback* langcallback;
     if(l == lang_and_callbacks_map.end()){
