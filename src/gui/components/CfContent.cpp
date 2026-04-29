@@ -1,4 +1,5 @@
 #include "CfContent.h"
+#include "datatypes/common.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
@@ -65,20 +66,20 @@ void CfContent::SetContentName(const std::string &name){
     }
 }
 
-void CfContent::ListenEvent(Event event, void (*callback)()){
+void CfContent::ListenEvent(Event event, EventCallback callback){
     switch (event) {
     case CFCONTENT_CLASS_NAME_CHANGED:
-        m_nameChangedCallbacks.emplace((void(*)(const std::string&, CfContent*))callback);
+        m_nameChangedCallbacks.emplace((NameChangedCallback)callback);
         break;
     default:
         break;
     }
 }
 
-void CfContent::StopListenEvent(Event event, void (*callback)()){
+void CfContent::StopListenEvent(Event event, EventCallback callback){
     switch (event) {
     case CFCONTENT_CLASS_NAME_CHANGED:
-        m_nameChangedCallbacks.erase((void(*)(const std::string&, CfContent*))callback);
+        m_nameChangedCallbacks.erase((NameChangedCallback)callback);
         break;
     default:
         break;

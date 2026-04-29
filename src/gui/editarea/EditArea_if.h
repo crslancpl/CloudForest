@@ -1,9 +1,12 @@
 #ifndef EDITAREA_IF_H_
 #define EDITAREA_IF_H_
 
+#include "datatypes/common.h"
+
 #include <gtk/gtk.h>
 #include <string>
 
+//forward declaration
 class EditArea;
 
 
@@ -25,8 +28,8 @@ enum Event{
     EDITAREA_LANG_CHANGED
 };
 
-void ListenEvent(Event event, void (*callback)());
-void StopListenEvent(Event event, void (*callback)());
+void ListenEvent(Event event, EventCallback callback);
+void StopListenEvent(Event event, EventCallback callback);
 
 }// namespace editarea
 

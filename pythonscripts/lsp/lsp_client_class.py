@@ -9,11 +9,12 @@ from . import lsp_msg
 
 class LspClient:
     def __init__(self, lspcommand: str, languageId: str) -> None:
-        print("aldha")
         self.LSP = subprocess.Popen(
-            lspcommand.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE
+            "clangd", stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
-        print("sta")
+        output, error = self.LSP.communicate()
+        print(output + error)
+
         self.languageId: str = languageId
 
     def start(self):

@@ -1,26 +1,31 @@
 #include "EditArea_if.h"
 
 #include "EditArea.h"
+#include "datatypes/common.h"
 #include "src/gui/layouts/tab/CfTab_if.h"
 
 #include <unordered_map>
 #include <unordered_set>
 
 
+typedef void (*EditAreaCreatedCallback)(EditArea*);
+typedef void (*EditAreaFocusedChangedCallback)(EditArea*);
+typedef void (*EditAreaLangChangedCallback)(EditArea*, const char*);
+
 static std::unordered_map<GFile*, EditArea*> open_editareas;
 static std::unordered_map<std::string, EditArea*> editarea_list;
 
 //callbacks
-static std::unordered_set<void(*)(EditArea*)> new_editarea_callbacks;
-static std::unordered_set<void(*)(EditArea*)> focus_changed_callbacks;
-static std::unordered_set<void(*)(EditArea*, const char*)> lang_changed_callbacks;
+static std::unordered_set<EditAreaCreatedCallback> editarea_created_callbacks;
+static std::unordered_set<EditAreaFocusedChangedCallback> focused_changed_callbacks;
+static std::unordered_set<EditAreaLangChangedCallback> lang_changed_callbacks;
 
 
 static EditArea* focused_editarea;
 
 void editarea::SetFocusedEditArea(EditArea* editarea){
     focused_editarea = editarea;
-    for(auto callback : focus_changed_callbacks){
+    for(auto callback : focused_changed_callbacks){
         callback(focused_editarea);
     }
 }
@@ -30,7 +35,7 @@ void editarea::CreateEmptyFile(){
 
     editarea::SetFocusedEditArea(neweditarea);
 
-    for(auto cb : new_editarea_callbacks){
+    for(auto cb : editarea_created_callbacks){
         cb(neweditarea);
     }
 
@@ -50,7 +55,7 @@ void editarea::OpenFile(GFile *file){
     editarea::SetFocusedEditArea(neweditarea);
     open_editareas.emplace(file, neweditarea);
 
-    for(auto cb : new_editarea_callbacks){
+    for(auto cb : editarea_created_callbacks){
         cb(neweditarea);
     }
 
@@ -74,32 +79,32 @@ EditArea* editarea::FindEditArea(const char* absopath){
     return result == editarea_list.end() ? nullptr : result->second;
 }
 
-void editarea::ListenEvent(Event event, void (*callback)()){
+void editarea::ListenEvent(Event event, EventCallback callback){
     switch (event) {
     case EDITAREA_CREATED:
-        new_editarea_callbacks.insert((void (*)(EditArea*))callback);
+        editarea_created_callbacks.insert((EditAreaCreatedCallback)callback);
         break;
     case EDITAREA_FOCUSED_CHANGED:
-        focus_changed_callbacks.insert((void (*)(EditArea*))callback);
+        focused_changed_callbacks.insert((EditAreaFocusedChangedCallback)callback);
         break;
     case EDITAREA_LANG_CHANGED:
-        lang_changed_callbacks.insert((void (*)(EditArea*, const char*))callback);
+        lang_changed_callbacks.insert((EditAreaLangChangedCallback)callback);
         break;
     default:
         break;
     }
 }
 
-void editarea::StopListenEvent(Event event, void (*callback)()){
+void editarea::StopListenEvent(Event event, EventCallback callback){
     switch (event) {
     case EDITAREA_CREATED:
-        new_editarea_callbacks.erase((void (*)(EditArea*))callback);
+        editarea_created_callbacks.erase((EditAreaCreatedCallback)callback);
         break;
     case EDITAREA_FOCUSED_CHANGED:
-        focus_changed_callbacks.erase((void (*)(EditArea*))callback);
+        focused_changed_callbacks.erase((EditAreaFocusedChangedCallback)callback);
         break;
     case EDITAREA_LANG_CHANGED:
-        lang_changed_callbacks.erase((void (*)(EditArea*, const char*))callback);
+        lang_changed_callbacks.erase((EditAreaLangChangedCallback)callback);
         break;
     default:
         break;

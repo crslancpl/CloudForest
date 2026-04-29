@@ -2,11 +2,17 @@
 #define TEXTAREA_H_
 
 #include "CfContent.h"
-#include "datatypes/language.h"
-#include "src/gui/editarea/EditArea_if.h"
+#include "datatypes/common.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>
+
+
+//forward declaration
+class TextArea;
+typedef struct Language Language;
+
+typedef void(*LangChangedCallback)(TextArea*, Language*);
 
 class TextArea : public CfContent{
 public:
@@ -30,11 +36,11 @@ public:
         TEXTAREA_CLASS_LANG_CHANGED
     };
 
-    void ListenEvent(Event event, void (*callback)());
-    void StopListenEvent(Event event, void (*callback)());
+    void ListenEvent(Event event, EventCallback callback);
+    void StopListenEvent(Event event, EventCallback callback);
 
 protected:
-    std::unordered_set<void (*)(TextArea*, Language*)> m_langChangedCallbacks;
+    std::unordered_set<LangChangedCallback> m_langChangedCallbacks;
 
     Language* m_language = nullptr;
     int m_firstLineNumber = 1;

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+//forward declaration
 typedef struct Suggestion Suggestion;
 
 

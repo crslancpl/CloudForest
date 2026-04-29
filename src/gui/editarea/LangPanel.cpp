@@ -1,5 +1,7 @@
 #include "LangPanel.h"
 
+#include "datatypes/common.h"
+#include "datatypes/language.h"
 #include "EditArea.h"
 #include "src/gui/Gui_if.h"
 #include "src/gui/windows/MainWindow.h"
@@ -10,7 +12,7 @@
 #include <vector>
 
 static GtkWindow *lang_choosing_window = nullptr;
-static EditArea *editarea_to_chonge_lang;//
+static EditArea *editarea_to_chonge_lang;
 static std::vector<GtkButton*> lang_buttons;
 static GtkBox* lang_but_box;
 static GtkEventController *focus_event_ctrl;
@@ -34,7 +36,7 @@ static void CreateButton(Language* lang){
 void langpanel::Construct(){
     /*
      * Create the language choosing window and set it as
-     * the flyout of g_mainwindow->m_window.
+     * the flyout of g_mainwindow's GtkWindow.
      */
     lang_choosing_window = GTK_WINDOW(gtk_window_new());
     focus_event_ctrl = gtk_event_controller_focus_new();
@@ -47,7 +49,7 @@ void langpanel::Construct(){
     lang_but_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
     gtk_window_set_child(lang_choosing_window, GTK_WIDGET(lang_but_box));
 
-    langmanager::ListenEvent(langmanager::LANG_MANAGER_NEW_LANG, (void(*)())CreateButton);
+    langmanager::ListenEvent(langmanager::LANG_MANAGER_NEW_LANG, (EventCallback)CreateButton);
 }
 
 void langpanel::ChooseLanguage(EditArea *editarea){

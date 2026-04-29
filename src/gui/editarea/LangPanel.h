@@ -1,9 +1,7 @@
 #ifndef LANGPANEL_H_
 #define LANGPANEL_H_
 
-/*
- * Forward definition
- */
+// forward declaration
 class EditArea;
 
 /*

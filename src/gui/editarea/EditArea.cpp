@@ -1,6 +1,7 @@
 #include "EditArea.h"
 
 #include "EditArea_if.h"
+#include "datatypes/common.h"
 #include "datatypes/language.h"
 #include "src/gui/components/TextArea.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
@@ -51,7 +52,7 @@ static void LangButtonClicked(GtkButton *self, EditArea *parent){
     langpanel::ChooseLanguage(parent);
 }
 
-static void LangChangedCallback(TextArea *parent, Language* lang){
+static void LangChanged(TextArea *parent, Language* lang){
     EditArea *ea = (EditArea*)parent;
     syntaxprovider::FastHighlight(ea);
 }
@@ -132,7 +133,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(LangButtonClicked), this);//Choose language is done by TextTag.cpp
 
-    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(void(*)())LangChangedCallback);
+    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)LangChanged);
 }
 
 void EditArea::CountError(){

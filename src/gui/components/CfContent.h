@@ -1,12 +1,17 @@
 #ifndef CFCONTENT_H_
 #define CFCONTENT_H_
 
+#include "CfComponent.h"
+#include "datatypes/common.h"
+
 #include <gtk/gtk.h>
-#include <gtk/gtkshortcut.h>
 #include <string>
 #include <unordered_set>
 
-#include "CfComponent.h"
+//forward declaration
+class CfContent;
+
+typedef void(*NameChangedCallback)(const std::string&, CfContent*);
 
 class CfContent : public CfComponent{
 public:
@@ -30,8 +35,8 @@ public:
         CFCONTENT_CLASS_NAME_CHANGED
     };
 
-    void ListenEvent(Event event, void (*callback)());
-    void StopListenEvent(Event event, void (*callback)());
+    void ListenEvent(Event event, EventCallback callback);
+    void StopListenEvent(Event event, EventCallback callback);
 
     virtual void Destroy();
     virtual void ChildDataChanged(CfContent* child);
@@ -47,7 +52,7 @@ private:
     GtkViewport *m_viewport;
     GtkWidget *m_contentWidget;
     std::string m_contentName;
-    std::unordered_set<void(*)(const std::string&, CfContent*)> m_nameChangedCallbacks;
+    std::unordered_set<NameChangedCallback> m_nameChangedCallbacks;
 };
 
 namespace cfcontent{

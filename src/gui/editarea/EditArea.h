@@ -17,17 +17,17 @@ public:
 
     bool isSaved = true;
 
-    void CountError();
-    void LoadCursorPos();
-    void LoadFile(GFile *file);
+    //override
+    void SetLanguage(Language*) override;
+    void Destroy() override;
 
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
     const char* GetFilePath();
 
-    void SetLanguage(Language*) override;
-
-    void Destroy() override;
+    void CountError();
+    void LoadCursorPos();
+    void LoadFile(GFile *file);
     void Save();
     void ShowSearchDialog();
     void ShowReplaceDialog();

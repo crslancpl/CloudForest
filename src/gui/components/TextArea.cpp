@@ -1,5 +1,6 @@
 #include "TextArea.h"
 
+#include "datatypes/common.h"
 #include "datatypes/language.h"
 #include "src/gui/style/Style.h"
 
@@ -145,20 +146,20 @@ void TextArea::CountLines(){
 
 
 
-void TextArea::ListenEvent(Event event, void (*callback)()){
+void TextArea::ListenEvent(Event event, EventCallback callback){
     switch (event) {
     case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.insert((void(*)(TextArea*, Language*))callback);
+        m_langChangedCallbacks.insert((LangChangedCallback)callback);
         break;
     default:
         break;
     }
 }
 
-void TextArea::StopListenEvent(Event event, void (*callback)()){
+void TextArea::StopListenEvent(Event event, EventCallback callback){
     switch (event) {
     case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.erase((void(*)(TextArea*, Language*))callback);
+        m_langChangedCallbacks.erase((LangChangedCallback)callback);
         break;
     default:
         break;
