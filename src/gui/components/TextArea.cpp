@@ -13,7 +13,7 @@
  * Static
  */
 
-static void TextChangedCallback(GtkTextBuffer *textviewbuffer, TextArea *textarea){
+static void TextChanged(GtkTextBuffer *textviewbuffer, TextArea *textarea){
     textarea->CountLines();
 }
 
@@ -38,7 +38,7 @@ TextArea::TextArea(){
     gtk_text_view_set_accepts_tab(m_textView, false);
 
     style::LoadTextTag(m_textViewBuffer);
-    g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(TextChangedCallback), this);
+    g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(TextChanged), this);
 
     g_object_ref(m_baseBox);
     SetContentWidget(GTK_WIDGET(m_baseBox));

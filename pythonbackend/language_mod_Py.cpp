@@ -75,6 +75,7 @@ static PyObject *language_module_listen(PyObject *self, PyObject *args){
     }
 
     PyList_Append(callbacklist, callback);
+
     Py_RETURN_NONE;
 }
 
@@ -93,7 +94,11 @@ static PyObject *language_module_stop_listen(PyObject *self, PyObject *args){
         return nullptr;
     }
 
-    PySet_Discard(callbacklist, callback);
+    for (int i = 0; i < PyList_GET_SIZE(callbacklist); i++){
+        if(PyList_GET_ITEM(callbacklist, i) == callback){
+            PyList_SetItem(callbacklist, i, Py_None);
+        }
+    }
 
     Py_RETURN_NONE;
 }

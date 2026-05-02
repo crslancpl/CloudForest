@@ -22,6 +22,7 @@ int main (int argc,char *argv[]){
   g_signal_connect(app, "shutdown", G_CALLBACK(AppClosed), nullptr);
 
   int status = g_application_run (G_APPLICATION (app), argc, argv);
+
   g_object_unref (app);
 
   return status;

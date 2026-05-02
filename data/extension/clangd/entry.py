@@ -1,14 +1,8 @@
 from cloudforest import editarea, language
 
-from pythonscripts.lsp.lsp_client_class import LspClient
+from pythonscripts.lsp.lsp_client_class import LspClient, create_lsp_client
 
-client = None
-
-
-def start():
-    global client
-    client = LspClient("clangd", "cpp")
-    client.start()
+client: None | LspClient = None
 
 
 def editarea_text_changed(ea: editarea.EditArea):
@@ -18,9 +12,13 @@ def editarea_text_changed(ea: editarea.EditArea):
 def editarea_created(ea: editarea.EditArea):
     global client
     if not client:
-        start()
-    client.open_file(ea.get_file_path(), ea.get_content())
-    print(ea.get_file_path())
+        client = create_lsp_client("clangd", "cpp")
+
+    if client:
+        client.open_file(ea.get_file_path(), ea.get_content())
+        ea.a
+    else:
+        language.stop_listen("C++", editarea_created)
 
 
 language.listen("C++", editarea_created)

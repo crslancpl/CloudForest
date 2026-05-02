@@ -40,13 +40,8 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
 }
 
 static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
-    std::string text = self->Editarea->GetContent();
-
-    if(text.empty()){
-        Py_RETURN_NONE;
-    }else{
-        return PyUnicode_FromString(text.c_str());
-    }
+    const char* text = self->Editarea->GetContent();
+    return PyUnicode_FromString(text);
     Py_RETURN_NONE;
 }
 

@@ -1,5 +1,6 @@
 import re
 import select
+import shutil
 import subprocess
 
 from cloudforest import editarea
@@ -8,25 +9,30 @@ from . import lsp_msg
 
 
 class LspClient:
-    def __init__(self, lspcommand: str, languageId: str) -> None:
+    def __init__(self, lspcommand: str, languageId: str):
         self.LSP = subprocess.Popen(
-            "clangd", stdin=subprocess.PIPE, stdout=subprocess.PIPE
+            lspcommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
-        output, error = self.LSP.communicate()
-        print(output + error)
-
         self.languageId: str = languageId
+        self.start()
 
     def start(self):
         message = lsp_msg.init_message()
         self.send(message)
         self.read()
 
+    def stop(self):
+        print("ending subprocess")
+        self.LSP.terminate()
+
     def end(self):
         message = lsp_msg.exit_message()
         self.send(message)
 
     def open_file(self, file: str, content: str):
+        print("file: " + file)
+        print("content: " + content)
+
         message = lsp_msg.did_open_message(file, content, self.languageId)
         self.send(message)
         self.read()
@@ -114,3 +120,12 @@ class LspClient:
             )
 
         self.currentEditArea.show_suggestion()
+
+
+def create_lsp_client(lspcommand: str, languageId: str) -> LspClient | None:
+    if not shutil.which(lspcommand):
+        # executable or file not found
+        print(lspcommand + " not found")
+        return None
+
+    return LspClient(lspcommand, languageId)
