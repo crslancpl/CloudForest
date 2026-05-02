@@ -24,6 +24,7 @@ public:
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
     const char* GetFilePath();
+    const unsigned int GetFileVersion();
 
     void CountError();
     void LoadCursorPos();
@@ -35,14 +36,14 @@ public:
     void InsertAtCursor(const char* text);
 
     //callbacks
-    void UnfocusedCallback();
-    void CursorMovedByKeyCallback();
-    void TextChangedCallback();
-    bool KeyInputCallback(guint keyval, guint keycode, GdkModifierType state);
-    void CursorPosChangedCallback();
-    void SaveButtonClickedCallback();
-    void LangButtonClickedCallback();
-    void FileSavedCallback(GFile *file);
+    void Unfocused();
+    void CursorMovedByKey();
+    void TextChanged();
+    bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
+    void CursorPosChanged();
+    void SaveButtonClicked();
+    void LangButtonClicked();
+    void FileSaved(GFile *file);
 
 private:
     GdkRectangle m_cursorRec;
@@ -52,6 +53,7 @@ private:
 
     char *m_originalContent = nullptr;
     unsigned int m_originalLength = 0;
+    unsigned int m_fileVersion = 0;
 
     std::string m_fileName;
     std::string m_absoPath;

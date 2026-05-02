@@ -1,6 +1,8 @@
 #include "editarea_class_Py.h"
 
 #include <Python.h>
+#include <listobject.h>
+#include <longobject.h>
 #include <pytypedefs.h>
 
 
@@ -13,12 +15,17 @@
 
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){
-    PyObject* path = PyUnicode_FromString(self->Filepath);
+    PyObject* path = PyUnicode_FromString(self->filePath);
     return path;
 }
 
+static PyObject *py_EditArea_get_file_version(py_EditArea *self, PyObject *args){
+    PyObject* version = PyLong_FromUnsignedLong(self->editarea->GetFileVersion());
+    return version;
+}
+
 static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
-    std::string text = self->Editarea->GetLanguage()->name.c_str();
+    std::string text = self->editarea->GetLanguage()->name.c_str();
 
     if(text.empty()){
         Py_RETURN_NONE;
@@ -34,15 +41,14 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    self->Editarea->SetLanguage(langmanager::FindLanguage(lang));
+    self->editarea->SetLanguage(langmanager::FindLanguage(lang));
 
     Py_RETURN_NONE;
 }
 
 static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
-    const char* text = self->Editarea->GetContent();
+    const char* text = self->editarea->GetContent();
     return PyUnicode_FromString(text);
-    Py_RETURN_NONE;
 }
 
 
@@ -58,7 +64,7 @@ static PyObject *py_EditArea_add_callback(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    PyObject* callbacklist = PyDict_GetItemString(self->CallbackDictionary, eventtype);
+    PyObject* callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
     if(callbacklist == nullptr) return nullptr;
     PyList_Append(callbacklist, func);
     Py_RETURN_NONE;
@@ -76,10 +82,10 @@ static PyObject *py_EditArea_remove_callback(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    PyObject *callbacklist = PyDict_GetItemString(self->CallbackDictionary, eventtype);
+    PyObject *callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
 
     if(callbacklist == Py_None) return nullptr;
-    return nullptr;
+
     for (Py_ssize_t itr = 0; itr < PyList_GET_SIZE(callbacklist); itr++) {
         PyObject *function = PyList_GetItem(callbacklist, itr);
         if(function == func){
@@ -98,7 +104,7 @@ static PyObject *py_EditArea_highlight(py_EditArea *self, PyObject *args){
         return nullptr;
     }
 
-    self->Editarea->ApplyTagByLinePos(line, offset, length, tagname);
+    self->editarea->ApplyTagByLinePos(line, offset, length, tagname);
     Py_RETURN_NONE;
 }
 
@@ -145,6 +151,7 @@ static PyObject* py_EditArea_hide_suggestion(py_EditArea *self, PyObject *args){
 
 static PyMethodDef py_EditArea_class_method[]={
     {"get_file_path", (PyCFunction)py_EditArea_get_file_path, METH_VARARGS, "get the file path"},
+    {"get_file_version", (PyCFunction)py_EditArea_get_file_version, METH_VARARGS, "get the version of the file"},
     {"get_content", (PyCFunction)py_EditArea_get_content, METH_VARARGS, "get content from edit area"},
     {"add_callback", (PyCFunction)py_EditArea_add_callback, METH_VARARGS, "add callback"},
     {"rm_callback", (PyCFunction)py_EditArea_remove_callback, METH_VARARGS, "remove callback"},
@@ -160,20 +167,20 @@ static PyMethodDef py_EditArea_class_method[]={
 
 static PyObject* py_EditArea_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
     py_EditArea *self = (py_EditArea*)type->tp_alloc(type, 0);
-    self->CallbackDictionary = PyDict_New();
-    self->CursorMovedCallbacks = PyList_New(0);
-    self->TextchangedCallbacks = PyList_New(0);
-    self->CompletionRequestedCallbacks = PyList_New(0);
-    self->LangChangedCallbacks = PyList_New(0);
-    self->FileSavedCallbacks = PyList_New(0);
-    self->FileDataChangedCallbacks = PyList_New(0);
+    self->callbackDictionary = PyDict_New();
+    self->cursorMovedCallbacks = PyList_New(0);
+    self->textchangedCallbacks = PyList_New(0);
+    self->completionRequestedCallbacks = PyList_New(0);
+    self->langChangedCallbacks = PyList_New(0);
+    self->fileSavedCallbacks = PyList_New(0);
+    self->fileDataChangedCallbacks = PyList_New(0);
 
-    PyDict_SetItemString(self->CallbackDictionary, "CURSORMOVED", self->CursorMovedCallbacks);
-    PyDict_SetItemString(self->CallbackDictionary, "TEXTCHANGED", self->TextchangedCallbacks);
-    PyDict_SetItemString(self->CallbackDictionary, "COMPLETIONREQUESTED", self->CompletionRequestedCallbacks);
-    PyDict_SetItemString(self->CallbackDictionary, "LANGUAGECHANGED", self->LangChangedCallbacks);
-    PyDict_SetItemString(self->CallbackDictionary, "FILESAVED", self->FileSavedCallbacks);
-    PyDict_SetItemString(self->CallbackDictionary, "FILEDATACHANGED", self->FileDataChangedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "cursor-moved", self->cursorMovedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "text-changed", self->textchangedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "completion-requested", self->completionRequestedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "lang-changed", self->langChangedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "file-saved", self->fileSavedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "file-data-changed", self->fileDataChangedCallbacks);
     return (PyObject *) self;
 }
 

@@ -9,16 +9,16 @@ class EditArea;
  */
 typedef struct py_EditArea{
     PyObject_HEAD;
-    char* Filepath;
-    char* Lang;
-    EditArea *Editarea;
-    PyObject *CallbackDictionary = NULL;
-    PyObject *CursorMovedCallbacks = NULL;
-    PyObject *TextchangedCallbacks;
-    PyObject *CompletionRequestedCallbacks;
-    PyObject *LangChangedCallbacks;
-    PyObject *FileSavedCallbacks;
-    PyObject *FileDataChangedCallbacks;
+    char* filePath;
+    char* lang;
+    EditArea *editarea;
+    PyObject *callbackDictionary = NULL;
+    PyObject *cursorMovedCallbacks = NULL;
+    PyObject *textchangedCallbacks = NULL;
+    PyObject *completionRequestedCallbacks = NULL;
+    PyObject *langChangedCallbacks = NULL;
+    PyObject *fileSavedCallbacks = NULL;
+    PyObject *fileDataChangedCallbacks = NULL;
 }py_EditArea;
 
 

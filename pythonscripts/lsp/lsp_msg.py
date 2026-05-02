@@ -1,7 +1,11 @@
 # for writing and parsing LSP message
 # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
 
+import copy
 import json
+from pydoc import text
+
+from typing_extensions import Text
 
 BaseMessage = {"jsonrpc": "2.0"}
 
@@ -16,25 +20,41 @@ RangeProperty = {
     "end": PositionProperty,
 }
 
-TextDocumentProperty = {"uri": "file:///", "languageId": "", "version": 0, "text": ""}
+TextDocument = {
+    "uri": "file:///",
+    "languageId": "",
+    "version": 0,
+    "text": "",
+}
 
 DidOpenMessage = {
     **BaseMessage,
     "method": "textDocument/didOpen",
-    "params": {"textDocument": TextDocumentProperty},
+    "params": None,
 }
+
+DidOpenParams = {"textDocument": None}
 
 DidChangeMessage = {
     **BaseMessage,
     "method": "textDocument/didChange",
-    "params": {"textDocument": TextDocumentProperty, "contentChanges": [{"text": ""}]},
+    "params": None,
+}
+
+DidChangeParams = {
+    "textDocument": None,
+    "contentChanges": [],
+}
+
+ContentChange = {
+    "text": "",
 }
 
 AutoCompleteMessage = {
     **BaseMessage,
     "id": 2,
     "method": "textDocument/completion",
-    "params": {"textDocument": TextDocumentProperty, "context": {"triggerKind": 1}},
+    "params": {"textDocument": None, "context": {"triggerKind": 1}},
 }
 
 
@@ -53,32 +73,39 @@ def exit_message() -> str:
     return message
 
 
-def did_open_message(fileuri: str, content: str, langid: str):
-    copiedTextDoc = TextDocumentProperty.copy()
-    copiedTextDoc["uri"] = "file:///" + fileuri
-    copiedTextDoc["text"] = content
-    copiedTextDoc["languageId"] = langid
+def did_open_message(fileuri: str, content: str, langid: str) -> str:
+    did_open = {
+        "jsonrpc": "2.0",
+        "method": "textDocument/didOpen",
+        "params": {
+            "textDocument": {
+                "uri": "file:///" + fileuri,
+                "languageId": langid,
+                "version": 0,
+                "text": content,
+            },
+        },
+    }
 
-    copiedDidOpenMsg = DidOpenMessage.copy()
-    copiedDidOpenMsg["params"]["textDocument"] = copiedTextDoc
-
-    message = json.dumps(copiedDidOpenMsg)
-    return message
+    return json.dumps(did_open)
 
 
-def did_change_message(fileuri: str, content: str, langid: str):
-    copiedTextDoc = TextDocumentProperty.copy()
-    copiedTextDoc["uri"] = "file:///" + fileuri
-    copiedTextDoc["text"] = ""
-    copiedTextDoc["languageId"] = langid
-
-    copiedDidChangeMsg = DidChangeMessage.copy()
-    copiedDidChangeMsg["params"]["textDocument"] = copiedTextDoc
-    copiedDidChangeMsg["params"]["contentChanges"][0]["text"] = content
-
-    message = json.dumps(copiedDidChangeMsg)
-
-    return message
+def did_change_message(fileuri: str, content: str, version: int, langid: str) -> str:
+    print(fileuri + " content: " + content)
+    did_change = {
+        "jsonrpc": "2.0",
+        "method": "textDocument/didChange",
+        "params": {
+            "textDocument": {
+                "uri": "file:///" + fileuri,
+                "languageId": langid,
+                "version": version,
+                "text": content,
+            },
+            "contentChanges": [{"text": content}],
+        },
+    }
+    return json.dumps(did_change)
 
 
 def completion_message(fileuri: str, line: int, char: int) -> str:

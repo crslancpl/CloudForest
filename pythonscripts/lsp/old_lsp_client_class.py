@@ -13,8 +13,7 @@ class LspClient:
         self.LSP = subprocess.Popen(
             lspcommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
-        self.lsp_command = lspcommand
-        self.language_id: str = languageId
+        self.languageId: str = languageId
         self.start()
 
     def start(self):
@@ -26,31 +25,22 @@ class LspClient:
         print("ending subprocess")
         self.LSP.terminate()
 
-    def exit(self):
+    def end(self):
         message = lsp_msg.exit_message()
         self.send(message)
 
-    # callbacks
-    def editarea_text_changed(self, ea: editarea.EditArea):
-        # print(ea.get_file_path() + " text changed ")  # + ea.get_content())
-        message = lsp_msg.did_change_message(
-            ea.get_file_path(),
-            ea.get_content(),
-            ea.get_file_version(),
-            self.language_id,
-        )
+    def open_file(self, file: str, content: str):
+        print("file: " + file)
+        print("content: " + content)
 
+        message = lsp_msg.did_open_message(file, content, self.languageId)
         self.send(message)
         self.read()
 
-    def listen_editarea(self, ea: editarea.EditArea):
-        message = lsp_msg.did_open_message(
-            ea.get_file_path(), ea.get_content(), self.language_id
-        )
-
+    def change_text(self, file: str, content: str):
+        message = lsp_msg.did_change_message(file, content, self.languageId)
         self.send(message)
         self.read()
-        ea.add_callback("text-changed", self.editarea_text_changed)
 
     def get_completion(self, ea: editarea.EditArea, line: int, pos: int):
         self.currentEditArea = ea
@@ -135,7 +125,7 @@ class LspClient:
 def create_lsp_client(lspcommand: str, languageId: str) -> LspClient | None:
     if not shutil.which(lspcommand):
         # executable or file not found
-        print('lsp_client_class: Language server "' + lspcommand + '" not found')
+        print(lspcommand + " not found")
         return None
 
     return LspClient(lspcommand, languageId)

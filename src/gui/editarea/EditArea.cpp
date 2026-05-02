@@ -24,41 +24,41 @@
 
 static EditArea *saving_editarea;// cache the edit area that is waiting for saving
 
-static void Unfocused(GtkEventControllerFocus* self, EditArea* parent){
-    parent->UnfocusedCallback();
+static void OnUnfocused(GtkEventControllerFocus* self, EditArea* parent){
+    parent->Unfocused();
 }
 
-static void CursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
-    parent->CursorMovedByKeyCallback();
+static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
+    parent->CursorMovedByKey();
 }
 
-static void TextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* parent){
-    parent->TextChangedCallback();
+static void OnTextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* parent){
+    parent->TextChanged();
 }
 
-static bool KeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
-    return parent->KeyInputCallback(keyval, keycode, state);;
+static bool OnKeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
+    return parent->KeyInput(keyval, keycode, state);;
 }
 
-static void CursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
-    parent->CursorPosChangedCallback();
+static void OnCursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
+    parent->CursorPosChanged();
 }
 
-static void SaveButtonClicked(GtkButton *self, EditArea* parent){
+static void OnSaveButtonClicked(GtkButton *self, EditArea* parent){
     parent->Save();
 }
 
-static void LangButtonClicked(GtkButton *self, EditArea *parent){
+static void OnLangButtonClicked(GtkButton *self, EditArea *parent){
     langpanel::ChooseLanguage(parent);
 }
 
-static void LangChanged(TextArea *parent, Language* lang){
+static void OnLangChanged(TextArea *parent, Language* lang){
     EditArea *ea = (EditArea*)parent;
     syntaxprovider::FastHighlight(ea);
 }
 
-static void FileSaved(GFile* file){
-    saving_editarea->FileSavedCallback(file);
+static void OnFileSaved(GFile* file){
+    saving_editarea->FileSaved(file);
     saving_editarea = nullptr;
 }
 
@@ -123,17 +123,17 @@ void EditArea::LoadGui(){
 
 //private
 void EditArea::ConnectSignals(){
-    g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(KeyInput), this);
+    g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(OnKeyInput), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), GTK_EVENT_CONTROLLER(m_keyDownEventCtrl));
-    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(Unfocused), this);
+    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(OnUnfocused), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_focusEventCtrl);
-    g_signal_connect(m_textView, "move-cursor", G_CALLBACK(CursorMovedByKey),this);
-    g_signal_connect_after(m_textViewBuffer, "notify::text",G_CALLBACK(TextChanged),this);
-    g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(CursorPosChanged),this);
-    g_signal_connect(m_saveBut, "clicked", G_CALLBACK(SaveButtonClicked), this);
-    g_signal_connect(m_langBut, "clicked", G_CALLBACK(LangButtonClicked), this);//Choose language is done by TextTag.cpp
+    g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
+    g_signal_connect_after(m_textViewBuffer, "notify::text",G_CALLBACK(OnTextChanged),this);
+    g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
+    g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
+    g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);//Choose language is done by TextTag.cpp
 
-    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)LangChanged);
+    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
 void EditArea::CountError(){
@@ -185,6 +185,10 @@ GdkRectangle* EditArea::GetCursorRectangle(){
 
 const char* EditArea::GetFilePath(){
     return m_absoPath.c_str();
+}
+
+const unsigned int EditArea::GetFileVersion(){
+    return m_fileVersion;
 }
 
 void EditArea::SetLanguage(Language* lang){
@@ -247,7 +251,7 @@ void EditArea::Save(){
     char* content = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 
     saving_editarea = this;
-    filemanagement::SaveFile(m_editingFile, content, FileSaved);
+    filemanagement::SaveFile(m_editingFile, content, OnFileSaved);
 }
 
 void EditArea::ShowSearchDialog() {
@@ -275,16 +279,17 @@ void EditArea::InsertAtCursor(const char* text){
 }
 
 //callbacks
-void EditArea::UnfocusedCallback(){
+void EditArea::Unfocused(){
     lsppopovers::suggestion::Hide();
     lsppopovers::tip::Hide();
 }
 
-void EditArea::CursorMovedByKeyCallback(){
+void EditArea::CursorMovedByKey(){
     m_isCurMovedByKey = true;
 }
 
-void EditArea::TextChangedCallback(){
+void EditArea::TextChanged(){
+    m_fileVersion += 1;
     this->LoadCursorPos();
 
     if(isSaved == true){
@@ -314,7 +319,7 @@ void EditArea::TextChangedCallback(){
     */
 }
 
-bool EditArea::KeyInputCallback(guint keyval, guint keycode, GdkModifierType state){
+bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
     // Search and replace shortcuts
     if (state & GDK_CONTROL_MASK) {
         switch (keyval) {
@@ -368,7 +373,7 @@ bool EditArea::KeyInputCallback(guint keyval, guint keycode, GdkModifierType sta
 */
     return false;
 }
-void EditArea::CursorPosChangedCallback(){
+void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
     editarea_py_invoke_cursor_moved(this, m_cursorLine, m_cursorColumn);
     if(m_isCurMovedByKey == true){
@@ -384,7 +389,7 @@ void EditArea::CursorPosChangedCallback(){
     }
 };
 
-void EditArea::FileSavedCallback(GFile *file){
+void EditArea::FileSaved(GFile *file){
     if(file == nullptr){
         //saving cancelled
         return;

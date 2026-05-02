@@ -2,6 +2,7 @@
 #Keyword
 if else return while for new
 continue break namespace using switch case
+this
 typedef
 default
 #Type

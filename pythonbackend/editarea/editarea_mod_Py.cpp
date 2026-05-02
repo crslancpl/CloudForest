@@ -23,7 +23,7 @@ py_EditArea* find_editarea_py(const EditArea *ea){
     }
     for(size_t itr = 0; itr < PyList_GET_SIZE(registered_editareas); itr++){
         py_EditArea *registeredea = (py_EditArea*)PyList_GET_ITEM(registered_editareas, itr);
-        if(registeredea->Editarea == ea){
+        if(registeredea->editarea == ea){
             return registeredea;
         }
     }
@@ -34,8 +34,7 @@ void editarea_py_invoke_text_changed(EditArea *ea){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->TextchangedCallbacks, args);
-    Py_DECREF((PyObject*) py_ea);
+    RunCallback(py_ea->textchangedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }
 
@@ -43,8 +42,7 @@ void editarea_py_invoke_cursor_moved(EditArea *ea, int line, int column){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(line), PyLong_FromLong(column));
-    RunCallback(py_ea->CursorMovedCallbacks, args);
-    Py_DECREF((PyObject*) py_ea);
+    RunCallback(py_ea->cursorMovedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }
 
@@ -52,8 +50,7 @@ void editarea_py_invoke_completion_requested(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->CompletionRequestedCallbacks, args);
-    Py_DECREF((PyObject*) py_ea);
+    RunCallback(py_ea->completionRequestedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }
 
@@ -61,8 +58,7 @@ void editarea_py_invoke_file_saved(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->FileSavedCallbacks, args);
-    Py_DECREF((PyObject*) py_ea);
+    RunCallback(py_ea->fileSavedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }
 
@@ -70,8 +66,7 @@ void editarea_py_invoke_filedata_changed(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->FileDataChangedCallbacks, args);
-    Py_DECREF((PyObject*) py_ea);
+    RunCallback(py_ea->fileDataChangedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }
 
@@ -117,8 +112,8 @@ void editarea_py_register(EditArea *ea){
      */
     py_EditArea *newEa = py_EditArea_create_object();
 
-    newEa->Editarea = ea;
-    newEa->Filepath = strdup(ea->GetFilePath());
+    newEa->editarea = ea;
+    newEa->filePath = strdup(ea->GetFilePath());
 
 
 
