@@ -48,6 +48,7 @@ exception:
 }
 
 void pybackend::End(){
+    cloudforest_module_invoke_app_closed();
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }

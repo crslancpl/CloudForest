@@ -9,7 +9,12 @@ from typing_extensions import Text
 
 BaseMessage = {"jsonrpc": "2.0"}
 
-InitMessage = {**BaseMessage, "id": 1, "method": "initialize", "params": {}}
+InitMessage = {
+    **BaseMessage,
+    "id": 1,
+    "method": "initialize",
+    "params": {"capabilities": {}},
+}
 
 ExitMessage = {**BaseMessage, "id": 1, "method": "exit"}
 
@@ -63,12 +68,22 @@ def content_length_header(content: str) -> str:
     return header
 
 
-def init_message() -> str:
+def initialize_message() -> str:
     message = json.dumps(InitMessage)
     return message
 
 
-def exit_message() -> str:
+def initialized_notification() -> str:
+    message = {"jsonrpc": "2.0", "method": "initialized", "params": {}}
+    return json.dumps(message)
+
+
+def shut_down_message() -> str:
+    shut_down = {"jsonrpc": "2.0", "method": "shutdown", "params": None}
+    return json.dumps(shut_down)
+
+
+def exit_notification() -> str:
     message = json.dumps(ExitMessage)
     return message
 
@@ -91,7 +106,6 @@ def did_open_message(fileuri: str, content: str, langid: str) -> str:
 
 
 def did_change_message(fileuri: str, content: str, version: int, langid: str) -> str:
-    print(fileuri + " content: " + content)
     did_change = {
         "jsonrpc": "2.0",
         "method": "textDocument/didChange",
@@ -137,6 +151,7 @@ def read_lsp_message(message: str) -> list | None:
 
     id = msg.get("id")
     data = None
+    print(f"lsp_message method: {msg.get('method')}")
     if id == 2:
         # Code completion
         data = msg.get("result").get("items")

@@ -13,6 +13,7 @@ You can find a list of language id from [Microsoft Language Server Protocal Spec
   }
 }
 ```
+
 For example
 ```json
 {

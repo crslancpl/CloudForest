@@ -1,0 +1,12 @@
+# Lsp Client check list
+- [x] initialize message
+- [x] initialized notification
+- [ ] workspace
+- [ ] error
+- [ ] diagnostics
+- [x] didOpen
+- [ ] didClose
+- [x] didChanged
+- [ ] completion request
+- [x] shutdown message
+- [x] exit notification

@@ -1,5 +1,8 @@
 {
   "clangd": {
     "location": "data/extension/clangd/entry.py"
+  },
+  "rust-analyzer": {
+    "location": "data/extension/rust-analyzer/entry.py"
   }
 }
