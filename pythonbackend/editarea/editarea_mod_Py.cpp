@@ -6,6 +6,8 @@
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/editarea/LspPopovers_if.h"
+#include <floatobject.h>
+#include <object.h>
 
 
 /*
@@ -21,6 +23,7 @@ py_EditArea* find_editarea_py(const EditArea *ea){
     if (registered_editareas == nullptr) {
         return nullptr;
     }
+
     for(size_t itr = 0; itr < PyList_GET_SIZE(registered_editareas); itr++){
         py_EditArea *registeredea = (py_EditArea*)PyList_GET_ITEM(registered_editareas, itr);
         if(registeredea->editarea == ea){
@@ -33,14 +36,16 @@ py_EditArea* find_editarea_py(const EditArea *ea){
 void editarea_py_invoke_text_changed(EditArea *ea){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->textchangedCallbacks, args);
-    Py_DECREF((PyObject*) args);
+    Py_DECREF(args);
 }
 
 void editarea_py_invoke_cursor_moved(EditArea *ea, int line, int column){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(line), PyLong_FromLong(column));
     RunCallback(py_ea->cursorMovedCallbacks, args);
     Py_DECREF((PyObject*) args);
@@ -49,6 +54,7 @@ void editarea_py_invoke_cursor_moved(EditArea *ea, int line, int column){
 void editarea_py_invoke_completion_requested(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->completionRequestedCallbacks, args);
     Py_DECREF((PyObject*) args);
@@ -57,6 +63,7 @@ void editarea_py_invoke_completion_requested(EditArea *editarea){
 void editarea_py_invoke_file_saved(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->fileSavedCallbacks, args);
     Py_DECREF((PyObject*) args);
@@ -65,6 +72,7 @@ void editarea_py_invoke_file_saved(EditArea *editarea){
 void editarea_py_invoke_filedata_changed(EditArea *editarea){
     py_EditArea* py_ea = find_editarea_py(editarea);
     if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->fileDataChangedCallbacks, args);
     Py_DECREF((PyObject*) args);
@@ -89,10 +97,25 @@ static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *args){
+    char* filepath;
+
+    if(!PyArg_ParseTuple(args, "s", &filepath)){
+        Py_RETURN_NAN;
+    }
+
+    EditArea* ea = editarea::FindEditArea(filepath);
+    if(!ea){
+        Py_RETURN_NONE;
+    }
+    PyObject* ea_py = (PyObject*)find_editarea_py(ea);
+    return  ea_py;
+}
 
 
 static PyMethodDef editarea_module_methods[]={
     {"add_callback", editarea_module_add_callback, METH_VARARGS, "add callback for event"},
+    {"find_by_file_path", editarea_module_find_by_file_path, METH_VARARGS, "find EditArea object with file path"},
     {nullptr, nullptr, 0, nullptr}
 };
 
@@ -114,8 +137,6 @@ void editarea_py_register(EditArea *ea){
 
     newEa->editarea = ea;
     newEa->filePath = strdup(ea->GetFilePath());
-
-
 
     // we are trying to make filepath a variable
     PyObject *filepath = PyUnicode_FromString(ea->GetFilePath());

@@ -8,7 +8,7 @@ import threading
 import cloudforest
 from cloudforest import editarea
 
-from . import lsp_msg
+from . import lsp_msg_reader, lsp_msg_writer
 
 
 class LspClient:
@@ -34,16 +34,16 @@ class LspClient:
         self.start()
 
     def start(self):
-        self.send(lsp_msg.initialize_message())
+        self.send(lsp_msg_writer.initialize_message())
         self.read()
-        self.send(lsp_msg.initialized_notification())
+        self.send(lsp_msg_writer.initialized_notification())
         self.read()
 
     def exit(self):
         print("ending subprocess")
-        self.send(lsp_msg.shut_down_message())
+        self.send(lsp_msg_writer.shut_down_message())
         self.read()
-        self.send(lsp_msg.exit_notification())
+        self.send(lsp_msg_writer.exit_notification())
         self.read()
         self.LSP.terminate()
 
@@ -52,11 +52,13 @@ class LspClient:
         self, ea: editarea.EditArea, line: int, column: int
     ):
         self.current_editarea = ea
-        self.send(lsp_msg.completion_message(ea.get_file_path(), line, column - 1))
+        self.send(
+            lsp_msg_writer.completion_message(ea.get_file_path(), line, column - 1)
+        )
         self.read()
 
     def editarea_text_changed(self, ea: editarea.EditArea):
-        message = lsp_msg.did_change_message(
+        message = lsp_msg_writer.did_change_message(
             ea.get_file_path(),
             ea.get_content(),
             ea.get_file_version(),
@@ -66,7 +68,7 @@ class LspClient:
         self.read()
 
     def listen_editarea(self, ea: editarea.EditArea):
-        message = lsp_msg.did_open_message(
+        message = lsp_msg_writer.did_open_message(
             ea.get_file_path(), ea.get_content(), self.language_id
         )
 
@@ -78,7 +80,7 @@ class LspClient:
         # self.stop_reading()
         if self.LSP.stdin is None:
             return
-        ContentLengthHeader = lsp_msg.content_length_header(message)
+        ContentLengthHeader = lsp_msg_writer.content_length_header(message)
 
         # print("message: " + message)
         self.LSP.stdin.flush()
@@ -118,7 +120,7 @@ class LspClient:
             # print("reading err")
             msgbytes = self.LSP.stderr.readline()
             msg = msgbytes.decode()
-            print(f"lsp_client_class stderr: {msg}", end="")
+            # print(f"lsp_client_class stderr: {msg}", end="")
 
     def read_out(self):
         # [!NOTE]
@@ -149,45 +151,14 @@ class LspClient:
             if msg.startswith("Content-Length:"):
                 # get content length. The header looks like this
                 # Content-Length: 100\r\n\r\n
-                # print(f"lsp_client_class stdin:{msg}")
+
                 contentlength = re.findall(r"\d+", str(msg))
                 _ = self.LSP.stdout.readline()  # this will be \r\n\r\n
                 message = self.LSP.stdout.read(int(contentlength[0])).decode()
-                print(f"lsp_client_class stdin: {message}")
-                # self.process_message(message)
-
+                # print(f"lsp_client_class stdout: {message}")
+                lsp_msg_reader.read(message)
             else:
                 return
-
-    def process_message(self, message: str):
-        content = lsp_msg.read_lsp_message(message)
-        if content is None:
-            return
-        elif content[0] == 1:
-            return
-        elif content[0] == 2:
-            self.read_completion(content[1])
-            return
-        else:
-            return
-
-    def read_completion(self, items) -> None:
-        self.current_editarea.clear_suggestion()
-        if items == []:
-            return
-        # print(items)
-        for item in items:
-            range = item.get("textEdit").get("range")
-            self.current_editarea.add_suggestion(
-                item.get("insertText"),
-                item.get("label"),
-                range.get("start").get("line"),
-                range.get("start").get("character"),
-                range.get("end").get("line"),
-                range.get("end").get("character"),
-            )
-
-        self.current_editarea.show_suggestion()
 
 
 def create_lsp_client(lspcommand: str, languageId: str) -> LspClient | None:

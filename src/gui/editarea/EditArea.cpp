@@ -1,17 +1,18 @@
 #include "EditArea.h"
 
 #include "EditArea_if.h"
-#include "datatypes/common.h"
-#include "datatypes/language.h"
-#include "src/gui/components/TextArea.h"
-#include "toolset/syntaxprovider/syntax_provider.h"
-#include "toolset/tools/text_tool.h"
-#include "src/filemanagement/FileManagement_if.h"
-#include "pythonbackend/editarea/editarea_mod_Py.h"
-#include "src/languages/LanguageManager_if.h"
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
 #include "LspPopovers_if.h"
+#include "datatypes/common.h"
+#include "datatypes/lsp.h"
+#include "datatypes/language.h"
+#include "src/gui/components/TextArea.h"
+#include "src/languages/LanguageManager_if.h"
+#include "src/filemanagement/FileManagement_if.h"
+#include "toolset/syntaxprovider/syntax_provider.h"
+#include "toolset/tools/text_tool.h"
+#include "pythonbackend/editarea/editarea_mod_Py.h"
 
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
@@ -136,6 +137,10 @@ void EditArea::ConnectSignals(){
     this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
+void EditArea::AddDiagnostic(Diagnostic* diagnostic){
+    this->ApplyTagByRange(&diagnostic->range, "error");
+}
+
 void EditArea::CountError(){
     int err = 0;
     int warn = 0;
@@ -210,7 +215,7 @@ void EditArea::LoadFile(GFile* newfile){
     m_editingFile = newfile;
     if(m_editingFile == nullptr){
         m_fileName = "untitled";
-        m_absoPath = tools::GenerateId().c_str();
+        m_absoPath = ("virtual/" + tools::GenerateId()).c_str();
         m_originalContent = strdup("\0");
         m_originalLength = 0;
     }else{

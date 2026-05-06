@@ -3,12 +3,14 @@
 
 #include "../components/TextArea.h"
 
+
 #include <gtk/gtk.h>
 #include <string>
 #include <memory>
 
 // Forward declaration
 class SearchReplaceDialog;
+typedef struct Diagnostic Diagnostic;
 
 class EditArea:public TextArea{
 public:
@@ -26,6 +28,7 @@ public:
     const char* GetFilePath();
     const unsigned int GetFileVersion();
 
+    void AddDiagnostic(Diagnostic* diagnostic);
     void CountError();
     void LoadCursorPos();
     void LoadFile(GFile *file);

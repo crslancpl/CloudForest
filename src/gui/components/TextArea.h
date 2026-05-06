@@ -2,7 +2,6 @@
 #define TEXTAREA_H_
 
 #include "CfContent.h"
-#include "datatypes/common.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>
@@ -10,9 +9,11 @@
 
 //forward declaration
 class TextArea;
+typedef struct Range Range;
 typedef struct Language Language;
-
 typedef void(*LangChangedCallback)(TextArea*, Language*);
+
+
 
 class TextArea : public CfContent{
 public:
@@ -27,6 +28,7 @@ public:
     virtual void SetLanguage(Language *lang);
 
     void ClearHighlight();
+    void ApplyTagByRange(Range *range, const char *tagname);
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
     void ApplyTagByPos(unsigned int textstartpos, unsigned int textendpos, const char *tagname);
     void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,const char *tagname);

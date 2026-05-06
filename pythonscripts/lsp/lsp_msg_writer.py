@@ -129,32 +129,3 @@ def completion_message(fileuri: str, line: int, char: int) -> str:
 
     message = json.dumps(copied)
     return message
-
-
-def read_completion(message: str):
-    msg = json.loads(message)
-
-    result = msg.get("result")
-    if result:
-        print(result)
-    else:
-        print("no value for item")
-
-    for items in result:
-        print(items)
-    # print("id: " + msg['id'])
-
-
-def read_lsp_message(message: str) -> list | None:
-    # returns a [id, data] pair
-    msg = json.loads(message)
-
-    id = msg.get("id")
-    data = None
-    print(f"lsp_message method: {msg.get('method')}")
-    if id == 2:
-        # Code completion
-        data = msg.get("result").get("items")
-    elif id == 1:
-        data = "initmessage"
-    return [id, data]

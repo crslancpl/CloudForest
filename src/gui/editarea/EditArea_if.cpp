@@ -67,7 +67,7 @@ void editarea::CloseFile(GFile *file){
 }
 
 void editarea::InsertToEditAreaList(EditArea *ea){
-    editarea_list.emplace(ea->GetFilePath(), ea);
+    editarea_list.emplace(std::string(ea->GetFilePath()), ea);
 }
 
 void editarea::RemoveFromEditAreaList(EditArea* ea){
@@ -75,7 +75,7 @@ void editarea::RemoveFromEditAreaList(EditArea* ea){
 }
 
 EditArea* editarea::FindEditArea(const char* absopath){
-    auto result = editarea_list.find(absopath);
+    auto result = editarea_list.find(std::string(absopath));
     return result == editarea_list.end() ? nullptr : result->second;
 }
 

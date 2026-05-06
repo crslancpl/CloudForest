@@ -3,6 +3,7 @@
 #include <Python.h>
 #include <listobject.h>
 #include <longobject.h>
+#include <methodobject.h>
 #include <pytypedefs.h>
 
 
@@ -149,6 +150,24 @@ static PyObject* py_EditArea_hide_suggestion(py_EditArea *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
+    Diagnostic* diagnostic = new Diagnostic();
+    if(!PyArg_ParseTuple(
+        args, "ssiiii",
+        &diagnostic->code,
+        &diagnostic->message,
+        &diagnostic->range.startLine,
+        &diagnostic->range.startColumn,
+        &diagnostic->range.endLine,
+        &diagnostic->range.endColumn)
+    ){
+        return nullptr;
+    }
+
+    self->editarea->AddDiagnostic(diagnostic);
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef py_EditArea_class_method[]={
     {"get_file_path", (PyCFunction)py_EditArea_get_file_path, METH_VARARGS, "get the file path"},
     {"get_file_version", (PyCFunction)py_EditArea_get_file_version, METH_VARARGS, "get the version of the file"},
@@ -162,6 +181,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"clear_suggestion", (PyCFunction)py_EditArea_clear_suggestion, METH_VARARGS, "clear the suggestions of the edit area"},
     {"hide_suggestion", (PyCFunction)py_EditArea_hide_suggestion, METH_VARARGS, "hide the suggestion popover"},
     {"show_suggestion", (PyCFunction)py_EditArea_show_suggestion, METH_VARARGS, "show the suggestion popover"},
+    {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
     {NULL, NULL, 0, NULL}
 };
 

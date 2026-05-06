@@ -86,6 +86,14 @@ void TextArea::ClearHighlight(){
     gtk_text_buffer_remove_all_tags(m_textViewBuffer, &m_startItr, &m_endItr);
 }
 
+void TextArea::ApplyTagByRange(Range *range, const char *tagname){
+    gtk_text_iter_set_line(&m_startItr, range->startLine);
+    gtk_text_iter_set_line_offset(&m_startItr, range->startColumn);
+    gtk_text_iter_set_line(&m_endItr, range->endLine);
+    gtk_text_iter_set_line_offset(&m_endItr, range->endColumn);
+    gtk_text_buffer_apply_tag_by_name(m_textViewBuffer, tagname, &m_startItr, &m_endItr);
+}
+
 void TextArea::ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname){
     /*
      * Position 1 is the position of the first character in the buffer
