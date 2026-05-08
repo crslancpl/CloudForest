@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 #include <string>
 #include <memory>
+#include <unordered_set>
 
 // Forward declaration
 class SearchReplaceDialog;
@@ -29,6 +30,7 @@ public:
     const unsigned int GetFileVersion();
 
     void AddDiagnostic(Diagnostic* diagnostic);
+    void ClearDiagnostics();
     void CountError();
     void LoadCursorPos();
     void LoadFile(GFile *file);
@@ -42,6 +44,7 @@ public:
     void Unfocused();
     void CursorMovedByKey();
     void TextChanged();
+    void LangChanged();
     bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
     void CursorPosChanged();
     void SaveButtonClicked();
@@ -73,6 +76,8 @@ private:
 
     GtkEventController *m_keyDownEventCtrl;
     GtkEventController *m_focusEventCtrl;
+
+    std::unordered_set<Diagnostic*> m_diagnosticsList;
 
     // Search and replace
     std::unique_ptr<SearchReplaceDialog> searchDialog;

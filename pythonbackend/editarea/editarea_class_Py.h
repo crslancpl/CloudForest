@@ -14,7 +14,7 @@ typedef struct py_EditArea{
     EditArea *editarea;
     PyObject *callbackDictionary = NULL;
     PyObject *cursorMovedCallbacks = NULL;
-    PyObject *textchangedCallbacks = NULL;
+    PyObject *textChangedCallbacks = NULL;
     PyObject *completionRequestedCallbacks = NULL;
     PyObject *langChangedCallbacks = NULL;
     PyObject *fileSavedCallbacks = NULL;

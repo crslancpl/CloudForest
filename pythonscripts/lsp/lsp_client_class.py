@@ -12,7 +12,7 @@ from . import lsp_msg_reader, lsp_msg_writer
 
 
 class LspClient:
-    def __init__(self, lspcommand: str, languageId: str):
+    def __init__(self, lspcommand: str, language: str, languageId: str):
         self.LSP = subprocess.Popen(
             lspcommand,
             stdin=subprocess.PIPE,
@@ -20,6 +20,7 @@ class LspClient:
             stderr=subprocess.PIPE,
         )
         self.lsp_command = lspcommand
+        self.language = language
         self.language_id: str = languageId
         self.read_number: int = 0
 
@@ -57,6 +58,15 @@ class LspClient:
         )
         self.read()
 
+    def editarea_lang_changed(self, ea: editarea.EditArea):
+        if ea.get_language() == self.language:
+            return
+
+        self.send(lsp_msg_writer.did_close_notification(ea.get_file_path()))
+        self.read()
+        ea.rm_callback("text-changed", self.editarea_text_changed)
+        ea.rm_callback("lang-changed", self.editarea_lang_changed)
+
     def editarea_text_changed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_change_message(
             ea.get_file_path(),
@@ -75,6 +85,7 @@ class LspClient:
         self.send(message)
         self.read()
         ea.add_callback("text-changed", self.editarea_text_changed)
+        ea.add_callback("lang-changed", self.editarea_lang_changed)
 
     def send(self, message: str):
         # self.stop_reading()
@@ -161,10 +172,13 @@ class LspClient:
                 return
 
 
-def create_lsp_client(lspcommand: str, languageId: str) -> LspClient | None:
+def create_lsp_client(
+    lspcommand: str, language: str, languageId: str
+) -> LspClient | None:
     if not shutil.which(lspcommand):
         # executable or file not found
         print(f'lsp_client_class: Language server "{lspcommand}" not found.')
         return None
+    # print(f"create client for {lspcommand}")
 
-    return LspClient(lspcommand, languageId)
+    return LspClient(lspcommand, language, languageId)

@@ -1,1 +1,0 @@
-import editarea_class

@@ -55,6 +55,7 @@ static void OnLangButtonClicked(GtkButton *self, EditArea *parent){
 
 static void OnLangChanged(TextArea *parent, Language* lang){
     EditArea *ea = (EditArea*)parent;
+    ea->LangChanged();
     syntaxprovider::FastHighlight(ea);
 }
 
@@ -138,7 +139,17 @@ void EditArea::ConnectSignals(){
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
+    m_diagnosticsList.emplace(diagnostic);
     this->ApplyTagByRange(&diagnostic->range, "error");
+
+}
+
+void EditArea::ClearDiagnostics(){
+    for (Diagnostic* diagnostic : m_diagnosticsList){
+        delete diagnostic;
+    }
+
+    m_diagnosticsList.clear();
 }
 
 void EditArea::CountError(){
@@ -322,6 +333,10 @@ void EditArea::TextChanged(){
         editarea_py_invoke_completion_requested(this);
     }
     */
+}
+
+void EditArea::LangChanged(){
+    editarea_py_invoke_lang_changed(this);
 }
 
 bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){

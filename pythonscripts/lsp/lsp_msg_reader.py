@@ -7,8 +7,12 @@ def read(message: str) -> dict:
     content = json.loads(message)
     if content.get("method"):
         find_method_processor(content.get("method"), content.get("params"))
-    if content.get("error"):
+    elif content.get("error"):
         read_as_error(content.get("error"))
+    elif content.get("result"):
+        pass
+    else:
+        print(f"other message: {message}")
     return content
 
 
@@ -66,6 +70,8 @@ def read_as_publish_diagnostics(params: dict) -> None:
     # print(f"diagnostics: {path} version {version}")
 
     ea = editarea.find_by_file_path(path)
+
+    ea.clear_diagnostics()
 
     for diagnostic in diagnostics:
         range = diagnostic.get("range")

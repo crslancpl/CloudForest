@@ -38,7 +38,16 @@ void editarea_py_invoke_text_changed(EditArea *ea){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->textchangedCallbacks, args);
+    RunCallback(py_ea->textChangedCallbacks, args);
+    Py_DECREF(args);
+}
+
+void editarea_py_invoke_lang_changed(EditArea *ea){
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    RunCallback(py_ea->langChangedCallbacks, args);
     Py_DECREF(args);
 }
 
@@ -51,8 +60,8 @@ void editarea_py_invoke_cursor_moved(EditArea *ea, int line, int column){
     Py_DECREF((PyObject*) args);
 }
 
-void editarea_py_invoke_completion_requested(EditArea *editarea){
-    py_EditArea* py_ea = find_editarea_py(editarea);
+void editarea_py_invoke_completion_requested(EditArea *ea){
+    py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
@@ -60,8 +69,8 @@ void editarea_py_invoke_completion_requested(EditArea *editarea){
     Py_DECREF((PyObject*) args);
 }
 
-void editarea_py_invoke_file_saved(EditArea *editarea){
-    py_EditArea* py_ea = find_editarea_py(editarea);
+void editarea_py_invoke_file_saved(EditArea *ea){
+    py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
@@ -69,8 +78,8 @@ void editarea_py_invoke_file_saved(EditArea *editarea){
     Py_DECREF((PyObject*) args);
 }
 
-void editarea_py_invoke_filedata_changed(EditArea *editarea){
-    py_EditArea* py_ea = find_editarea_py(editarea);
+void editarea_py_invoke_filedata_changed(EditArea *ea){
+    py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);

@@ -9,11 +9,11 @@ client: None | LspClient = None
 def editarea_created(ea: editarea.EditArea):
     global client
     if not client:
-        client = create_lsp_client("rust-analyzer", "rust")
+        client = create_lsp_client("rust-analyzer", "Rust", "rust")
 
     if client:
+        print("rust-analyzer client running")
         client.listen_editarea(ea)
-
     else:
         language.stop_listen("Rust", editarea_created)
 

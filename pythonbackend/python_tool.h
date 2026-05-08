@@ -2,7 +2,17 @@
 #define PYTHON_TOOL_H_
 
 #include <Python.h>
+#include <pytypedefs.h>
+#include <string>
 
 void RunCallback(PyObject* callbacklist, PyObject* args);
+void CheckList(PyObject* list);
+void AddToList(PyObject* list, PyObject* obj);
+void RemoveFromList(PyObject* list, PyObject* obj);
+
+void Execute(const std::string &code);
+void ExecuteFile(const std::string &path);
+
+PyThreadState* GetMainThreadState();
 
 #endif

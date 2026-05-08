@@ -1,12 +1,16 @@
 #include "editarea_class_Py.h"
 
 #include <Python.h>
+#include <cpython/classobject.h>
+#include <floatobject.h>
 #include <listobject.h>
 #include <longobject.h>
 #include <methodobject.h>
+#include <object.h>
 #include <pytypedefs.h>
 
 
+#include "pythonbackend/python_tool.h"
 #include "src/gui/editarea/LspPopovers_if.h"
 #include "src/gui/editarea/LspPopovers.h"
 #include "src/gui/editarea/EditArea.h"
@@ -29,7 +33,7 @@ static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
     std::string text = self->editarea->GetLanguage()->name.c_str();
 
     if(text.empty()){
-        Py_RETURN_NONE;
+        Py_RETURN_NAN;
     }else{
         return PyUnicode_FromString(text.c_str());
     }
@@ -39,7 +43,7 @@ static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
 static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
     char* lang;
     if(!PyArg_ParseTuple(args, "s", &lang)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     self->editarea->SetLanguage(langmanager::FindLanguage(lang));
@@ -52,48 +56,45 @@ static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
     return PyUnicode_FromString(text);
 }
 
-
 static PyObject *py_EditArea_add_callback(py_EditArea *self, PyObject *args){
     char *eventtype;
     PyObject *func;
 
     if(!PyArg_ParseTuple(args, "sO", &eventtype, &func)){
-        Py_RETURN_NONE;
+        Py_RETURN_NAN;
     }
 
     if(!PyCallable_Check(func)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     PyObject* callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
-    if(callbacklist == nullptr) return nullptr;
-    PyList_Append(callbacklist, func);
+    if(callbacklist == nullptr) Py_RETURN_NAN;
+
+    AddToList(callbacklist, func);
+
     Py_RETURN_NONE;
 }
 
-static PyObject *py_EditArea_remove_callback(py_EditArea *self, PyObject *args){
+static PyObject *py_EditArea_rm_callback(py_EditArea *self, PyObject *args){
+    static unsigned int rm_id = 0;
     char *eventtype;
     PyObject *func;
 
     if(!PyArg_ParseTuple(args, "sO",&eventtype,&func)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     if(!PyCallable_Check(func)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     PyObject *callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
 
-    if(callbacklist == Py_None) return nullptr;
+    if(callbacklist == Py_None) Py_RETURN_NAN;
 
-    for (Py_ssize_t itr = 0; itr < PyList_GET_SIZE(callbacklist); itr++) {
-        PyObject *function = PyList_GetItem(callbacklist, itr);
-        if(function == func){
-            PyList_SetItem(callbacklist, itr, nullptr);
-            Py_DecRef(func);
-        }
-    }
+    RemoveFromList(callbacklist, func);
+
     Py_RETURN_NONE;
 }
 
@@ -102,7 +103,7 @@ static PyObject *py_EditArea_highlight(py_EditArea *self, PyObject *args){
     char *absolutepath, *tagname;
     int line, offset, length;
     if(!PyArg_ParseTuple(args, "siii",&tagname,&line,&offset,&length)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     self->editarea->ApplyTagByLinePos(line, offset, length, tagname);
@@ -115,7 +116,7 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
     unsigned int startline, startpos, endline, endpos;
     if(!PyArg_ParseTuple(args, "ssiiii",
         &suggestion,&label,&startline,&startpos, &endline, &endpos)){
-        return nullptr;
+            Py_RETURN_NAN;
     }
 
     Suggestion* sug = new Suggestion();
@@ -161,10 +162,15 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
         &diagnostic->range.endLine,
         &diagnostic->range.endColumn)
     ){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     self->editarea->AddDiagnostic(diagnostic);
+    Py_RETURN_NONE;
+}
+
+static PyObject* py_EditArea_clear_diagnostics(py_EditArea* self, PyObject *args){
+    self->editarea->ClearDiagnostics();
     Py_RETURN_NONE;
 }
 
@@ -173,7 +179,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"get_file_version", (PyCFunction)py_EditArea_get_file_version, METH_VARARGS, "get the version of the file"},
     {"get_content", (PyCFunction)py_EditArea_get_content, METH_VARARGS, "get content from edit area"},
     {"add_callback", (PyCFunction)py_EditArea_add_callback, METH_VARARGS, "add callback"},
-    {"rm_callback", (PyCFunction)py_EditArea_remove_callback, METH_VARARGS, "remove callback"},
+    {"rm_callback", (PyCFunction)py_EditArea_rm_callback, METH_VARARGS, "remove callback"},
     {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
     {"set_language", (PyCFunction)py_EditArea_set_lang, METH_VARARGS, "set the language of edit area"},
     {"get_language", (PyCFunction)py_EditArea_get_lang, METH_VARARGS, "get the language of edit area"},
@@ -182,6 +188,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"hide_suggestion", (PyCFunction)py_EditArea_hide_suggestion, METH_VARARGS, "hide the suggestion popover"},
     {"show_suggestion", (PyCFunction)py_EditArea_show_suggestion, METH_VARARGS, "show the suggestion popover"},
     {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
+    {"clear_diagnostics", (PyCFunction)py_EditArea_clear_diagnostics, METH_VARARGS, "clear all diagnostics in the EditArea"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -189,14 +196,14 @@ static PyObject* py_EditArea_new(PyTypeObject *type, PyObject *args, PyObject *k
     py_EditArea *self = (py_EditArea*)type->tp_alloc(type, 0);
     self->callbackDictionary = PyDict_New();
     self->cursorMovedCallbacks = PyList_New(0);
-    self->textchangedCallbacks = PyList_New(0);
+    self->textChangedCallbacks = PyList_New(0);
     self->completionRequestedCallbacks = PyList_New(0);
     self->langChangedCallbacks = PyList_New(0);
     self->fileSavedCallbacks = PyList_New(0);
     self->fileDataChangedCallbacks = PyList_New(0);
 
     PyDict_SetItemString(self->callbackDictionary, "cursor-moved", self->cursorMovedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "text-changed", self->textchangedCallbacks);
+    PyDict_SetItemString(self->callbackDictionary, "text-changed", self->textChangedCallbacks);
     PyDict_SetItemString(self->callbackDictionary, "completion-requested", self->completionRequestedCallbacks);
     PyDict_SetItemString(self->callbackDictionary, "lang-changed", self->langChangedCallbacks);
     PyDict_SetItemString(self->callbackDictionary, "file-saved", self->fileSavedCallbacks);

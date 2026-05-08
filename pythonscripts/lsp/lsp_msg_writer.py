@@ -105,6 +105,20 @@ def did_open_message(fileuri: str, content: str, langid: str) -> str:
     return json.dumps(did_open)
 
 
+def did_close_notification(fileuri: str):
+    did_close = {
+        "jsonrpc": "2.0",
+        "method": "textDocument/didClose",
+        "params": {
+            "textDocument": {
+                "uri": f"file:///{fileuri}",
+            },
+        },
+    }
+
+    return json.dumps(did_close)
+
+
 def did_change_message(fileuri: str, content: str, version: int, langid: str) -> str:
     did_change = {
         "jsonrpc": "2.0",

@@ -5,18 +5,24 @@
 #include "python_tool.h"
 #include "editarea/editarea_mod_Py.h"
 
+#include <abstract.h>
+#include <cstdlib>
+#include <dictobject.h>
+#include <floatobject.h>
 #include <listobject.h>
+
 #include <methodobject.h>
 #include <object.h>
 #include <pytypedefs.h>
 #include <setobject.h>
+#include <string>
 #include <tupleobject.h>
 
 static PyObject *lang_to_callbacks_dict;
 
+
 void language_module_invoke_new_editarea(const char* langname, EditArea* ea){
     PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
-
     if(callbacklist == NULL){
         return;
     }
@@ -35,7 +41,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
     char* syntaxfile;
     char* fileextension;
     if(!PyArg_ParseTuple(args, "ssss", &langname, &id, &syntaxfile, &fileextension)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     langmanager::NewLanguage(langname, id, syntaxfile, fileextension);
@@ -46,7 +52,7 @@ static PyObject *language_module_add_callback(PyObject *self, PyObject *args){
     char* event;
     PyObject* callback;
     if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     if(strcmp(event, "new-editarea") == 0){
@@ -56,25 +62,27 @@ static PyObject *language_module_add_callback(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+
 static PyObject *language_module_listen(PyObject *self, PyObject *args){
     char* langname;
     PyObject* callback;
+
     if(!PyArg_ParseTuple(args, "sO", &langname, &callback)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
     if(!PyCallable_Check(callback)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
-    if(callbacklist == NULL){
-        //create new language
+
+    if(callbacklist == nullptr){
         callbacklist = PyList_New(0);
         PyDict_SetItemString(lang_to_callbacks_dict, langname, callbacklist);
         ListenNewEditAreaForLanguage(langname, language_module_invoke_new_editarea);
     }
 
-    PyList_Append(callbacklist, callback);
+    AddToList(callbacklist, callback);
 
     Py_RETURN_NONE;
 }
@@ -82,23 +90,20 @@ static PyObject *language_module_listen(PyObject *self, PyObject *args){
 static PyObject *language_module_stop_listen(PyObject *self, PyObject *args){
     char* langname;
     PyObject* callback;
+
     if(!PyArg_ParseTuple(args, "sO", &langname, &callback)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
     if(!PyCallable_Check(callback)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
     if(callbacklist == Py_None){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
-    for (int i = 0; i < PyList_GET_SIZE(callbacklist); i++){
-        if(PyList_GET_ITEM(callbacklist, i) == callback){
-            PyList_SetItem(callbacklist, i, Py_None);
-        }
-    }
+    RemoveFromList(callbacklist, callback);
 
     Py_RETURN_NONE;
 }

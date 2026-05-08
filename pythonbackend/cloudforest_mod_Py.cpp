@@ -1,12 +1,18 @@
 #include "cloudforest_mod_Py.h"
 
-#include "editarea/editarea_mod_Py.h"
-#include "settingpanel/setting_panel_mod_Py.h"
-#include "language_mod_Py.h"
 #include "python_tool.h"
 
+#include "language_mod_Py.h"
+#include "editarea/editarea_mod_Py.h"
+#include "settingpanel/setting_panel_mod_Py.h"
+
+
+#include <floatobject.h>
 #include <listobject.h>
+#include <methodobject.h>
 #include <object.h>
+#include <pylifecycle.h>
+#include <pystate.h>
 #include <pytypedefs.h>
 #include <tupleobject.h>
 
@@ -21,11 +27,12 @@ static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
 static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args){
     char* event;
     PyObject* callbackfunc;
+
     if(!PyArg_ParseTuple(args, "sO", &event, &callbackfunc)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
     if(!PyCallable_Check(callbackfunc)){
-        return nullptr;
+        Py_RETURN_NAN;
     }
 
     if (strcmp(event, "app-closed") == 0) {
@@ -34,10 +41,23 @@ static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+/*
+static PyObject* cloudforest_module_run_extension(PyObject* self, PyObject* args){
+    char* entryfile;
+
+    if(!PyArg_ParseTuple(args, "s", &entryfile)){
+        Py_RETURN_NONE;
+    }
+
+    PyThreadState* ts = execute_extension(entryfile);
+    Py_RETURN_NONE;
+}
+*/
 
 static PyMethodDef cloudforest_module_method[] = {
     {"test",  cloudforest_module_test, METH_VARARGS,"test if module available"},
     {"add_callback",  cloudforest_module_add_callback, METH_VARARGS,"add callback"},
+    //{"run_extension", cloudforest_module_run_extension, METH_VARARGS, "run an extension in sub-interpreter"},
     {nullptr, nullptr, 0, nullptr}
 };
 

@@ -1,23 +1,18 @@
 #include "python_if.h"
 
-#include <Python.h>
-#include <string>
 
 #include "cloudforest_mod_Py.h"
+#include "python_tool.h"
+
+#include <Python.h>
+#include <pythread.h>
+#include <string>
+
 
 #define PY_SSIZE_T_CLEAN
 
-static void Execute(const std::string &code){
-    PyRun_SimpleString(code.c_str());
-}
-
-static void ExecuteFile(const std::string &path){
-    FILE *f = fopen(path.c_str(),"r");
-    PyRun_SimpleFile(f, path.c_str());
-}
-
 void pybackend::Start(){
-    int result = PyImport_AppendInittab("cloudforest", PyInit_cloudforest_module);
+    PyImport_AppendInittab("cloudforest", PyInit_cloudforest_module);
 
     PyStatus status;
     PyConfig config;
@@ -37,7 +32,6 @@ void pybackend::Start(){
 
     ExecuteFile("pythonscripts/init.py");
     ExecuteFile("pythonscripts/entry.py");
-
     ExecuteFile("data/extension/init.py");
 
     return;
