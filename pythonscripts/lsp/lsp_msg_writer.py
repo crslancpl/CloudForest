@@ -128,7 +128,6 @@ def did_change_message(fileuri: str, content: str, version: int, langid: str) ->
                 "uri": "file:///" + fileuri,
                 "languageId": langid,
                 "version": version,
-                "text": content,
             },
             "contentChanges": [{"text": content}],
         },

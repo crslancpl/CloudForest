@@ -1,7 +1,10 @@
 #ifndef FILEPANELBUTTONS_H_
 #define FILEPANELBUTTONS_H_
 
+#include "src/gui/components/CfComponent.h"
+
 #include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 
 
 class FPFolderButton;
@@ -15,10 +18,21 @@ class FPButtons{
 };
 
 /* File panel folder button */
-class FPFolderButton {
+class FPFolderButton : public CfComponent {
 public:
     FPFolderButton(GFile *folder, int level);
     ~FPFolderButton();
+
+
+    void AddChildFolder(FPFolderButton* child);
+    void AddChildFile(FPFileButton* child);
+    void UnrefBuilder();
+    void ToggleFolder();
+    unsigned int GetLevel();
+
+    GtkWidget* GetBaseWidget() override;
+
+private:
     FileData *m_fileData;
 
     GtkBuilder *builder;// unref by UnrefBuilder();
@@ -26,27 +40,24 @@ public:
     GtkButton *m_folderToggleBut;
     GtkBox *m_content;// Containing child files and child folders
 
-    int Level;// Root folder is 0
-    bool IsOpened=false;
-    bool ChildLoaded = false;
-
-    void AddChildFolder(FPFolderButton* Child);
-    void AddChildFile(FPFileButton* Child);
-    void UnrefBuilder();
+    unsigned int m_level;// Root folder is 0
+    bool m_isOpen=false;
+    bool m_childLoaded = false;
 };
 
 
 
 /* File panel file button */
-class FPFileButton {
+class FPFileButton : public CfComponent {
 public:
     FPFileButton(GFile *file, int level);// the level of Root folder is 0
     ~FPFileButton();
 
+    void Open();
+    GtkWidget* GetBaseWidget() override;
+private:
     FileData *m_fileData;
     GtkButton *m_button;
-
-    void Open();
 };
 
 #endif

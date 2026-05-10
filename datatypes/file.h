@@ -14,4 +14,9 @@ typedef struct FileData{
     GIcon *icon;
 }FileData;
 
+typedef struct Workspace{
+    char* dirName;
+    char* dirAbsoPath;
+}Workspace;
+
 #endif

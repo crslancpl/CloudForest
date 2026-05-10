@@ -7,6 +7,7 @@
 #include "../Gui_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 
 /*
  * For FPFileButton and FPFolderButton. It will load the icon and the file name of
@@ -51,20 +52,12 @@ static void ChildEnumerated(GFile *file, GFileInfo *info){
      }
  }
 
-static void ToggleFolder(GtkButton* self,FPFolderButton *filefolderbut){
-    if(!filefolderbut->ChildLoaded){
-        folder_button_to_enumerate = filefolderbut;
-        filemanagement::EnumerateFolderChild(filefolderbut->m_fileData->file, ChildEnumerated);
-        filefolderbut->ChildLoaded = true;
-    }
-
-    gtk_widget_set_visible(GTK_WIDGET(filefolderbut->m_content) , !filefolderbut->IsOpened);
-    filefolderbut->IsOpened = !filefolderbut->IsOpened;
+static void OnFolderClicked(GtkButton* self,FPFolderButton *filefolderbut){
+    filefolderbut->ToggleFolder();
 }
 
 
-FPFolderButton::FPFolderButton(GFile *folder, int level){
-    Level=level;
+FPFolderButton::FPFolderButton(GFile *folder, int level):m_level(level){
     /* binding */
     builder = gtk_builder_new_from_file("data/ui/FPFolderButton.ui");
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "FolderBaseBox"));
@@ -77,7 +70,7 @@ FPFolderButton::FPFolderButton(GFile *folder, int level){
     gtk_widget_add_css_class(GTK_WIDGET(m_folderToggleBut), std::string("FolderButton").c_str());
     gtk_widget_set_visible(GTK_WIDGET(m_content), false);
 
-    g_signal_connect(m_folderToggleBut, "clicked", G_CALLBACK(ToggleFolder),this);// expand and collapse folder
+    g_signal_connect(m_folderToggleBut, "clicked", G_CALLBACK(OnFolderClicked),this);// expand and collapse folder
 }
 
 FPFolderButton::~FPFolderButton(){
@@ -85,19 +78,38 @@ FPFolderButton::~FPFolderButton(){
 }
 
 
-void FPFolderButton::AddChildFolder(FPFolderButton* Child){
-    gtk_box_append(m_content, GTK_WIDGET(Child->m_baseBox));
+void FPFolderButton::AddChildFolder(FPFolderButton* child){
+    gtk_box_append(m_content, child->GetBaseWidget());
 }
 
-void FPFolderButton::AddChildFile(FPFileButton* Child){
-    gtk_box_append(m_content, GTK_WIDGET(Child->m_button));
+void FPFolderButton::AddChildFile(FPFileButton* child){
+    gtk_box_append(m_content, child->GetBaseWidget());
 }
+
+void FPFolderButton::ToggleFolder(){
+    if(!m_childLoaded){
+        folder_button_to_enumerate = this;
+        filemanagement::EnumerateFolderChild(m_fileData->file, ChildEnumerated);
+        m_childLoaded = true;
+    }
+
+    m_isOpen = !m_isOpen;
+    gtk_widget_set_visible(GTK_WIDGET(m_content) , m_isOpen);
+}
+
+
 
 void FPFolderButton::UnrefBuilder(){
     g_object_unref(G_OBJECT(builder));
 }
 
+unsigned int FPFolderButton::GetLevel(){
+    return m_level;
+}
 
+GtkWidget* FPFolderButton::GetBaseWidget(){
+    return GTK_WIDGET(m_baseBox);
+}
 
 
 /*
@@ -124,4 +136,8 @@ FPFileButton::~FPFileButton(){
 
 void FPFileButton::Open(){
     editarea::OpenFile(m_fileData->file);
+}
+
+GtkWidget* FPFileButton::GetBaseWidget(){
+    return GTK_WIDGET(m_button);
 }

@@ -79,7 +79,6 @@ EditArea::EditArea(GFile* file){
     /* Set properties */
     gtk_button_set_label(m_saveBut, "Saved");
 
-    this->CountError();
     this->LoadCursorPos();
     this->ConnectSignals();
 
@@ -139,9 +138,13 @@ void EditArea::ConnectSignals(){
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
-    m_diagnosticsList.emplace(diagnostic);
-    this->ApplyTagByRange(&diagnostic->range, "error");
+    Range &r = diagnostic->range;
+    if(r.startLine == r.endLine && r.startColumn == r.endColumn){
+        // diagnostic with 0 length will be marked one char forward
+        r.startColumn--;
+    }
 
+    m_diagnosticsList.emplace(diagnostic);
 }
 
 void EditArea::ClearDiagnostics(){
@@ -150,20 +153,34 @@ void EditArea::ClearDiagnostics(){
     }
 
     m_diagnosticsList.clear();
+    this->ProcessDiagnostics();
 }
 
-void EditArea::CountError(){
-    int err = 0;
-    int warn = 0;
-    int info = 0;
+void EditArea::ProcessDiagnostics(){
+    char severityList[5] = {-1, 0, 0, 0, 0};
+    // [0      ,1    , 2      , 3          , 4   ]
+    // [Unknown, Error, Warning, Information, Hint]
+    static const char* tags[5] = {
+        "none",// severity must not be 0
+        "error",
+        "warning",
+        "info",
+        "hint"
+    };
+
+    for (Diagnostic* diagnostic: m_diagnosticsList) {
+        this->ApplyTagByRange(&diagnostic->range, tags[diagnostic->severity]);
+        severityList[diagnostic->severity] ++;
+    }
+
     std::string s =
-        "<span color=\"red\">⚠"
-        + std::to_string(err)
-        + "</span> <span color=\"yellow\">⚠"
-        + std::to_string(warn)
-        + "</span> <span color=\"greenyellow\">⚠"
-        + std::to_string(info)
-        +"</span>";
+        "<span color=\"red\">e" +
+        std::to_string(severityList[1]) +
+        "</span> <span color=\"yellow\">w" +
+        std::to_string(severityList[2]) +
+        "</span> <span color=\"greenyellow\">i" +
+        std::to_string(severityList[3]) +
+        "</span>";
     gtk_label_set_markup(m_errorButLabel, s.c_str());
 }
 
@@ -373,24 +390,6 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
     default:
         break;
     }
-/*
-    else if(m_sugPopover->m_isShowing){
-        if(keyval == GDK_KEY_Up){
-            m_sugPopover->SelectUp();
-            return true;
-        }else if(keyval == GDK_KEY_Down){
-            m_sugPopover->SelectDown();
-            return true;
-        }else if(keyval == GDK_KEY_Tab || keyval  == GDK_KEY_Return){
-            // We have to stop autocompletion for blank space
-            // before using Enter key to select the completion.
-            // Else whenever the user spams Enter to create new lines,
-            // the completion will be inserted.
-            m_sugPopover->ConfirmSelection();
-            return true;
-        }
-    }
-*/
     return false;
 }
 void EditArea::CursorPosChanged(){

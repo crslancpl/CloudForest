@@ -1,9 +1,8 @@
-import asyncio
 import re
 import select
 import shutil
 import subprocess
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import cloudforest
 from cloudforest import editarea
@@ -28,6 +27,11 @@ class LspClient:
             self.stdin_thread = self.LSP.stdin
         if self.LSP.stdout:
             self.stdout_thread = self.LSP.stdout
+            """
+            self.out_event: IOEvent = IOEvent(self.stdout_thread)
+            self.out_event.add_listener(self.read_text)
+            """
+
         if self.LSP.stderr:
             self.stderr_thread = self.LSP.stderr
 
@@ -101,20 +105,9 @@ class LspClient:
         self.LSP.stdin.flush()
 
     def read(self):
-        self.err_thread = threading.Thread(
-            target=self.read_err(),
-        )
-        self.out_thread = threading.Thread(
-            target=self.read_out(),
-        )
-        self.err_thread.run()
-        self.out_thread.run()
-
-    def stop_reading(self):
-        if self.err_thread:
-            self.err_thread.join()
-        if self.out_thread:
-            self.out_thread.join()
+        with ThreadPoolExecutor(max_workers=2) as TPExecutor:
+            TPExecutor.submit(self.read_out)
+            TPExecutor.submit(self.read_err)
 
     def read_err(self):
         if self.LSP.stderr is None:
@@ -131,7 +124,7 @@ class LspClient:
             # print("reading err")
             msgbytes = self.LSP.stderr.readline()
             msg = msgbytes.decode()
-            # print(f"lsp_client_class stderr: {msg}", end="")
+            print(f"lsp_client_class stderr: {msg}", end="")
 
     def read_out(self):
         # [!NOTE]

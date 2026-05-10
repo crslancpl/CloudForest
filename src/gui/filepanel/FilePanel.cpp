@@ -1,7 +1,7 @@
 #include "FilePanel.h"
 
 
-#include <cstdlib>
+
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>
@@ -32,41 +32,17 @@ FilePanel::FilePanel(){
 }
 
 
-
-FPFolderButton* FilePanel::FindFolderBut_GFile(GFile *folder){
-    char* foldername = g_file_get_basename(folder);
-    /*
-    for(std::shared_ptr<FPFolderButton> &folderbut: m_folderButtons){
-        if(strcmp(folderbut->m_fileData->FileName, foldername)== 0){
-            return folderbut.get();
-        }
-    }
-    */
-    return nullptr;
-}
-
-FPFileButton* FilePanel::FindFileBut_GFile(GFile *file){
-    /*
-    for(std::shared_ptr<FPFileButton> &filebut: m_fileButtons){
-        if(filebut->m_fileData->File == file){
-            return filebut.get();
-        }
-    }
-    */
-    return nullptr;
-}
-
 void FilePanel::AddNewRoot(FPFolderButton* folderbutton){
-    gtk_box_append(m_fileTree,GTK_WIDGET(folderbutton->m_baseBox));
+    gtk_box_append(m_fileTree, folderbutton->GetBaseWidget());
 }
 
 void FilePanel::AddNewRoot(FPFileButton* filebutton){
-    gtk_box_append(m_fileTree,GTK_WIDGET(filebutton->m_button));
+    gtk_box_append(m_fileTree, filebutton->GetBaseWidget());
 }
 
 void FilePanel::NewFolder(GFile *folder,GFile *parentfolder,FPFolderButton *parentfolderbut){
     if(parentfolderbut){
-        parentfolderbut->AddChildFolder(new FPFolderButton(folder, parentfolderbut->Level+1));
+        parentfolderbut->AddChildFolder(new FPFolderButton(folder, parentfolderbut->GetLevel() + 1));
     }else{
         AddNewRoot(new FPFolderButton(folder, 0));
     }
@@ -74,7 +50,7 @@ void FilePanel::NewFolder(GFile *folder,GFile *parentfolder,FPFolderButton *pare
 
 void FilePanel::NewFile(GFile *file, FPFolderButton* parentfolderbut){
     if(parentfolderbut){
-        parentfolderbut->AddChildFile(new FPFileButton(file, parentfolderbut->Level+1));
+        parentfolderbut->AddChildFile(new FPFileButton(file, parentfolderbut->GetLevel() + 1));
     }else{
         AddNewRoot(new FPFileButton(file, 0));
     }

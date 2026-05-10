@@ -68,9 +68,7 @@ def read_as_publish_diagnostics(params: dict) -> None:
 
     path = str(uri).removeprefix("file:///")
     # print(f"diagnostics: {path} version {version}")
-
     ea = editarea.find_by_file_path(path)
-
     ea.clear_diagnostics()
 
     for diagnostic in diagnostics:
@@ -82,7 +80,7 @@ def read_as_publish_diagnostics(params: dict) -> None:
             code = "none"
 
         print(
-            f"diagnostic: range {range} code '{code}' diagnostic: '{diagnostic.get('message')}'"
+            f"diagnostic severity {diagnostic.get('severity')}: range {range} code '{code}' diagnostic: '{diagnostic.get('message')}'"
         )
 
         ea.add_diagnostic(
@@ -92,6 +90,7 @@ def read_as_publish_diagnostics(params: dict) -> None:
             start.get("character"),
             end.get("line"),
             end.get("character"),
+            diagnostic.get("severity"),
         )
 
-    return
+    ea.process_diagnostics()

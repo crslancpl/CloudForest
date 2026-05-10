@@ -29,9 +29,9 @@ public:
     const char* GetFilePath();
     const unsigned int GetFileVersion();
 
-    void AddDiagnostic(Diagnostic* diagnostic);
-    void ClearDiagnostics();
-    void CountError();
+    void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
+    void ProcessDiagnostics(); // read data from all diagnostics and show highlight
+    void ClearDiagnostics(); // clear the diagnostics list
     void LoadCursorPos();
     void LoadFile(GFile *file);
     void Save();

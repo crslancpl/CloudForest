@@ -28,8 +28,26 @@ void style::LoadTextTag(GtkTextBuffer *buffer){
     gtk_text_buffer_create_tag(buffer, "func", "foreground","rgb(199,176,252)", nullptr);
     gtk_text_buffer_create_tag(buffer, "value", "foreground","rgb(128,188,237)", nullptr);
 
-    gtk_text_buffer_create_tag(buffer, "error", "underline", PANGO_UNDERLINE_ERROR, nullptr);
-    gtk_text_buffer_create_tag(buffer, "warning", "underline", PANGO_UNDERLINE_SINGLE, nullptr);
+    GdkRGBA errstyle = {1, 0, 0, 1};
+    gtk_text_buffer_create_tag(buffer, "error",
+        "underline", PANGO_UNDERLINE_ERROR,
+        "underline-rgba", &errstyle,
+        nullptr);
+    GdkRGBA warnstyle = {1, 0.7, 0, 1};
+    gtk_text_buffer_create_tag(buffer, "warning",
+        "underline", PANGO_UNDERLINE_SINGLE,
+        "underline-rgba", &warnstyle,
+        nullptr);
+    GdkRGBA infostyle = {0, 1, 0, 1};
+    gtk_text_buffer_create_tag(buffer, "info",
+        "underline", PANGO_UNDERLINE_SINGLE,
+        "underline-rgba", &infostyle,
+        nullptr);
+    GdkRGBA hintstyle = {0, 0, 1, 1};
+    gtk_text_buffer_create_tag(buffer, "hint",
+        "underline", PANGO_UNDERLINE_SINGLE,
+        "underline-rgba", &hintstyle,
+        nullptr);
 
     gtk_text_buffer_create_tag(buffer, "search_highlight",
                                 "background", "yellow",

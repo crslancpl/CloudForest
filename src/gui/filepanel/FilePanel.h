@@ -1,11 +1,15 @@
 #ifndef FILEPANEL_H_
 #define FILEPANEL_H_
-#include <gtk/gtk.h>
 
 #include "src/gui/components/CfContent.h"
-#include "FilePanelButtons.h"
+
+#include <gtk/gtk.h>
+#include <unordered_map>
+#include <string>
 
 typedef struct FileData FileData;
+class FPFileButton;
+class FPFolderButton;
 
 class FilePanel : public CfContent{
 public:
@@ -16,12 +20,9 @@ public:
 
     void NewFolder(GFile *file,GFile *parentfolder,FPFolderButton* parentfolderbut);
     void NewFile(GFile *file, FPFolderButton* parentfolderbut);
-    FPFolderButton* FindFolderBut_GFile(GFile *folder);
-    FPFileButton* FindFileBut_GFile(GFile *file);
 
 private:
     GtkBox *m_fileTree;
-
     void AddNewRoot(FPFolderButton* folderbutton);
     void AddNewRoot(FPFileButton* filebutton);
 };

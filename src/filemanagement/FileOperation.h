@@ -12,6 +12,7 @@ void SaveFile(GFile* file, char* content, void (*savedcallback)(GFile*));
 
 void ChooseFile();
 void ChooseFolder();
+void NewWorkspace();
 
 }// namespace filemangement
 

@@ -154,18 +154,24 @@ static PyObject* py_EditArea_hide_suggestion(py_EditArea *self, PyObject *args){
 static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
     Diagnostic* diagnostic = new Diagnostic();
     if(!PyArg_ParseTuple(
-        args, "ssiiii",
+        args, "ssiiiii",
         &diagnostic->code,
         &diagnostic->message,
         &diagnostic->range.startLine,
         &diagnostic->range.startColumn,
         &diagnostic->range.endLine,
-        &diagnostic->range.endColumn)
+        &diagnostic->range.endColumn,
+        &diagnostic->severity)
     ){
         Py_RETURN_NAN;
     }
 
     self->editarea->AddDiagnostic(diagnostic);
+    Py_RETURN_NONE;
+}
+
+static PyObject* py_EditArea_process_diagnostics(py_EditArea* self, PyObject *args){
+    self->editarea->ProcessDiagnostics();
     Py_RETURN_NONE;
 }
 
@@ -188,6 +194,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"hide_suggestion", (PyCFunction)py_EditArea_hide_suggestion, METH_VARARGS, "hide the suggestion popover"},
     {"show_suggestion", (PyCFunction)py_EditArea_show_suggestion, METH_VARARGS, "show the suggestion popover"},
     {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
+    {"process_diagnostics", (PyCFunction)py_EditArea_process_diagnostics, METH_VARARGS, "read diagnostics and apply tags in the EditArea"},
     {"clear_diagnostics", (PyCFunction)py_EditArea_clear_diagnostics, METH_VARARGS, "clear all diagnostics in the EditArea"},
     {NULL, NULL, 0, NULL}
 };
