@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <interface>
-  <object id="HeaderBar" class="GtkHeaderBar">
-    <property name="name">HeaderBar</property>
+  <object id="headerbar" class="GtkHeaderBar">
+    <property name="name">headerbar</property>
     <child type="start">
     <object class="GtkBox">
       <property name="hexpand">true</property>
-      <property name="name">headerbarbuttonbox</property>
+      <property name="name">button-box</property>
       <child>
-        <object class="GtkButton" id="AppButton">
+        <object class="GtkButton" id="app-btn">
           <property name="label">IDE</property>
-          <property name="name">TitlebarButtons</property>
+          <property name="name">titlebar-btns</property>
         </object>
       </child>
       <child>
-        <object id="FileBut" class="GtkMenuButton">
+        <object id="file-btn" class="GtkMenuButton">
           <property name="label">File</property>
-          <property name="name">TitlebarButtons</property>
+          <property name="name">headerbar-btns</property>
           <property name="menu-model">fmenu</property>
         </object>
       </child>
       <child>
         <object class="GtkButton">
           <property name="label">Compile</property>
-          <property name="name">TitlebarButtons</property>
+          <property name="name">headerbar-btns</property>
         </object>
       </child>
       <child>
-        <object class="GtkSearchEntry" id="TitleBarSearchBox">
-          <property name="name">SearchBox</property>
+        <object class="GtkSearchEntry" id="search-box">
+          <property name="name">search-box</property>
           <property name="placeholder-text">search</property>
           <!--property name="hexpand">true</property-->
         </object>

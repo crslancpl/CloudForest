@@ -51,6 +51,7 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
+
 static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
     const char* text = self->editarea->GetContent();
     return PyUnicode_FromString(text);

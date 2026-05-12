@@ -36,6 +36,7 @@ class LspClient:
             self.stderr_thread = self.LSP.stderr
 
         cloudforest.add_callback("app-closed", self.exit)
+        cloudforest.add_callback("new-workspace", self.add_workspace)
         self.start()
 
     def start(self):
@@ -51,6 +52,11 @@ class LspClient:
         self.send(lsp_msg_writer.exit_notification())
         self.read()
         self.LSP.terminate()
+
+    def add_workspace(self, name: str, path: str):
+        # self.send(lsp_msg_writer.new_workspace_notification(name, path))
+        # self.read()
+        pass
 
     # callbacks
     def editarea_completion_requested(
@@ -78,6 +84,7 @@ class LspClient:
             ea.get_file_version(),
             self.language_id,
         )
+
         self.send(message)
         self.read()
 
@@ -85,7 +92,7 @@ class LspClient:
         message = lsp_msg_writer.did_open_message(
             ea.get_file_path(), ea.get_content(), self.language_id
         )
-
+        # print(f"listening editarea {ea.get_file_path()}")
         self.send(message)
         self.read()
         ea.add_callback("text-changed", self.editarea_text_changed)
@@ -96,7 +103,6 @@ class LspClient:
         if self.LSP.stdin is None:
             return
         ContentLengthHeader = lsp_msg_writer.content_length_header(message)
-
         # print("message: " + message)
         self.LSP.stdin.flush()
         _ = self.LSP.stdin.write(ContentLengthHeader.encode("utf-8"))
@@ -124,7 +130,7 @@ class LspClient:
             # print("reading err")
             msgbytes = self.LSP.stderr.readline()
             msg = msgbytes.decode()
-            print(f"lsp_client_class stderr: {msg}", end="")
+            # print(f"lsp_client_class stderr: {msg}", end="")
 
     def read_out(self):
         # [!NOTE]

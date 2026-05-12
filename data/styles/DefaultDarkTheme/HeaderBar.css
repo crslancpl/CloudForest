@@ -5,19 +5,19 @@ headerbar {
     border-bottom: solid 3px purple;
 }
 
-#headerbarbuttonbox button {
+#button-box button {
     border-style: none;
     background-image: none;
     background-color: transparent;
     color: skyblue;
 }
 
-#headerbarbuttonbox button:hover {
+#button-box button:hover {
     border: 1px solid red;
     color: magenta;
 }
 
-#SearchBox {
+#search-box {
     background-image: none;
     color: white;
     background-color: rgb(10, 10, 10);

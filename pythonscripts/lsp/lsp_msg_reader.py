@@ -66,7 +66,7 @@ def read_as_publish_diagnostics(params: dict) -> None:
     if version is None:
         return
 
-    path = str(uri).removeprefix("file:///")
+    path = str(uri).removeprefix("file://")
     # print(f"diagnostics: {path} version {version}")
     ea = editarea.find_by_file_path(path)
     ea.clear_diagnostics()

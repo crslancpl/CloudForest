@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <interface>
-    <object id="BaseGrid" class="GtkGrid">
-        <property name="name">EditAreaBaseGrid</property>
+    <object id="base-grid" class="GtkGrid">
+        <property name="name">base-grid</property>
         <child>
-            <object id="FileInfoPanel" class="GtkBox">
-                <property name="name">MiscPanel</property>
+            <object id="file-info-panel" class="GtkBox">
+                <property name="name">misc-panel</property>
                 <property name="hexpand">true</property>
                 <property name="height-request">26</property>
                 <layout>
@@ -12,8 +12,8 @@
                     <property name="row">0</property>
                 </layout>
                 <child>
-                    <object id="LocationBut" class="GtkButton">
-                        <property name="name">LocationBut</property>
+                    <object id="location-btn" class="GtkButton">
+                        <property name="name">location-btn</property>
                     </object>
                 </child>
                 <child>
@@ -22,15 +22,15 @@
                     </object>
                 </child>
                 <child>
-                    <object id="SaveBut" class="GtkButton">
-                        <property name="name">SaveBut</property>
+                    <object id="save-btn" class="GtkButton">
+                        <property name="name">save-btn</property>
                     </object>
                 </child>
             </object>
         </child>
         <child>
-            <object id="MiscPanel" class="GtkBox">
-                <property name="name">MiscPanel</property>
+            <object id="misc-panel" class="GtkBox">
+                <property name="name">misc-panel</property>
                 <property name="hexpand">true</property>
                 <property name="height-request">26</property>
                 <layout>
@@ -38,17 +38,17 @@
                     <property name="row">3</property>
                 </layout>
                 <child>
-                    <object id="OutLineBut" class="GtkButton">
-                        <property name="name">OutlineBut</property>
+                    <object id="outline-btn" class="GtkButton">
+                        <property name="name">outline-btn</property>
                         <property name="label">Outline</property>
                     </object>
                 </child>
                 <child>
-                    <object id="ErrorBut" class="GtkButton">
-                        <property name="name">ErrorBut</property>
+                    <object id="error-btn" class="GtkButton">
+                        <property name="name">error-btn</property>
                         <child>
-                            <object id="ErrorButLabel" class="GtkLabel">
-                                <property name="name">ErrorButLabel</property>
+                            <object id="error-btn-label" class="GtkLabel">
+                                <property name="name">error-btn-label</property>
                             </object>
                         </child>
                     </object>
@@ -59,14 +59,14 @@
                     </object>
                 </child>
                 <child>
-                    <object id="LangBut" class="GtkButton">
-                        <property name="name">LangBut</property>
+                    <object id="lang-btn" class="GtkButton">
+                        <property name="name">lang-btn</property>
                         <property name="label">Unknown</property>
                     </object>
                 </child>
                 <child>
-                    <object id="CursorPosBut" class="GtkButton">
-                        <property name="name">CursorPosBut</property>
+                    <object id="cursor-pos-btn" class="GtkButton">
+                        <property name="name">cursor-pos-btn</property>
                     </object>
                 </child>
             </object>

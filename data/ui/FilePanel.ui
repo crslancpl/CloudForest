@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <interface>
-<object class="GtkBox" id="FileTree">
+<object class="GtkBox" id="ws-area">
 <property name="spacing">2</property>
   <property name="orientation">vertical</property>
-  <property name="name">FileTree</property>
+  <property name="name">ws-area</property>
 </object>
 </interface>

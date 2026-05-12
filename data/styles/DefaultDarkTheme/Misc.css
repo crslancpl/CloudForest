@@ -1,4 +1,4 @@
-.normalbutton {
+.normal-button {
     background-image: none;
     background-color: transparent;
     border-width: 2px;
@@ -7,7 +7,7 @@
     color: white;
 }
 
-.normalbutton:hover {
+.normal-button:hover {
     background-image: none;
     background-color: transparent;
     border-style: solid;

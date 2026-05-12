@@ -1,10 +1,10 @@
-.SettingPanel {
+.setting-panel {
     border-radius: 15px;
     padding: 5px;
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-.SettingTabButtonBox button {
+.setting-tab-button-box button {
     border: transparent;
     background-image: none;
     background-color: transparent;
@@ -12,42 +12,42 @@
     border: solid 2px transparent;
 }
 
-.SettingTabButtonBox button:hover {
+.setting-tab-button-box button:hover {
     background-image: none;
     border: solid 2px skyblue;
 }
 
-.CloseButton {
+.close-button {
     color: red;
     font-weight: bolder;
 }
 
-.SettingPage {
+.setting-page {
     margin: 15px 5px;
 }
 
-.SettingPage spinbutton {
+.setting-page spinbutton {
     background-image: none;
     border: solid 1px azure;
     border-radius: 10px;
     background-color: transparent;
 }
 
-.SettingPage dropdown {
+.setting-page dropdown {
     background-image: none;
     border: solid 1px azure;
     background-color: transparent;
 }
 
-.SettingPage button {
+.setting-page button {
     background-image: none;
     background-color: transparent;
 }
 
-#PageName {
+#page-name {
     font-size: 25px;
 }
 
-#SectionName {
+#section-name {
     font-size: 17px;
 }

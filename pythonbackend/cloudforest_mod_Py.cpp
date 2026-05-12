@@ -5,19 +5,35 @@
 #include "language_mod_Py.h"
 #include "editarea/editarea_mod_Py.h"
 #include "settingpanel/setting_panel_mod_Py.h"
+#include "src/filemanagement/FileCallback.h"
+#include "src/filemanagement/FileOperation.h"
+#include "datatypes/file.h"
 
 
+#include <cstring>
 #include <floatobject.h>
 #include <listobject.h>
 #include <methodobject.h>
+#include <modsupport.h>
 #include <object.h>
 #include <pylifecycle.h>
 #include <pystate.h>
 #include <pytypedefs.h>
 #include <tupleobject.h>
+#include <unicodeobject.h>
+
+
 
 //callback lists
 static PyObject *cloudforest_module_app_closed_callbacks;
+static PyObject *cloudforest_module_new_workspace_callbacks;
+
+
+static void OnNewWorkspace(Workspace* ws){
+    PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->name), PyUnicode_FromString(ws->rootFolderData->absoPath));
+    RunCallback(cloudforest_module_new_workspace_callbacks, args);
+    Py_DECREF(args);
+}
 
 static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
     printf("this is from CloudForest module\n");
@@ -37,6 +53,8 @@ static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args)
 
     if (strcmp(event, "app-closed") == 0) {
         PyList_Append(cloudforest_module_app_closed_callbacks, callbackfunc);
+    }else if(strcmp(event, "new-workspace") == 0){
+        PyList_Append(cloudforest_module_new_workspace_callbacks, callbackfunc);
     }
     Py_RETURN_NONE;
 }
@@ -72,9 +90,11 @@ static struct PyModuleDef cloudforest_module = {
 PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyObject *cfmodule = PyModule_Create(&cloudforest_module);
     cloudforest_module_app_closed_callbacks = PyList_New(0);
+    cloudforest_module_new_workspace_callbacks = PyList_New(0);
     PyModule_AddObject(cfmodule, "editarea", (PyObject*)PyInit_editarea_module());
     PyModule_AddObject(cfmodule, "setting_panel", (PyObject*)PyInit_setting_panel_module());
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
+    filemanagement::ListenEvent(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     return cfmodule;
 }
 

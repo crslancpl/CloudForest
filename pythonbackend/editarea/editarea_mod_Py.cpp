@@ -2,12 +2,16 @@
 
 #include "editarea_class_Py.h"
 #include "pythonbackend/python_tool.h"
-
+#include "src/filemanagement/FileOperation.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/editarea/LspPopovers_if.h"
+#include "datatypes/file.h"
+
 #include <floatobject.h>
+#include <methodobject.h>
 #include <object.h>
+#include <unicodeobject.h>
 
 
 /*
@@ -121,10 +125,24 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
     return  ea_py;
 }
 
+static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* args){
+    py_EditArea* ea;
+    if(!PyArg_ParseTuple(args, "O", &ea)){
+        Py_RETURN_NAN;
+    }
+
+    Workspace* ws = filemanagement::FindWorkspaceFromPath(ea->editarea->GetFilePath());
+    if(ws){
+        return PyUnicode_FromString(ws->rootFolderData->absoPath);
+    }else{
+        Py_RETURN_NONE;
+    }
+}
 
 static PyMethodDef editarea_module_methods[]={
     {"add_callback", editarea_module_add_callback, METH_VARARGS, "add callback for event"},
     {"find_by_file_path", editarea_module_find_by_file_path, METH_VARARGS, "find EditArea object with file path"},
+    {"find_workspace_path", editarea_module_find_workspace_path, METH_VARARGS, "find the path of the editarea's workspace"},
     {nullptr, nullptr, 0, nullptr}
 };
 

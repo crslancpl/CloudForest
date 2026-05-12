@@ -25,7 +25,7 @@ CfTabSwitcher::CfTabSwitcher(CfContent *content,CfTabLayout *parent){
     gtk_widget_set_size_request(GTK_WIDGET(m_switchButton), 50, 15);
     gtk_widget_set_size_request(GTK_WIDGET(m_closeButton), 15, 15);
 
-    gtk_widget_add_css_class(GTK_WIDGET(m_baseBox), "SwitcherBaseBox");
+    gtk_widget_add_css_class(GTK_WIDGET(m_baseBox), "switcher-base-box");
 
     gtk_box_append(m_baseBox, GTK_WIDGET(m_switchButton));
     gtk_box_append(m_baseBox, GTK_WIDGET(m_closeButton));

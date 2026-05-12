@@ -1,8 +1,8 @@
-#headerbarbuttonbox button {
+#button-box button {
     border-radius: 20px;
 }
 
-#SearchBox {
+#search-box {
     margin: 5px;
     border-radius: 30px;
 }

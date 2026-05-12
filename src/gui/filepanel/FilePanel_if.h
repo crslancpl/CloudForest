@@ -1,14 +1,16 @@
 #ifndef FILEPANEL_IF_H_
 #define FILEPANEL_IF_H_
 
-#include <gtk/gtk.h>
-
 class FPFolderButton;
+typedef struct Workspace Workspace;
+typedef struct FileData FileData;
 
 namespace filepanel{
-void LoadAsRoot(GFile *file, GFileInfo *fileinfo);
+
+//void LoadWorkspace(Workspace *file);
+void AddWorkspaceBox(Workspace* ws);
 void Construct();
-FPFolderButton* GetFolderButton(const GFile *folder);
+FPFolderButton* GetFolderButton(const FileData *folder);
 }
 
 #endif

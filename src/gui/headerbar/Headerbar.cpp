@@ -58,9 +58,9 @@ static GActionEntry app_entries[] =
 HeaderBar::HeaderBar(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/HeaderBar.ui");
 
-    m_headerBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "HeaderBar"));
-    m_fileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "FileBut"));
-    m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "AppButton"));
+    m_headerBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "headerbar"));
+    m_fileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "file-btn"));
+    m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "app-btn"));
 
     g_signal_connect(m_ideBut, "clicked",G_CALLBACK(IdeButtonClicked), nullptr);
     g_action_map_add_action_entries (G_ACTION_MAP (global::g_gtkApplication), app_entries, G_N_ELEMENTS (app_entries), global::g_gtkApplication);

@@ -8,14 +8,15 @@
 
 //forward declaration
 class EditArea;
+typedef struct FileData FileData ;
 
 
 namespace editarea {
-void OpenFile(GFile* file);//pass nullptr to create empty file
+void OpenFile(FileData* file);//pass nullptr to create empty file
 void CreateEmptyFile();
 void OpenFileWithAbsoPath(const std::string &absoPath);
-void CloseFile(GFile* file);
-void SaveFile(GFile* file);
+void CloseFile(FileData* file);
+void SaveFile(FileData* file);
 EditArea* GetFocusedEditArea();
 void SetFocusedEditArea(EditArea* editarea);
 void InsertToEditAreaList(EditArea* ea);

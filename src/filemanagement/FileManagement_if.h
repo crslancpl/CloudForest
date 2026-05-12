@@ -17,8 +17,6 @@ typedef struct FileData FileData;
 
 namespace filemanagement{
 void Init();
-void OpenFile(GFile* file);
-void CloseFile(GFile *file);
 }
 
 

@@ -1,35 +1,35 @@
-#FileTree button:hover {
+#file-tree button:hover {
     border: solid 1px navajowhite;
     background-color: transparent;
 }
 
-#FileTree button {
+#file-tree button {
     border: solid 1px transparent;
     background-image: none;
     background-color: transparent;
     font-family: sans-serif;
 }
 
-#FilePanelBaseGrid {
+#file-panel-base-grid {
     background-color: rgba(50, 50, 50, 0.8);
 }
 
-#FileTree scrolledwindow {
+#file-tree scrolledwindow {
     background-image: none;
 }
 
-.FolderButton {
+.folder-button {
     border: none;
     color: orange;
 }
 
-.FileButton {
+.file-button {
     border: none;
     color: wheat;
 }
 
-.rootfolder {
-    background-color: rgba(0, 0, 0, 0.1);
+.ws-box {
+    background-color: rgba(40, 40, 40, 1);
 }
 
 .file-tree {
@@ -37,7 +37,7 @@
     padding: 5px;
 }
 
-.FolderButton {
+.folder-button {
     color: #8ab4f8;
     background: none;
     border: none;
@@ -45,11 +45,11 @@
     padding: 3px;
 }
 
-.FolderButton:hover {
+.folder-button:hover {
     background-color: #3d3d3d;
 }
 
-.FileButton {
+.file-button {
     color: #e0e0e0;
     background: none;
     border: none;
@@ -57,6 +57,6 @@
     padding: 3px;
 }
 
-.FileButton:hover {
+.file-button:hover {
     background-color: #3d3d3d;
 }

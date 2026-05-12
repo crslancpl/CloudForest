@@ -1,17 +1,17 @@
-#EditAreaBaseGrid {
+#base-grid {
     background-color: rgba(15, 15, 20, 0.6);
     color: white;
 }
-#EditAreaBaseGrid button {
+#base-grid button {
     background-image: none;
 }
 
-#EditAreaBaseGrid textview,
-#EditAreaBaseGrid textview text {
+#base-grid textview,
+#base-grid textview text {
     background-color: transparent;
 }
 
-#EditAreaBaseGrid {
+#base-grid {
     border-color: transparent;
 }
 
@@ -19,63 +19,63 @@
     padding: 5px;
 }
 
-#TextArea {
+#textarea {
     color: white;
     font-family: monospace;
     caret-color: white;
 }
 
-#LineNoArea {
+#line-no-area {
     border-right: solid 3px red;
     color: cyan;
     font-family: monospace;
 }
 
-#MiscPanel button {
+#misc-panel button {
     color: white;
     background-color: transparent;
     border: transparent solid 1px;
 }
 
-#MiscPanel button:hover {
+#misc-panel button:hover {
     border: rgba(255, 0, 0, 0.6) solid 1px;
 }
 
-.SwitcherBaseBox {
+.switcher-base-box {
     background-image: none;
     background-color: black;
 }
 
-.SwitcherBaseBox:hover {
+.switcher-base-box:hover {
     border: deepskyblue 2px solid;
 }
 
-.SwitcherBaseBox button {
+.switcher-base-box button {
     border: none;
     background-image: none;
     background-color: transparent;
 }
 
-.SwitcherButtonSaved {
+.switcher-button-saved {
     color: white;
     border: none;
 }
 
-.SwitcherButtonUnsaved {
+.switcher-button-unsaved {
     color: red;
     border: none;
     background-image: none;
     background-color: transparent;
 }
 
-.SwitcherCloseButton {
+.switcher-close-button {
     color: white;
     border: none;
     background-image: none;
     background-color: transparent;
 }
 
-.SwitcherCloseButton:hover {
+.switcher-close-button:hover {
     color: red;
     background-image: none;
     background-color: transparent;

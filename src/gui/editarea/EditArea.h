@@ -12,10 +12,11 @@
 // Forward declaration
 class SearchReplaceDialog;
 typedef struct Diagnostic Diagnostic;
+typedef struct FileData FileData;
 
 class EditArea:public TextArea{
 public:
-    EditArea(GFile* file);
+    EditArea(FileData* file);
     ~EditArea();
 
     bool isSaved = true;
@@ -26,14 +27,14 @@ public:
 
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
-    const char* GetFilePath();
-    const unsigned int GetFileVersion();
+    const char* GetFilePath() const;
+    const unsigned int GetFileVersion() const;
 
     void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
     void ProcessDiagnostics(); // read data from all diagnostics and show highlight
     void ClearDiagnostics(); // clear the diagnostics list
     void LoadCursorPos();
-    void LoadFile(GFile *file);
+    void LoadFile(FileData *file);
     void Save();
     void ShowSearchDialog();
     void ShowReplaceDialog();
@@ -49,7 +50,7 @@ public:
     void CursorPosChanged();
     void SaveButtonClicked();
     void LangButtonClicked();
-    void FileSaved(GFile *file);
+    void FileSaved(FileData *file);
 
 private:
     GdkRectangle m_cursorRec;
@@ -61,10 +62,7 @@ private:
     unsigned int m_originalLength = 0;
     unsigned int m_fileVersion = 0;
 
-    std::string m_fileName;
-    std::string m_absoPath;
-
-    GFile *m_editingFile = nullptr;
+    FileData *m_editingFile = nullptr;
     GtkGrid *m_baseGrid;
     GtkButton *m_locationBut;// showing path
     GtkButton *m_saveBut;

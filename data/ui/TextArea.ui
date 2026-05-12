@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <interface>
-<object class="GtkBox" id="BaseBox">
+<object class="GtkBox" id="base-box">
     <child>
-        <object id="LineNoScroll" class="GtkScrolledWindow">
+        <object id="line-no-scroll" class="GtkScrolledWindow">
             <property name="hscrollbar-policy">never</property>
             <property name="vscrollbar-policy">external</property>
             <property name="width-request">60</property>
             <child>
-                <object id="LineNum" class="GtkTextView">
-                    <property name="name">LineNoArea</property>
+                <object id="line-no-area" class="GtkTextView">
+                    <property name="name">line-no-area</property>
                     <property name="editable">false</property>
                     <property name="cursor-visible">false</property>
                     <property name="justification">right</property>
@@ -21,8 +21,8 @@
             <property name="hexpand">true</property>
             <property name="vexpand">true</property>
             <child>
-                <object id="TextArea" class="GtkTextView">
-                    <property name="name">TextArea</property>
+                <object id="textarea" class="GtkTextView">
+                    <property name="name">textarea</property>
                     <property name="hexpand">true</property>
                     <property name="vexpand">true</property>
                 </object>

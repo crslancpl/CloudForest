@@ -1,4 +1,4 @@
-#EditAreaBaseGrid {
+#base-grid {
     border-radius: 15px;
     border-width: 2px;
     border-style: solid;
@@ -13,26 +13,26 @@ textview {
     padding-top: 10px;
 }
 
-#TextArea {
+#textarea {
     padding-left: 10px;
     padding-right: 30px;
 }
 
-#LineNoArea {
+#line-no-area {
     padding-right: 10px;
 }
 
-#MiscPanel {
+#misc-panel {
     /*background-color: rgba(0, 0, 0, 0.5);*/
 }
 
-#EditAreaBaseGrid button {
+#base-grid button {
     border-radius: 30px;
     padding-left: 10px;
     padding-right: 10px;
 }
 
-.SwitcherBaseBox {
+.switcher-base-box {
     border-radius: 20px;
     margin: 5px;
 }

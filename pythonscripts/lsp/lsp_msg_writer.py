@@ -94,7 +94,7 @@ def did_open_message(fileuri: str, content: str, langid: str) -> str:
         "method": "textDocument/didOpen",
         "params": {
             "textDocument": {
-                "uri": "file:///" + fileuri,
+                "uri": "file://" + fileuri,
                 "languageId": langid,
                 "version": 0,
                 "text": content,
@@ -111,7 +111,7 @@ def did_close_notification(fileuri: str):
         "method": "textDocument/didClose",
         "params": {
             "textDocument": {
-                "uri": f"file:///{fileuri}",
+                "uri": f"file://{fileuri}",
             },
         },
     }
@@ -125,7 +125,7 @@ def did_change_message(fileuri: str, content: str, version: int, langid: str) ->
         "method": "textDocument/didChange",
         "params": {
             "textDocument": {
-                "uri": "file:///" + fileuri,
+                "uri": "file://" + fileuri,
                 "languageId": langid,
                 "version": version,
             },
@@ -137,8 +137,18 @@ def did_change_message(fileuri: str, content: str, version: int, langid: str) ->
 
 def completion_message(fileuri: str, line: int, char: int) -> str:
     copied = AutoCompleteMessage.copy()
-    copied["params"]["textDocument"] = {"uri": "file:///" + fileuri}
+    copied["params"]["textDocument"] = {"uri": "file://" + fileuri}
     copied["params"]["position"] = {"line": line, "character": char}
 
     message = json.dumps(copied)
     return message
+
+
+def new_workspace_notification(name: str, uri: str):
+    msg = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "workspace/didChangeWorkspaceFolders",
+        "params": {"event": {"added": [{"uri": f"file://{uri}", "name": name}]}},
+    }
+    return json.dumps(msg)

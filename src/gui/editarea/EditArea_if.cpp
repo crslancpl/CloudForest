@@ -2,6 +2,8 @@
 
 #include "EditArea.h"
 #include "datatypes/common.h"
+#include "datatypes/file.h"
+#include "src/filemanagement/FileOperation.h"
 #include "src/gui/layouts/tab/CfTab_if.h"
 
 #include <unordered_map>
@@ -12,7 +14,7 @@ typedef void (*EditAreaCreatedCallback)(EditArea*);
 typedef void (*EditAreaFocusedChangedCallback)(EditArea*);
 typedef void (*EditAreaLangChangedCallback)(EditArea*, const char*);
 
-static std::unordered_map<GFile*, EditArea*> open_editareas;
+static std::unordered_map<FileData*, EditArea*> open_editareas;
 static std::unordered_map<std::string, EditArea*> editarea_list;
 
 //callbacks
@@ -31,7 +33,7 @@ void editarea::SetFocusedEditArea(EditArea* editarea){
 }
 
 void editarea::CreateEmptyFile(){
-    auto neweditarea = new EditArea(nullptr);
+    auto neweditarea = new EditArea(filemanagement::CreateVirtualFile());
 
     editarea::SetFocusedEditArea(neweditarea);
 
@@ -42,7 +44,7 @@ void editarea::CreateEmptyFile(){
     tablayout::Show(neweditarea);
 }
 
-void editarea::OpenFile(GFile *file){
+void editarea::OpenFile(FileData *file){
     auto result = open_editareas.find(file);
     if(result != open_editareas.end()){
         tablayout::Show((CfContent*)result->second);
@@ -62,7 +64,7 @@ void editarea::OpenFile(GFile *file){
     tablayout::Show((CfContent*)neweditarea);
 }
 
-void editarea::CloseFile(GFile *file){
+void editarea::CloseFile(FileData *file){
     open_editareas.erase(file);
 }
 

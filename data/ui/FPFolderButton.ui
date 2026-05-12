@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <interface>
-  <object class="GtkBox" id="FolderBaseBox">
+  <object class="GtkBox" id="folder-base-box">
     <property name="orientation">vertical</property>
     <property name="hexpand">true</property>
     <child>
-        <object class="GtkButton" id="FolderToggleBut">
+        <object class="GtkButton" id="folder-toggle-button">
             <property name="hexpand">true</property>
         </object>
     </child>
     <child>
-        <object class="GtkBox" id="Content">
+        <object class="GtkBox" id="child-area">
             <property name="orientation">vertical</property>
+            <child>
+                <object class="GtkBox" id="child-folder-area">
+                    <property name="orientation">vertical</property>
+                </object>
+            </child>
+            <child>
+                <object class="GtkBox" id="child-file-area">
+                    <property name="orientation">vertical</property>
+                </object>
+            </child>
         </object>
     </child>
   </object>

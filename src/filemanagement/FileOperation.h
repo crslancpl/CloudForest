@@ -1,18 +1,28 @@
 #ifndef FILEOPERATION_H_
 #define FILEOPERATION_H_
 
+#include <gio/gio.h>
 #include <gtk/gtk.h>
+
+// forward declare
+typedef struct FileData FileData;
+typedef struct Workspace Workspace;
 
 void FileOperationInit();
 
 namespace filemanagement{
 
-GFile* CreateFile(char* name, GFile* parentfolder);//create file in file panel
-void SaveFile(GFile* file, char* content, void (*savedcallback)(GFile*));
+FileData* CreateFile(char* name, FileData* parentdata);//create file in file panel
+FileData* CreateVirtualFile();
+void SaveFile(FileData* filedata, char* content, void (*savedcallback)(FileData*));
 
 void ChooseFile();
 void ChooseFolder();
-void NewWorkspace();
+void NewWorkspace(FileData* rootfolderdata);
+Workspace* FindWorkspace(FileData* filedata);
+Workspace* FindWorkspaceFromPath(const char* path);
+void OpenFile(FileData* filedata);
+void CloseFile(FileData *filedata);
 
 }// namespace filemangement
 

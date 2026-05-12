@@ -24,10 +24,10 @@ static void TextChanged(GtkTextBuffer *textviewbuffer, TextArea *textarea){
 TextArea::TextArea(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/TextArea.ui");
 
-    m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "BaseBox"));
-    m_textView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "TextArea"));
+    m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "base-box"));
+    m_textView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "textarea"));
     m_textViewBuffer = gtk_text_view_get_buffer(m_textView);
-    m_lineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "LineNum"));
+    m_lineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "line-no-area"));
     m_lineNoAreaBuffer = gtk_text_view_get_buffer(m_lineNoArea);
 
     gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(m_lineNoArea), gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(m_textView)));

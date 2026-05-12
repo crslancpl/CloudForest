@@ -37,8 +37,6 @@ void gui::Init(){
 void gui::Start(){
     gui::g_mainwindow->Insert(gui::g_filepanel);
     gui::g_mainwindow->Insert(tablayout::NewTabLayout());
-
     editarea::CreateEmptyFile();
-
     gui::g_mainwindow->Show();
 }

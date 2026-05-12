@@ -1,8 +1,8 @@
-#MainWindow {
+#main-window {
     background-color: rgba(0, 0, 0, 0.3);
     /*box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);*/
 }
 
-.Separator:hover {
+.separator:hover {
     background-color: skyblue;
 }

@@ -7,6 +7,8 @@
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
 #include "datatypes/language.h"
+#include "datatypes/file.h"
+#include "src/filemanagement/FileOperation.h"
 #include "src/gui/components/TextArea.h"
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
@@ -59,14 +61,13 @@ static void OnLangChanged(TextArea *parent, Language* lang){
     syntaxprovider::FastHighlight(ea);
 }
 
-static void OnFileSaved(GFile* file){
+static void OnFileSaved(FileData* file){
     saving_editarea->FileSaved(file);
     saving_editarea = nullptr;
 }
 
-EditArea::EditArea(GFile* file){
+EditArea::EditArea(FileData* file){
     editarea::InsertToEditAreaList(this);
-
     /* Load gui */
     this->LoadGui();
     this->LoadFile(file);
@@ -96,16 +97,16 @@ void EditArea::LoadGui(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/EditArea.ui");
 
     /* Binding */
-    m_baseGrid = GTK_GRID(gtk_builder_get_object(builder, "BaseGrid"));
+    m_baseGrid = GTK_GRID(gtk_builder_get_object(builder, "base-grid"));
     // FileInfo panel(top)
-    m_locationBut = GTK_BUTTON(gtk_builder_get_object(builder,"LocationBut"));
-    m_saveBut = GTK_BUTTON(gtk_builder_get_object(builder, "SaveBut"));
+    m_locationBut = GTK_BUTTON(gtk_builder_get_object(builder,"location-btn"));
+    m_saveBut = GTK_BUTTON(gtk_builder_get_object(builder, "save-btn"));
     // Misc panel(bottom)
-    m_outlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "OutlineBut"));
-    m_errorBut = GTK_BUTTON(gtk_builder_get_object(builder, "ErrorBut"));
-    m_errorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "ErrorButLabel"));
-    m_langBut = GTK_BUTTON(gtk_builder_get_object(builder, "LangBut"));
-    m_cursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "CursorPosBut"));
+    m_outlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "outline-btn"));
+    m_errorBut = GTK_BUTTON(gtk_builder_get_object(builder, "error-btn"));
+    m_errorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "error-btn-label"));
+    m_langBut = GTK_BUTTON(gtk_builder_get_object(builder, "lang-btn"));
+    m_cursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "cursor-pos-btn"));
 
     m_keyDownEventCtrl = gtk_event_controller_key_new();
     m_focusEventCtrl = gtk_event_controller_focus_new();
@@ -114,7 +115,7 @@ void EditArea::LoadGui(){
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_saveBut), "Save");
     gtk_widget_set_has_tooltip(GTK_WIDGET(m_locationBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_locationBut),
-        m_editingFile ? g_file_get_path(m_editingFile) : "New file");
+        m_editingFile ? m_editingFile->absoPath : "New file");
 
     this->SetContentWidget(GTK_WIDGET(m_baseGrid));
     gtk_grid_attach(m_baseGrid, GTK_WIDGET(m_baseBox), 0, 2, 1, 1);
@@ -158,7 +159,7 @@ void EditArea::ClearDiagnostics(){
 
 void EditArea::ProcessDiagnostics(){
     char severityList[5] = {-1, 0, 0, 0, 0};
-    // [0      ,1    , 2      , 3          , 4   ]
+    // [0      , 1    , 2      , 3          , 4   ]
     // [Unknown, Error, Warning, Information, Hint]
     static const char* tags[5] = {
         "none",// severity must not be 0
@@ -216,11 +217,14 @@ GdkRectangle* EditArea::GetCursorRectangle(){
     return &m_cursorRec;
 }
 
-const char* EditArea::GetFilePath(){
-    return m_absoPath.c_str();
+const char* EditArea::GetFilePath() const{
+    if(m_editingFile){
+        return m_editingFile->absoPath;
+    }
+    return "";
 }
 
-const unsigned int EditArea::GetFileVersion(){
+const unsigned int EditArea::GetFileVersion() const{
     return m_fileVersion;
 }
 
@@ -238,18 +242,13 @@ void EditArea::SetLanguage(Language* lang){
     }
 }
 
-void EditArea::LoadFile(GFile* newfile){
+void EditArea::LoadFile(FileData* newfile){
     editarea::RemoveFromEditAreaList(this);
     m_editingFile = newfile;
-    if(m_editingFile == nullptr){
-        m_fileName = "untitled";
-        m_absoPath = ("virtual/" + tools::GenerateId()).c_str();
+    if(m_editingFile->isVirtual){
         m_originalContent = strdup("\0");
         m_originalLength = 0;
     }else{
-        m_fileName = g_file_get_basename(m_editingFile);
-        m_absoPath = g_file_get_path(m_editingFile);
-
         filemanagement::ReadFileText(m_editingFile, &m_originalContent);
         m_originalLength = strlen(m_originalContent);
 
@@ -258,10 +257,10 @@ void EditArea::LoadFile(GFile* newfile){
 
     editarea::InsertToEditAreaList(this);
 
-    gtk_button_set_label(m_locationBut, m_absoPath.c_str());
+    gtk_button_set_label(m_locationBut, m_editingFile->absoPath);
 
-    this->SetLanguage(langmanager::FindFileLanguage(m_fileName.c_str()));
-    this->SetContentName(m_fileName);
+    this->SetLanguage(langmanager::FindFileLanguage(m_editingFile->fileName));
+    this->SetContentName(m_editingFile->fileName);
     if(m_parent){
         m_parent->ChildDataChanged(this);
     }
@@ -323,6 +322,7 @@ void EditArea::CursorMovedByKey(){
 
 void EditArea::TextChanged(){
     m_fileVersion += 1;
+
     this->LoadCursorPos();
 
     if(isSaved == true){
@@ -408,7 +408,7 @@ void EditArea::CursorPosChanged(){
     }
 };
 
-void EditArea::FileSaved(GFile *file){
+void EditArea::FileSaved(FileData *file){
     if(file == nullptr){
         //saving cancelled
         return;
