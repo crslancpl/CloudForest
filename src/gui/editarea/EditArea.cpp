@@ -73,7 +73,6 @@ EditArea::EditArea(FileData* file){
     this->LoadFile(file);
     /* Initialize variables */
 
-    m_totalLines = 1;
     m_cursorPos = 0;
     m_isCurMovedByKey = false;
 
@@ -140,7 +139,7 @@ void EditArea::ConnectSignals(){
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
     Range &r = diagnostic->range;
-    if(r.startLine == r.endLine && r.startColumn == r.endColumn){
+    if(r.startColumn > 0 && r.startLine == r.endLine && r.startColumn == r.endColumn){
         // diagnostic with 0 length will be marked one char forward
         r.startColumn--;
     }

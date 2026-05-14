@@ -132,22 +132,22 @@ void TextArea::ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned i
 }
 
 void TextArea::CountLines(){
-    int NewLineCount = gtk_text_buffer_get_line_count(m_textViewBuffer);
+    int linecount = gtk_text_buffer_get_line_count(m_textViewBuffer);
     m_totalChars = gtk_text_buffer_get_char_count(m_textViewBuffer);
 
-    if(NewLineCount != m_totalLines){
+    if(linecount != m_totalLines){
 
         gtk_text_buffer_get_end_iter(m_lineNoAreaBuffer, &m_startItr);
-        if(NewLineCount > m_totalLines){
-            while(m_totalLines < NewLineCount){
+        if(linecount > m_totalLines){
+            while(m_totalLines < linecount){
                 std::string Line = std::to_string(m_totalLines + m_firstLineNumber) + '\n';
                 gtk_text_buffer_insert(m_lineNoAreaBuffer, &m_startItr, Line.c_str(), -1);
                 m_totalLines ++;
             }
         }else{
-            gtk_text_buffer_get_iter_at_line(m_lineNoAreaBuffer, &m_endItr, NewLineCount);
+            gtk_text_buffer_get_iter_at_line(m_lineNoAreaBuffer, &m_endItr, linecount);
             gtk_text_buffer_delete(m_lineNoAreaBuffer, &m_endItr, &m_startItr);
-            m_totalLines = NewLineCount;
+            m_totalLines = linecount;
         }
     }
 }

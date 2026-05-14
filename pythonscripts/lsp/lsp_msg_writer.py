@@ -1,22 +1,22 @@
 # for writing and parsing LSP message
 # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
 
-import copy
 import json
-from pydoc import text
 
-from typing_extensions import Text
+import cloudforest
 
 BaseMessage = {"jsonrpc": "2.0"}
+
+ClientCapabilities = {"workspace": {"workspaceFolders": True}}
 
 InitMessage = {
     **BaseMessage,
     "id": 1,
     "method": "initialize",
-    "params": {"capabilities": {}},
+    "params": {"capabilities": ClientCapabilities, "workspaceFolders": []},
 }
 
-ExitMessage = {**BaseMessage, "id": 1, "method": "exit"}
+ExitMessage = {**BaseMessage, "id": 2, "method": "exit"}
 
 PositionProperty = {"line": 0, "character": 0}
 
@@ -69,6 +69,12 @@ def content_length_header(content: str) -> str:
 
 
 def initialize_message() -> str:
+    workspaces: list[dict[str, str]] = cloudforest.get_workspaces()
+    # cloudforest.get_workspaces() returns a list of dictionaries. The URI already contains the "file://" schema
+    # {name: "", "uri": ""}
+    # print(workspaces)
+    msg = InitMessage.copy()
+    msg["params"]["workspaceFolders"] = workspaces
     message = json.dumps(InitMessage)
     return message
 
@@ -88,13 +94,13 @@ def exit_notification() -> str:
     return message
 
 
-def did_open_message(fileuri: str, content: str, langid: str) -> str:
+def did_open_message(path: str, content: str, langid: str) -> str:
     did_open = {
         "jsonrpc": "2.0",
         "method": "textDocument/didOpen",
         "params": {
             "textDocument": {
-                "uri": "file://" + fileuri,
+                "uri": "file://" + path,
                 "languageId": langid,
                 "version": 0,
                 "text": content,
@@ -105,13 +111,13 @@ def did_open_message(fileuri: str, content: str, langid: str) -> str:
     return json.dumps(did_open)
 
 
-def did_close_notification(fileuri: str):
+def did_close_notification(path: str):
     did_close = {
         "jsonrpc": "2.0",
         "method": "textDocument/didClose",
         "params": {
             "textDocument": {
-                "uri": f"file://{fileuri}",
+                "uri": f"file://{path}",
             },
         },
     }
@@ -119,13 +125,13 @@ def did_close_notification(fileuri: str):
     return json.dumps(did_close)
 
 
-def did_change_message(fileuri: str, content: str, version: int, langid: str) -> str:
+def did_change_message(path: str, content: str, version: int, langid: str) -> str:
     did_change = {
         "jsonrpc": "2.0",
         "method": "textDocument/didChange",
         "params": {
             "textDocument": {
-                "uri": "file://" + fileuri,
+                "uri": "file://" + path,
                 "languageId": langid,
                 "version": version,
             },
@@ -135,20 +141,20 @@ def did_change_message(fileuri: str, content: str, version: int, langid: str) ->
     return json.dumps(did_change)
 
 
-def completion_message(fileuri: str, line: int, char: int) -> str:
+def completion_message(path: str, line: int, char: int) -> str:
     copied = AutoCompleteMessage.copy()
-    copied["params"]["textDocument"] = {"uri": "file://" + fileuri}
+    copied["params"]["textDocument"] = {"uri": "file://" + path}
     copied["params"]["position"] = {"line": line, "character": char}
 
     message = json.dumps(copied)
     return message
 
 
-def new_workspace_notification(name: str, uri: str):
+def new_workspace_notification(name: str, path: str):
     msg = {
         "jsonrpc": "2.0",
-        "id": 1,
+        "id": 4,
         "method": "workspace/didChangeWorkspaceFolders",
-        "params": {"event": {"added": [{"uri": f"file://{uri}", "name": name}]}},
+        "params": {"event": {"added": [{"uri": f"file://{path}", "name": name}]}},
     }
     return json.dumps(msg)

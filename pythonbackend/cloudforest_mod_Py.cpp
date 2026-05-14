@@ -10,11 +10,14 @@
 #include "datatypes/file.h"
 
 
+#include <abstract.h>
 #include <cstring>
+#include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
 #include <methodobject.h>
 #include <modsupport.h>
+#include <moduleobject.h>
 #include <object.h>
 #include <pylifecycle.h>
 #include <pystate.h>
@@ -38,6 +41,29 @@ static void OnNewWorkspace(Workspace* ws){
 static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
     printf("this is from CloudForest module\n");
     Py_RETURN_NONE;
+}
+
+static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *args){
+    /*
+     * get_workspace function will return a list of {name, uri}
+     *
+     * [usage]
+     * cloudforest.get_workspaces()
+     * [return]
+     * [ {name1, uri1}, {name2, uri2}, ...]
+     */
+
+    PyObject* wslist = PyList_New(0);
+    for(Workspace* ws : filemanagement::GetWorkspaceList()){
+        PyObject* wsproperty = PyDict_New();
+        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->name));
+        std::string uri = "file://" + std::string(ws->rootFolderData->absoPath);
+        PyDict_SetItemString(wsproperty, "uri", PyUnicode_FromString(uri.c_str()));
+
+        PyList_Append(wslist, wsproperty);
+    }
+
+    return wslist;
 }
 
 static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args){
@@ -75,8 +101,16 @@ static PyObject* cloudforest_module_run_extension(PyObject* self, PyObject* args
 static PyMethodDef cloudforest_module_method[] = {
     {"test",  cloudforest_module_test, METH_VARARGS,"test if module available"},
     {"add_callback",  cloudforest_module_add_callback, METH_VARARGS,"add callback"},
+    {"get_workspaces", cloudforest_module_get_workspaces, METH_VARARGS, "iterate through every workspaces and call the callback"},
     //{"run_extension", cloudforest_module_run_extension, METH_VARARGS, "run an extension in sub-interpreter"},
     {nullptr, nullptr, 0, nullptr}
+};
+
+static struct PyModuleDef_Slot cloudforest_module_slot[] = {
+#if PY_VERSION_HEX >= 0x030D0000
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, nullptr}
 };
 
 static struct PyModuleDef cloudforest_module = {

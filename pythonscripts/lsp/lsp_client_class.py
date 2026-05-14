@@ -28,6 +28,7 @@ class LspClient:
         if self.LSP.stdout:
             self.stdout_thread = self.LSP.stdout
             """
+            # GIL should be disabled to run the listener
             self.out_event: IOEvent = IOEvent(self.stdout_thread)
             self.out_event.add_listener(self.read_text)
             """
@@ -35,6 +36,7 @@ class LspClient:
         if self.LSP.stderr:
             self.stderr_thread = self.LSP.stderr
 
+        self.read()
         cloudforest.add_callback("app-closed", self.exit)
         cloudforest.add_callback("new-workspace", self.add_workspace)
         self.start()
@@ -54,6 +56,10 @@ class LspClient:
         self.LSP.terminate()
 
     def add_workspace(self, name: str, path: str):
+        print(
+            "lsp_client_class: workspce/didChangeWorkspaceFolders is disabled because many servers "
+            "don't support it. Open the workspace(folder) before running the language server instead"
+        )
         # self.send(lsp_msg_writer.new_workspace_notification(name, path))
         # self.read()
         pass
@@ -113,7 +119,7 @@ class LspClient:
     def read(self):
         with ThreadPoolExecutor(max_workers=2) as TPExecutor:
             TPExecutor.submit(self.read_out)
-            TPExecutor.submit(self.read_err)
+            # TPExecutor.submit(self.read_err)
 
     def read_err(self):
         if self.LSP.stderr is None:
@@ -130,7 +136,9 @@ class LspClient:
             # print("reading err")
             msgbytes = self.LSP.stderr.readline()
             msg = msgbytes.decode()
-            # print(f"lsp_client_class stderr: {msg}", end="")
+            if msg == "":
+                return
+            print(f"lsp_client_class stderr: {msg}", end="")
 
     def read_out(self):
         # [!NOTE]
@@ -157,7 +165,6 @@ class LspClient:
 
             msgbytes = self.LSP.stdout.readline()
             msg = msgbytes.decode()
-
             if msg.startswith("Content-Length:"):
                 # get content length. The header looks like this
                 # Content-Length: 100\r\n\r\n

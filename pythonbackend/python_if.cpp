@@ -5,7 +5,6 @@
 #include "python_tool.h"
 
 #include <Python.h>
-#include <pythread.h>
 #include <string>
 
 

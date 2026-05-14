@@ -5,7 +5,13 @@ from cloudforest import editarea
 
 def read(message: str) -> dict:
     content = json.loads(message)
-    if content.get("method"):
+    if content.get("id"):
+        match content.get("id"):
+            case 1:
+                # response for initialize message
+                read_as_initialize_response(content.get("result"))
+
+    elif content.get("method"):
         find_method_processor(content.get("method"), content.get("params"))
     elif content.get("error"):
         read_as_error(content.get("error"))
@@ -14,6 +20,16 @@ def read(message: str) -> dict:
     else:
         print(f"other message: {message}")
     return content
+
+
+def read_as_response(content: dict) -> None:
+    for key in content:
+        print(f"{key} {content[key]}")
+
+
+def read_as_initialize_response(content: dict) -> None:
+    server_capabilities = content.get("capabilities")
+    server_info = content.get("serverInfo")
 
 
 def read_as_error(content: dict) -> None:

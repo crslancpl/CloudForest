@@ -1,4 +1,4 @@
-from cloudforest import editarea, language
+from cloudforest import add_callback, editarea, language
 
 # from pythonscripts.lsp.lsp_client_class import LspClient, create_lsp_client
 from pythonscripts.lsp.lsp_client_class import LspClient, create_lsp_client

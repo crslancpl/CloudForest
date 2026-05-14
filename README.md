@@ -3,11 +3,12 @@
 >[!WARNING]
 >If you are looking for a good text editor, choose other editors, this project is not done yet. It has even less functions than gedit and Notepad.
 
-
 This is the source code of the code editor, using GTK4 C library in C++.
-<br/>
+
+List of bugs in [quickstart/note.md](quickstart/note.md) <br>
+Todo list in [quickstart/checklist](quickstart/checklist) folder <br>
 Read the docs in [quickstart](quickstart) for an overview.
-<br/>
+
 
 ## Depenencies:
 1. [CMake](https://cmake.org/download/)   **The minimum version is 3.5**
@@ -49,4 +50,4 @@ Read the docs in [quickstart](quickstart) for an overview.
 * Embed webview
 * Move widgets to an individual window
 
-Repository created: 7/7
+Repository created: 2025 7/7

@@ -130,6 +130,10 @@ void filemanagement::NewWorkspace(FileData* rootfolderdata){
     InvokeNewWorkspace(ws);
 }
 
+const std::unordered_set<Workspace*> &filemanagement::GetWorkspaceList(){
+    return workspace_list;
+}
+
 Workspace* filemanagement::FindWorkspace(FileData *filedata){
     for(Workspace* ws : workspace_list){
         if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
