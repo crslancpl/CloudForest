@@ -1,6 +1,7 @@
 #include "LanguageListener.h"
 
 #include "LanguageManager_if.h"
+#include "datatypes/common.h"
 #include "datatypes/language.h"
 #include "pythonbackend/language_mod_Py.h"
 #include "src/gui/editarea/EditArea.h"
@@ -39,9 +40,9 @@ static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
     language_module_invoke_new_editarea(lang->name.c_str(), (EditArea*)ta);
 }
 
-static void EditAreaCreated(EditArea* ea){
+static void OnEditAreaCreated(EditArea* ea){
     // pass to editarea::AddNewEditAreaCallback()
-    ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (void(*)())UpdateTextAreaLanguage);
+    ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
     language_module_invoke_new_editarea(ea->GetLanguage()->name.c_str(), ea);
 }
 
@@ -77,5 +78,5 @@ void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const c
 }
 
 void LanguageListenerStart(){
-    editarea::ListenEvent(editarea::EDITAREA_CREATED, (void (*)())EditAreaCreated);
+    editarea::ListenEvent(editarea::EDITAREA_CREATED, (void (*)())OnEditAreaCreated);
 }

@@ -5,7 +5,6 @@
 
 
 #include <gtk/gtk.h>
-#include <string>
 #include <memory>
 #include <unordered_set>
 

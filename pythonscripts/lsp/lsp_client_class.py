@@ -1,3 +1,4 @@
+import json
 import re
 import select
 import shutil
@@ -8,6 +9,7 @@ import cloudforest
 from cloudforest import editarea
 
 from . import lsp_msg_reader, lsp_msg_writer
+from .lsp_msg_reader import find_method_processor, read_as_error
 
 
 class LspClient:
@@ -38,7 +40,6 @@ class LspClient:
 
         self.read()
         cloudforest.add_callback("app-closed", self.exit)
-        cloudforest.add_callback("new-workspace", self.add_workspace)
         self.start()
 
     def start(self):
@@ -56,12 +57,8 @@ class LspClient:
         self.LSP.terminate()
 
     def add_workspace(self, name: str, path: str):
-        print(
-            "lsp_client_class: workspce/didChangeWorkspaceFolders is disabled because many servers "
-            "don't support it. Open the workspace(folder) before running the language server instead"
-        )
-        # self.send(lsp_msg_writer.new_workspace_notification(name, path))
-        # self.read()
+        self.send(lsp_msg_writer.new_workspace_notification(name, path))
+        self.read()
         pass
 
     # callbacks
@@ -104,6 +101,29 @@ class LspClient:
         ea.add_callback("text-changed", self.editarea_text_changed)
         ea.add_callback("lang-changed", self.editarea_lang_changed)
 
+    def load_server_info(self, result: dict):
+        server_info = result.get("serverInfo")
+        if not server_info:
+            return
+        self.name = server_info.get("name")
+        self.version = server_info.get("version")
+
+        capability = result.get("capabilities")
+        if not capability:
+            return
+        ws_info = capability.get("workspace")
+        if ws_info:
+            self.load_server_workspace_capability(ws_info)
+
+    def load_server_workspace_capability(self, ws_info: dict):
+        ws_folders_info = ws_info.get("workspaceFolders")
+        if not ws_folders_info:
+            return
+        if ws_folders_info.get("supported") and ws_folders_info.get(
+            "changeNotifications"
+        ):
+            cloudforest.add_callback("new-workspace", self.add_workspace)
+
     def send(self, message: str):
         # self.stop_reading()
         if self.LSP.stdin is None:
@@ -120,6 +140,25 @@ class LspClient:
         with ThreadPoolExecutor(max_workers=2) as TPExecutor:
             TPExecutor.submit(self.read_out)
             # TPExecutor.submit(self.read_err)
+
+    def read_msg(self, message: str):
+        content = json.loads(message)
+        if content.get("id"):
+            # response
+            match content.get("id"):
+                case 1:
+                    # response for initialize message
+                    self.load_server_info(content.get("result"))
+
+        elif content.get("method"):
+            find_method_processor(content.get("method"), content.get("params"))
+        elif content.get("error"):
+            read_as_error(content.get("error"))
+        elif content.get("result"):
+            pass
+        else:
+            print(f"other message: {message}")
+        return content
 
     def read_err(self):
         if self.LSP.stderr is None:
@@ -156,7 +195,7 @@ class LspClient:
         self.read_number += 1
         # print(f"reading out num {self.read_number}")
         while True:
-            waitforin = timeoutpoll.poll(60)  # wait shorter
+            waitforin = timeoutpoll.poll(80)  # wait shorter
             # The "Content-Length: ...\r\n" message
             if not waitforin:
                 # print(f"stop reading out {self.read_number}")
@@ -173,7 +212,7 @@ class LspClient:
                 _ = self.LSP.stdout.readline()  # this will be \r\n\r\n
                 message = self.LSP.stdout.read(int(contentlength[0])).decode()
                 # print(f"lsp_client_class stdout: {message}")
-                lsp_msg_reader.read(message)
+                self.read_msg(message)
             else:
                 return
 
@@ -186,5 +225,4 @@ def create_lsp_client(
         print(f'lsp_client_class: Language server "{lspcommand}" not found.')
         return None
     # print(f"create client for {lspcommand}")
-
     return LspClient(lspcommand, language, languageId)

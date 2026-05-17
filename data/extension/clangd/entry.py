@@ -10,7 +10,7 @@ def editarea_created(ea: editarea.EditArea):
         client = create_lsp_client("clangd", "C++", "cpp")
 
     if client:
-        print("clangd client running")
+        print(f"clangd running version {client.version}")
         client.listen_editarea(ea)
 
     else:

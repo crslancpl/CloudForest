@@ -74,8 +74,10 @@ def initialize_message() -> str:
     # {name: "", "uri": ""}
     # print(workspaces)
     msg = InitMessage.copy()
-    msg["params"]["workspaceFolders"] = workspaces
+    if len(workspaces) != 0:
+        msg["params"]["workspaceFolders"] = workspaces
     message = json.dumps(InitMessage)
+    # print(message)
     return message
 
 
@@ -153,8 +155,12 @@ def completion_message(path: str, line: int, char: int) -> str:
 def new_workspace_notification(name: str, path: str):
     msg = {
         "jsonrpc": "2.0",
-        "id": 4,
         "method": "workspace/didChangeWorkspaceFolders",
-        "params": {"event": {"added": [{"uri": f"file://{path}", "name": name}]}},
+        "params": {
+            "event": {
+                "added": [{"uri": f"file://{path}", "name": name}],
+                "removed": [],
+            }
+        },
     }
     return json.dumps(msg)

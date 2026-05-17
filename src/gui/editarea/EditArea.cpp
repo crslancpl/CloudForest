@@ -16,6 +16,7 @@
 #include "toolset/tools/text_tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib.h>
@@ -40,7 +41,7 @@ static void OnTextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* pa
 }
 
 static bool OnKeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
-    return parent->KeyInput(keyval, keycode, state);;
+    return parent->KeyInput(keyval, keycode, state);
 }
 
 static void OnCursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
@@ -391,6 +392,7 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
     }
     return false;
 }
+
 void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
     editarea_py_invoke_cursor_moved(this, m_cursorLine, m_cursorColumn);

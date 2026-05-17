@@ -12,7 +12,7 @@ def editarea_created(ea: editarea.EditArea):
         client = create_lsp_client("rust-analyzer", "Rust", "rust")
 
     if client:
-        print("rust-analyzer client running")
+        print(f"rust-analyzer running version {client.version}")
         client.listen_editarea(ea)
     else:
         language.stop_listen("Rust", editarea_created)

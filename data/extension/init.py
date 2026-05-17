@@ -18,9 +18,13 @@ def run_extension(path: str):
     extension_module = importlib.import_module(mod)
 
 
-with open("data/extension/enabled.json") as enabled_json:
-    enabled_extensions = json.load(enabled_json)
-    for extension_name in enabled_extensions:
-        extension: dict = enabled_extensions[extension_name]
-        path = str(extension.get("location"))
-        run_extension(path)
+def load_enabled_extensions():
+    with open("data/extension/enabled.json") as enabled_json:
+        enabled_extensions = json.load(enabled_json)
+        for extension_name in enabled_extensions:
+            extension: dict = enabled_extensions[extension_name]
+            path = str(extension.get("location"))
+            run_extension(path)
+
+
+load_enabled_extensions()

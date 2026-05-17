@@ -85,24 +85,10 @@ static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/*
-static PyObject* cloudforest_module_run_extension(PyObject* self, PyObject* args){
-    char* entryfile;
-
-    if(!PyArg_ParseTuple(args, "s", &entryfile)){
-        Py_RETURN_NONE;
-    }
-
-    PyThreadState* ts = execute_extension(entryfile);
-    Py_RETURN_NONE;
-}
-*/
-
 static PyMethodDef cloudforest_module_method[] = {
     {"test",  cloudforest_module_test, METH_VARARGS,"test if module available"},
     {"add_callback",  cloudforest_module_add_callback, METH_VARARGS,"add callback"},
     {"get_workspaces", cloudforest_module_get_workspaces, METH_VARARGS, "iterate through every workspaces and call the callback"},
-    //{"run_extension", cloudforest_module_run_extension, METH_VARARGS, "run an extension in sub-interpreter"},
     {nullptr, nullptr, 0, nullptr}
 };
 

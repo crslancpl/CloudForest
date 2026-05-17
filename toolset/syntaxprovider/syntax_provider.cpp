@@ -12,10 +12,6 @@
 static std::unordered_map<TextArea*, SyntaxProvider*> provider_map;
 static std::unordered_map<Language*, SyntaxProvider*> lang_to_provider_map;
 
-static void EditAreaCreated(EditArea* ea){
-    ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (void(*)())syntaxprovider::SetLanguage);
-}
-
 SyntaxProvider::SyntaxProvider(Language* language){
     m_language = language;
 }
@@ -26,7 +22,6 @@ void SyntaxProvider::Highlight(TextArea* ta){
 
 void syntaxprovider::Init(){
     cf::Init();
-    //editarea::ListenEvent(editarea::EDITAREA_CREATED, (void(*)())EditAreaCreated);
 }
 
 void syntaxprovider::Highlight(TextArea *ta){
