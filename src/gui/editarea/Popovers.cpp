@@ -1,8 +1,10 @@
-#include "LspPopovers.h"
+#include "Popovers.h"
 
 #include "datatypes/lsp.h"
+#include <gtk/gtk.h>
 
-TipPopover::TipPopover(){
+TipPopover::TipPopover(GdkRectangle *cursorrect){
+    m_cursorRect = cursorrect;
     m_tipLabel = GTK_LABEL(gtk_label_new(""));
     m_popover = GTK_POPOVER(gtk_popover_new());
     gtk_widget_add_css_class(GTK_WIDGET(m_popover), "tippopover");
@@ -15,10 +17,6 @@ TipPopover::TipPopover(){
 
 TipPopover::~TipPopover(){
     g_object_unref(m_popover);
-}
-
-void TipPopover::setCursorRect(GdkRectangle *cursorrect){
-    m_cursorRect = cursorrect;
 }
 
 void TipPopover::ShowContent(const char* content){
@@ -36,7 +34,9 @@ void TipPopover::Hide(){
  * SuggestionPopover
  */
 
-SuggestionPopover::SuggestionPopover(){
+SuggestionPopover::SuggestionPopover(GtkTextBuffer *targetbuffer, GdkRectangle *cursorrect)
+    : m_targetTextBuffer(targetbuffer), m_cursorRect(cursorrect){
+
     m_popover = GTK_POPOVER(gtk_popover_new());
     m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
     m_scrollWin = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
@@ -63,17 +63,6 @@ SuggestionPopover::SuggestionPopover(){
 
 SuggestionPopover::~SuggestionPopover(){
     g_object_unref(m_popover);
-}
-
-void SuggestionPopover::setCursorRect(GdkRectangle *cursorrect){
-    m_cursorRect = cursorrect;
-}
-
-void SuggestionPopover::setTargetBuffer(GtkTextBuffer *targetbuffer){
-    /*
-     * This has to be called when focus switched
-     */
-    m_targetTextBuffer = targetbuffer;
 }
 
 void SuggestionPopover::Show(){
@@ -214,4 +203,29 @@ void SuggestionPopover::Select(unsigned int itemnum){
 void SuggestionPopover::UnSelectSelected(){
     gtk_widget_remove_css_class(m_selectedItem, "selecteditem");
     gtk_widget_add_css_class(m_selectedItem, "normalitem");
+}
+
+DiagnosticPopover::DiagnosticPopover(GtkTextView* textview, GtkTextBuffer* targetbuffer)
+    : m_targetTextView(textview),m_targetBuffer(targetbuffer){
+    m_popover = GTK_POPOVER(gtk_popover_new());
+    m_messageLabel = GTK_LABEL(gtk_label_new("message here"));
+    gtk_label_set_single_line_mode(m_messageLabel, false);
+    gtk_popover_set_autohide(m_popover, false);
+    gtk_popover_set_child(m_popover, GTK_WIDGET(m_messageLabel));
+    gtk_popover_set_position(m_popover, GTK_POS_RIGHT);
+    gtk_popover_set_offset(m_popover, 0, 30);
+    gtk_popover_set_has_arrow(m_popover, false);
+    gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_targetTextView));
+}
+
+void DiagnosticPopover::Hide(){
+    gtk_popover_popdown(m_popover);
+}
+
+void DiagnosticPopover::ShowDiagnostic(Diagnostic* diagnostic,int textviewline, int textviewindex){
+    gtk_text_buffer_get_iter_at_line_index(m_targetBuffer, &m_iter, textviewline, diagnostic->range.startColumn);
+    gtk_text_view_get_iter_location(m_targetTextView, &m_iter, &m_rectangle);
+    gtk_popover_set_pointing_to(m_popover, &m_rectangle);
+    gtk_label_set_label(m_messageLabel, diagnostic->message);
+    gtk_popover_popup(m_popover);
 }

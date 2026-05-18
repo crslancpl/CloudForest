@@ -3,7 +3,7 @@
 #include "EditArea_if.h"
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
-#include "LspPopovers_if.h"
+#include "Popovers.h"
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
 #include "datatypes/language.h"
@@ -13,12 +13,13 @@
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
-#include "toolset/tools/text_tool.h"
+#include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
 #include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
+#include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 
@@ -28,8 +29,16 @@
 
 static EditArea *saving_editarea;// cache the edit area that is waiting for saving
 
+static bool OnKeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
+    return parent->KeyInput(keyval, keycode, state);
+}
+
 static void OnUnfocused(GtkEventControllerFocus* self, EditArea* parent){
     parent->Unfocused();
+}
+
+static void OnMouseMoved(GtkEventControllerMotion* self, double x, double y, EditArea* parent){
+    parent->MouseMoved(x, y);
 }
 
 static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
@@ -38,10 +47,6 @@ static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint co
 
 static void OnTextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* parent){
     parent->TextChanged();
-}
-
-static bool OnKeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
-    return parent->KeyInput(keyval, keycode, state);
 }
 
 static void OnCursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
@@ -72,8 +77,9 @@ EditArea::EditArea(FileData* file){
     /* Load gui */
     this->LoadGui();
     this->LoadFile(file);
-    /* Initialize variables */
+    m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);
 
+    /* Initialize variables */
     m_cursorPos = 0;
     m_isCurMovedByKey = false;
 
@@ -89,6 +95,7 @@ EditArea::EditArea(FileData* file){
 }
 
 EditArea::~EditArea(){
+    delete m_diagnosticPopover;
 }
 
 //private
@@ -110,6 +117,7 @@ void EditArea::LoadGui(){
 
     m_keyDownEventCtrl = gtk_event_controller_key_new();
     m_focusEventCtrl = gtk_event_controller_focus_new();
+    m_mouseMovedEventCtrl = gtk_event_controller_motion_new();
 
     gtk_widget_set_has_tooltip(GTK_WIDGET(m_saveBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_saveBut), "Save");
@@ -126,9 +134,11 @@ void EditArea::LoadGui(){
 //private
 void EditArea::ConnectSignals(){
     g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(OnKeyInput), this);
-    gtk_widget_add_controller(GTK_WIDGET(m_textView), GTK_EVENT_CONTROLLER(m_keyDownEventCtrl));
+    gtk_widget_add_controller(GTK_WIDGET(m_textView),m_keyDownEventCtrl);
     g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(OnUnfocused), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_focusEventCtrl);
+    g_signal_connect(m_mouseMovedEventCtrl, "motion", G_CALLBACK(OnMouseMoved), this);
+    gtk_widget_add_controller(GTK_WIDGET(m_textView), m_mouseMovedEventCtrl);
     g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
     g_signal_connect_after(m_textViewBuffer, "notify::text",G_CALLBACK(OnTextChanged),this);
     g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
@@ -146,15 +156,6 @@ void EditArea::AddDiagnostic(Diagnostic* diagnostic){
     }
 
     m_diagnosticsList.emplace(diagnostic);
-}
-
-void EditArea::ClearDiagnostics(){
-    for (Diagnostic* diagnostic : m_diagnosticsList){
-        delete diagnostic;
-    }
-
-    m_diagnosticsList.clear();
-    this->ProcessDiagnostics();
 }
 
 void EditArea::ProcessDiagnostics(){
@@ -183,6 +184,39 @@ void EditArea::ProcessDiagnostics(){
         std::to_string(severityList[3]) +
         "</span>";
     gtk_label_set_markup(m_errorButLabel, s.c_str());
+}
+
+void EditArea::ClearDiagnostics(){
+    for (Diagnostic* diagnostic : m_diagnosticsList){
+        delete diagnostic;
+    }
+    m_currentDiagnosticRange.startLine = 0;
+    m_currentDiagnosticRange.startColumn = 0;
+    m_currentDiagnosticRange.endLine = 0;
+    m_currentDiagnosticRange.endColumn = 0;
+    m_diagnosticsList.clear();
+    this->ProcessDiagnostics();
+}
+
+Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){
+    int line = gtk_text_iter_get_line(&m_startItr);
+    int index = gtk_text_iter_get_line_index(&m_startItr);
+    // printf("line %i index %i\n", line, index);
+    if(tools::IsLineIndexInRange(line, index, &m_currentDiagnosticRange)) return nullptr;
+
+    // There may be more than 1 diagnostic for a iteer
+    for (Diagnostic* diagnostic : m_diagnosticsList) {
+        if(tools::IsLineIndexInRange(line, index, &diagnostic->range)){
+            m_currentDiagnosticRange = diagnostic->range;
+            return diagnostic;
+        }
+    }
+    m_currentDiagnosticRange.startLine = 0;
+    m_currentDiagnosticRange.startColumn = 0;
+    m_currentDiagnosticRange.endLine = 0;
+    m_currentDiagnosticRange.endColumn = 0;
+    m_diagnosticPopover->Hide();
+    return nullptr;
 }
 
 void EditArea::LoadCursorPos(){
@@ -310,10 +344,65 @@ void EditArea::InsertAtCursor(const char* text){
     gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
 }
 
-//callbacks
+
+
+/*
+ * callbacks
+ */
+
+bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
+    // Search and replace shortcuts
+    if (state & GDK_CONTROL_MASK) {
+        switch (keyval) {
+        case GDK_KEY_f:
+            this->ShowSearchDialog();
+            return true;
+        case GDK_KEY_h:
+            this->ShowReplaceDialog();
+            return true;
+        case GDK_KEY_s:
+            this->Save();
+            return true;
+        case GDK_KEY_o:
+            filemanagement::ChooseFile();
+            return true;
+        default:
+            break;
+        }
+    }
+
+    if (state & GDK_ALT_MASK) {
+        if (keyval == GDK_KEY_s) {
+            //gui::AppSettingPanel.Show();
+        }
+    }
+
+    switch (keyval) {
+    case GDK_KEY_Tab:
+        this->InsertAtCursor("    ");
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
 void EditArea::Unfocused(){
-    lsppopovers::suggestion::Hide();
-    lsppopovers::tip::Hide();
+    m_diagnosticPopover->Hide();
+}
+
+void EditArea::MouseMoved(double x, double y){
+    int bufferx, buffery;
+
+    gtk_text_view_window_to_buffer_coords(m_textView, GTK_TEXT_WINDOW_WIDGET, x, y, &bufferx, &buffery);
+    gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, x, y);
+    int textviewline = gtk_text_iter_get_line(&m_startItr);
+    int textviewindex = gtk_text_iter_get_line_index(&m_startItr);
+    gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, bufferx, buffery);
+    Diagnostic* d = this->FindDiagnostic(&m_startItr);
+    if(d){
+        m_diagnosticPopover->ShowDiagnostic(d, textviewline, textviewindex);
+    }
 }
 
 void EditArea::CursorMovedByKey(){
@@ -356,43 +445,6 @@ void EditArea::LangChanged(){
     editarea_py_invoke_lang_changed(this);
 }
 
-bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
-    // Search and replace shortcuts
-    if (state & GDK_CONTROL_MASK) {
-        switch (keyval) {
-        case GDK_KEY_f:
-            this->ShowSearchDialog();
-            return true;
-        case GDK_KEY_h:
-            this->ShowReplaceDialog();
-            return true;
-        case GDK_KEY_s:
-            this->Save();
-            return true;
-        case GDK_KEY_o:
-            filemanagement::ChooseFile();
-            return true;
-        default:
-            break;
-        }
-    }
-
-    if (state & GDK_ALT_MASK) {
-        if (keyval == GDK_KEY_s) {
-            //gui::AppSettingPanel.Show();
-        }
-    }
-
-    switch (keyval) {
-    case GDK_KEY_Tab:
-        this->InsertAtCursor("    ");
-        return true;
-    default:
-        break;
-    }
-    return false;
-}
-
 void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
     editarea_py_invoke_cursor_moved(this, m_cursorLine, m_cursorColumn);
@@ -402,8 +454,8 @@ void EditArea::CursorPosChanged(){
     }
 
     if(m_isTextChanged == false){
-        lsppopovers::suggestion::Hide();
-        lsppopovers::tip::Hide();
+        //lsppopovers::suggestion::Hide();
+        //lsppopovers::tip::Hide();
     }else{
         m_isTextChanged = false;
     }

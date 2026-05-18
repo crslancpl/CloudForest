@@ -5,7 +5,6 @@
 
 #include "editarea/EditArea_if.h"
 #include "editarea/LangPanel.h"
-#include "editarea/LspPopovers_if.h"
 #include "filepanel/FilePanel_if.h"
 #include "filepanel/FilePanel.h"
 #include "src/gui/settingpanel/SettingPanel_if.h"
@@ -30,7 +29,6 @@ void gui::Init(){
     mainwindow::Construct();
     filepanel::Construct();
     langpanel::Construct();
-    lsppopovers::Construct();
     settingpanel::Construct();
 }
 

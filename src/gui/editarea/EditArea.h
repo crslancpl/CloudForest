@@ -3,12 +3,12 @@
 
 #include "../components/TextArea.h"
 
-
 #include <gtk/gtk.h>
 #include <memory>
 #include <unordered_set>
 
 // Forward declaration
+class DiagnosticPopover;
 class SearchReplaceDialog;
 typedef struct Diagnostic Diagnostic;
 typedef struct FileData FileData;
@@ -32,6 +32,7 @@ public:
     void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
     void ProcessDiagnostics(); // read data from all diagnostics and show highlight
     void ClearDiagnostics(); // clear the diagnostics list
+    Diagnostic* FindDiagnostic(GtkTextIter* itr);
     void LoadCursorPos();
     void LoadFile(FileData *file);
     void Save();
@@ -41,11 +42,12 @@ public:
     void InsertAtCursor(const char* text);
 
     //callbacks
+    bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
     void Unfocused();
+    void MouseMoved(double x, double y);
     void CursorMovedByKey();
     void TextChanged();
     void LangChanged();
-    bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
     void CursorPosChanged();
     void SaveButtonClicked();
     void LangButtonClicked();
@@ -54,6 +56,8 @@ public:
 private:
     GdkRectangle m_cursorRec;
 
+    DiagnosticPopover* m_diagnosticPopover;
+    Range m_currentDiagnosticRange;
     bool m_isCurMovedByKey = false;
     bool m_isTextChanged = false;
 
@@ -73,6 +77,7 @@ private:
 
     GtkEventController *m_keyDownEventCtrl;
     GtkEventController *m_focusEventCtrl;
+    GtkEventController *m_mouseMovedEventCtrl;
 
     std::unordered_set<Diagnostic*> m_diagnosticsList;
 

@@ -7,15 +7,15 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK4 REQUIRED IMPORTED_TARGET gtk4)
 
 if(UNIX)
-    set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/libCFEmbed.so)
+  set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/libCFEmbed.so)
 elseif(WIN32)
-    set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/libCFEmbed.dll)
+  set(CFLIBPATH ${CMAKE_CURRENT_SOURCE_DIR}/libCFEmbed.dll)
 endif()
 
 add_library( ${PROJECT_NAME}
     syntaxprovider/syntax_provider.cpp
     syntaxprovider/CFCore.cpp
-    tools/text_tool.cpp
+    tools/Tool.cpp
 )
 
 target_include_directories( ${PROJECT_NAME} PUBLIC ${CLOUDFOREST_ROOT_DIR})

@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 
-#include "toolset/tools/text_tool.h"
+#include "toolset/tools/Tool.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/editarea/EditArea.h"
 #include "CFEmbed.h"

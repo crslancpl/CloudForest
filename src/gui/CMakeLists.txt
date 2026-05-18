@@ -7,8 +7,7 @@ set(COMPONENTS
 
 set(EDITAREA
     editarea/LangPanel.cpp
-    editarea/LspPopovers_if.cpp
-    editarea/LspPopovers.cpp
+    editarea/Popovers.cpp
     editarea/SearchReplaceDialog.cpp
     editarea/EditArea_if.cpp
     editarea/EditArea.cpp

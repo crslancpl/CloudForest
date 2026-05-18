@@ -9,7 +9,7 @@
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/windows/MainWindow.h"
-#include "toolset/tools/text_tool.h"
+#include "toolset/tools/Tool.h"
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>

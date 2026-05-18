@@ -1,4 +1,4 @@
-#include "text_tool.h"
+#include "Tool.h"
 
 
 #include <cstdio>
@@ -57,4 +57,22 @@ std::vector<std::string> tools::TrimText(const std::string &text, const std::str
         result.push_back(current);
     }
     return result;
+}
+
+bool tools::IsLineIndexInRange(const unsigned int line, const unsigned int index, const Range* range){
+    if( line >= range->startLine && line <= range->endLine){
+        if(index >= range->startColumn && index <= range->endColumn){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool tools::IsRangeInRange(const Range *input, const Range *range){
+    if( input->startLine >= range->startLine && input->endLine <= range->endLine){
+        if(input->startColumn >= range->startColumn && input->endColumn <= range->endColumn){
+            return true;
+        }
+    }
+    return false;
 }

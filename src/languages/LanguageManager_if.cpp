@@ -1,7 +1,7 @@
 #include "LanguageManager_if.h"
 
 #include "datatypes/language.h"
-#include "toolset/tools/text_tool.h"
+#include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
 #include <unordered_map>

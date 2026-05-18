@@ -71,11 +71,11 @@ def read_as_publish_diagnostics(params: dict) -> None:
         code = diagnostic.get("code")
         if code is None:
             code = "none"
-
+        """
         print(
             f"diagnostic severity {diagnostic.get('severity')}: range {range} code '{code}' diagnostic: '{diagnostic.get('message')}'"
         )
-
+        """
         ea.add_diagnostic(
             code,
             diagnostic.get("message"),

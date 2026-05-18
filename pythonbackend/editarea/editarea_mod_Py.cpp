@@ -5,7 +5,6 @@
 #include "src/filemanagement/FileOperation.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
-#include "src/gui/editarea/LspPopovers_if.h"
 #include "datatypes/file.h"
 
 #include <floatobject.h>

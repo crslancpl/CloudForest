@@ -2,6 +2,7 @@
 
 #include <Python.h>
 #include <cpython/classobject.h>
+#include <cstring>
 #include <floatobject.h>
 #include <listobject.h>
 #include <longobject.h>
@@ -11,8 +12,6 @@
 
 
 #include "pythonbackend/python_tool.h"
-#include "src/gui/editarea/LspPopovers_if.h"
-#include "src/gui/editarea/LspPopovers.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/languages/LanguageManager_if.h"
 #include "datatypes/lsp.h"
@@ -128,7 +127,7 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
     sug->range.endLine = endline;
     sug->range.endColumn = endpos;
 
-    lsppopovers::suggestion::Add(sug);
+    //lsppopovers::suggestion::Add(sug);
     /*
      * [!NOTE]
      * the suggestuon object will be moved to the suggestion popover,
@@ -138,26 +137,31 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
 }
 
 static PyObject* py_EditArea_clear_suggestion(py_EditArea *self, PyObject *args){
-    lsppopovers::suggestion::Clear();
+    //lsppopovers::suggestion::Clear();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_show_suggestion(py_EditArea *self, PyObject *args){
-    lsppopovers::suggestion::Show();
+    //lsppopovers::suggestion::Show();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_hide_suggestion(py_EditArea *self, PyObject *args){
-    lsppopovers::suggestion::Hide();
+    //lsppopovers::suggestion::Hide();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
+    /*
+     * The message cannot be paseds directly to diagnostic as Python will free the char*
+     */
+
     Diagnostic* diagnostic = new Diagnostic();
+    char* message;
     if(!PyArg_ParseTuple(
         args, "ssiiiii",
         &diagnostic->code,
-        &diagnostic->message,
+        &message,
         &diagnostic->range.startLine,
         &diagnostic->range.startColumn,
         &diagnostic->range.endLine,
@@ -167,6 +171,7 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
         Py_RETURN_NAN;
     }
 
+    diagnostic->message = strdup(message);
     self->editarea->AddDiagnostic(diagnostic);
     Py_RETURN_NONE;
 }

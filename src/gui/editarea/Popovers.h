@@ -1,6 +1,7 @@
-#ifndef LSPPOPOVERS_H_
-#define LSPPOPOVERS_H_
+#ifndef POPOVERS_H_
+#define POPOVERS_H_
 
+#include "src/gui/editarea/EditArea.h"
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
@@ -12,11 +13,12 @@ typedef struct Suggestion Suggestion;
 
 class TipPopover{
 public:
-    TipPopover();
+    TipPopover(GdkRectangle *cursorrect);
     ~TipPopover();
-    void setCursorRect(GdkRectangle *cursorrect);
+
     void ShowContent(const char* content);
     void Hide();
+
 private:
     GdkRectangle *m_cursorRect;
     GtkLabel *m_tipLabel;
@@ -26,10 +28,9 @@ private:
 
 class SuggestionPopover{
 public:
-    SuggestionPopover();
+    SuggestionPopover(GtkTextBuffer *targetbuffer, GdkRectangle *cursorrect);
     ~SuggestionPopover();
-    void setTargetBuffer(GtkTextBuffer *targetbuffer);
-    void setCursorRect(GdkRectangle *cursorrect);
+
     void Show();
     void Hide();
     void Add(Suggestion *item);
@@ -62,5 +63,21 @@ private:
     void UnSelectSelected();
 };
 
+class DiagnosticPopover{
+public:
+    DiagnosticPopover(GtkTextView* textview, GtkTextBuffer* targetbuffer);
+
+    void Hide();
+    void ShowDiagnostic(Diagnostic* diagnostic, int textviewline, int textviewindex);
+public:
+    GtkPopover* m_popover;
+    GtkLabel* m_messageLabel;
+    GtkTextIter m_iter;// for getting rectangle
+    GdkRectangle m_rectangle;
+
+    //from parent
+    GtkTextView* m_targetTextView;
+    GtkTextBuffer* m_targetBuffer;
+};
 
 #endif
