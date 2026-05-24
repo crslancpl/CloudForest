@@ -127,7 +127,9 @@ def did_close_notification(path: str):
     return json.dumps(did_close)
 
 
-def did_change_message(path: str, content: str, version: int, langid: str) -> str:
+def did_change_message(
+    path: str, range: dict, changed_text: str, version: int, langid: str
+) -> str:
     did_change = {
         "jsonrpc": "2.0",
         "method": "textDocument/didChange",
@@ -137,7 +139,7 @@ def did_change_message(path: str, content: str, version: int, langid: str) -> st
                 "languageId": langid,
                 "version": version,
             },
-            "contentChanges": [{"text": content}],
+            "contentChanges": [{"range": range, "text": changed_text}],
         },
     }
     return json.dumps(did_change)

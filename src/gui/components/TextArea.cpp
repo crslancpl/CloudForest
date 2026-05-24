@@ -2,6 +2,7 @@
 
 #include "datatypes/common.h"
 #include "datatypes/language.h"
+#include "src/gui/editarea/EditArea.h"
 #include "src/gui/style/Style.h"
 
 #include <glib-object.h>
@@ -23,7 +24,8 @@ static void TextChanged(GtkTextBuffer *textviewbuffer, TextArea *textarea){
 
 TextArea::TextArea(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/TextArea.ui");
-
+    m_cursorZPos.column = 0;
+    m_cursorZPos.line = 0;
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "base-box"));
     m_textView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "textarea"));
     m_textViewBuffer = gtk_text_view_get_buffer(m_textView);
@@ -55,7 +57,7 @@ void TextArea::SetContent(char *content){
     gtk_text_buffer_set_text(m_textViewBuffer, content, -1);
 }
 
-char* TextArea::GetContent(){
+const char* TextArea::GetContent(){
     gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
     return gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 }
@@ -69,7 +71,7 @@ void TextArea::SetFirstLineNumber(int number){
     CountLines();
 }
 
-Language *TextArea::GetLanguage(){
+const Language *TextArea::GetLanguage() const{
     return m_language;
 }
 
@@ -86,11 +88,11 @@ void TextArea::ClearHighlight(){
     gtk_text_buffer_remove_all_tags(m_textViewBuffer, &m_startItr, &m_endItr);
 }
 
-void TextArea::ApplyTagByRange(Range *range, const char *tagname){
-    gtk_text_iter_set_line(&m_startItr, range->startLine);
-    gtk_text_iter_set_line_offset(&m_startItr, range->startColumn);
-    gtk_text_iter_set_line(&m_endItr, range->endLine);
-    gtk_text_iter_set_line_offset(&m_endItr, range->endColumn);
+void TextArea::ApplyTagByRange(ZRange *range, const char *tagname){
+    gtk_text_iter_set_line(&m_startItr, range->start.line);
+    gtk_text_iter_set_line_offset(&m_startItr, range->start.column);
+    gtk_text_iter_set_line(&m_endItr, range->end.line);
+    gtk_text_iter_set_line_offset(&m_endItr, range->end.column);
     gtk_text_buffer_apply_tag_by_name(m_textViewBuffer, tagname, &m_startItr, &m_endItr);
 }
 

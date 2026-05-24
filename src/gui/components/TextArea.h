@@ -2,6 +2,7 @@
 #define TEXTAREA_H_
 
 #include "CfContent.h"
+#include "datatypes/common.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>
@@ -9,7 +10,7 @@
 
 //forward declaration
 class TextArea;
-typedef struct Range Range;
+typedef struct ZRange ZRange;
 typedef struct Language Language;
 typedef void(*LangChangedCallback)(TextArea*, Language*);
 
@@ -20,15 +21,15 @@ public:
     TextArea();
     ~TextArea();
 
-    char* GetContent();
+    const char* GetContent();
     void SetContent(char *content);
     void SetEditable(bool editable);
     void SetFirstLineNumber(int number);
-    Language* GetLanguage();
+    const Language* GetLanguage() const;
     virtual void SetLanguage(Language *lang);
 
     void ClearHighlight();
-    void ApplyTagByRange(Range *range, const char *tagname);
+    void ApplyTagByRange(ZRange *range, const char *tagname);
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
     void ApplyTagByPos(unsigned int textstartpos, unsigned int textendpos, const char *tagname);
     void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,const char *tagname);
@@ -59,9 +60,8 @@ protected:
     GtkTextIter m_startItr, m_endItr;
     GtkTextIter m_cursorItr;
 
-    unsigned int m_cursorPos = 0;
-    unsigned int m_cursorLine = 0;
-    unsigned int m_cursorColumn = 0;
+    unsigned int m_cursorIndex = 0;
+    ZPosition m_cursorZPos;
 };
 
 namespace text_editor {

@@ -28,6 +28,8 @@ public:
     GdkRectangle* GetCursorRectangle();
     const char* GetFilePath() const;
     const unsigned int GetFileVersion() const;
+    const Difference &GetPendingDiff() const;
+
 
     void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
     void ProcessDiagnostics(); // read data from all diagnostics and show highlight
@@ -46,18 +48,21 @@ public:
     void Unfocused();
     void MouseMoved(double x, double y);
     void CursorMovedByKey();
+    void TextInserted(GtkTextIter* itr, char* text, long int length);
+    void TextDeleted(GtkTextIter* start, GtkTextIter* end);
     void TextChanged();
     void LangChanged();
     void CursorPosChanged();
     void SaveButtonClicked();
     void LangButtonClicked();
     void FileSaved(FileData *file);
+    void RangeSelected(ZRange* range);
 
 private:
     GdkRectangle m_cursorRec;
 
     DiagnosticPopover* m_diagnosticPopover;
-    Range m_currentDiagnosticRange;
+
     bool m_isCurMovedByKey = false;
     bool m_isTextChanged = false;
 
@@ -78,6 +83,9 @@ private:
     GtkEventController *m_keyDownEventCtrl;
     GtkEventController *m_focusEventCtrl;
     GtkEventController *m_mouseMovedEventCtrl;
+
+    Difference m_pendingDif;
+    ZRange m_currentDiagnosticRange;
 
     std::unordered_set<Diagnostic*> m_diagnosticsList;
 

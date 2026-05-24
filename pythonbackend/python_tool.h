@@ -1,6 +1,7 @@
 #ifndef PYTHON_TOOL_H_
 #define PYTHON_TOOL_H_
 
+#include "datatypes/common.h"
 #include <Python.h>
 #include <pytypedefs.h>
 #include <string>
@@ -14,5 +15,7 @@ void Execute(const std::string &code);
 void ExecuteFile(const std::string &path);
 
 PyThreadState* GetMainThreadState();
+
+PyObject* GetPyDictFromZRange(const ZRange &range);
 
 #endif

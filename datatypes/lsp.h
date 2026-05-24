@@ -11,14 +11,14 @@ typedef struct Suggestion{
     std::string insertText;
     std::string type;
     std::string description;
-    Range range;// where to insert the text
+    ZRange range;// where to insert the text
 }Suggestion;
 
 typedef struct Diagnostic{
     char* code;
     char* message;
     int severity;
-    Range range;
+    ZRange range;
 }Diagnostic;
 
 #endif

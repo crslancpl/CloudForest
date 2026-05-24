@@ -1,7 +1,6 @@
 #include "cloudforest_mod_Py.h"
 
 #include "python_tool.h"
-
 #include "language_mod_Py.h"
 #include "editarea/editarea_mod_Py.h"
 #include "settingpanel/setting_panel_mod_Py.h"
@@ -9,7 +8,7 @@
 #include "src/filemanagement/FileOperation.h"
 #include "datatypes/file.h"
 
-
+#include <cstdio>
 #include <abstract.h>
 #include <cstring>
 #include <dictobject.h>
@@ -24,8 +23,6 @@
 #include <pytypedefs.h>
 #include <tupleobject.h>
 #include <unicodeobject.h>
-
-
 
 //callback lists
 static PyObject *cloudforest_module_app_closed_callbacks;
@@ -85,10 +82,11 @@ static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+
 static PyMethodDef cloudforest_module_method[] = {
     {"test",  cloudforest_module_test, METH_VARARGS,"test if module available"},
-    {"add_callback",  cloudforest_module_add_callback, METH_VARARGS,"add callback"},
     {"get_workspaces", cloudforest_module_get_workspaces, METH_VARARGS, "iterate through every workspaces and call the callback"},
+    {"add_callback",  cloudforest_module_add_callback, METH_VARARGS,"add callback"},
     {nullptr, nullptr, 0, nullptr}
 };
 

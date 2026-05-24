@@ -1,4 +1,5 @@
 #include "Tool.h"
+#include "datatypes/common.h"
 
 
 #include <cstdio>
@@ -59,20 +60,62 @@ std::vector<std::string> tools::TrimText(const std::string &text, const std::str
     return result;
 }
 
-bool tools::IsLineIndexInRange(const unsigned int line, const unsigned int index, const Range* range){
-    if( line >= range->startLine && line <= range->endLine){
-        if(index >= range->startColumn && index <= range->endColumn){
+bool tools::IsZPosInRange(const ZPosition& pos, const ZRange* range){
+    if( pos.line >= range->start.line && pos.line <= range->end.line){
+        if(pos.column >= range->start.column && pos.column <= range->end.column){
             return true;
         }
     }
     return false;
 }
 
-bool tools::IsRangeInRange(const Range *input, const Range *range){
-    if( input->startLine >= range->startLine && input->endLine <= range->endLine){
-        if(input->startColumn >= range->startColumn && input->endColumn <= range->endColumn){
+bool tools::IsZRangeInRange(const ZRange *input, const ZRange *range){
+    if( input->start.line >= range->start.line && input->end.line <= range->end.line){
+        if(input->start.column >= range->start.column && input->end.column <= range->end.column){
             return true;
         }
     }
     return false;
+}
+
+bool tools::IsORangeInRange(const ORange *input, const ORange *range){
+    if( input->start.line >= range->start.line && input->end.line <= range->end.line){
+        if(input->start.column >= range->start.column && input->end.column <= range->end.column){
+            return true;
+        }
+    }
+    return false;
+}
+
+ZRange tools::GetZRange(const ZPosition &pos1, const ZPosition &pos2){
+    ZRange range;
+    if(pos1.line < pos2.line){
+        range.start = pos1;
+        range.end = pos2;
+        range.direction = 1;
+    }else if (pos1.line == pos2.line){
+        if (pos1.column < pos2.column){
+            range.start = pos1;
+            range.end = pos2;
+            range.direction = 1;
+        }else if(pos1.column == pos2.column){
+            range.start = pos1;
+            range.end = pos2;
+            range.direction = 0;
+        }else{
+            range.start = pos2;
+            range.end = pos1;
+            range.direction = -1;
+        }
+    }else {
+        range.start = pos2;
+        range.end = pos1;
+        range.direction = -1;
+    }
+    return range;
+}
+
+void tools::GetZPosFromGtkTextIter(ZPosition &pos, GtkTextIter* itr){
+    pos.line = gtk_text_iter_get_line(itr);
+    pos.column = gtk_text_iter_get_line_index(itr);
 }

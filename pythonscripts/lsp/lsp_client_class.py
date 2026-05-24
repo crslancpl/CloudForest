@@ -80,11 +80,15 @@ class LspClient:
         ea.rm_callback("text-changed", self.editarea_text_changed)
         ea.rm_callback("lang-changed", self.editarea_lang_changed)
 
-    def editarea_text_changed(self, ea: editarea.EditArea):
+    def editarea_text_changed(
+        self, ea: editarea.EditArea, range, changed_text, version
+    ):
+
         message = lsp_msg_writer.did_change_message(
             ea.get_file_path(),
-            ea.get_content(),
-            ea.get_file_version(),
+            range,
+            changed_text,
+            version,
             self.language_id,
         )
 
@@ -137,7 +141,7 @@ class LspClient:
         self.LSP.stdin.flush()
 
     def read(self):
-        with ThreadPoolExecutor(max_workers=2) as TPExecutor:
+        with ThreadPoolExecutor(max_workers=1) as TPExecutor:
             TPExecutor.submit(self.read_out)
             # TPExecutor.submit(self.read_err)
 
@@ -194,8 +198,9 @@ class LspClient:
         timeoutpoll.register(self.LSP.stdout, select.POLLIN)
         self.read_number += 1
         # print(f"reading out num {self.read_number}")
+
         while True:
-            waitforin = timeoutpoll.poll(80)  # wait shorter
+            waitforin = timeoutpoll.poll(50)  # wait shorter
             # The "Content-Length: ...\r\n" message
             if not waitforin:
                 # print(f"stop reading out {self.read_number}")

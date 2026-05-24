@@ -4,5 +4,8 @@
   },
   "rust-analyzer": {
     "location": "data/extension/rust-analyzer/entry.py"
+  },
+  "testing": {
+    "location": "data/extension/testing/threadtest.py"
   }
 }

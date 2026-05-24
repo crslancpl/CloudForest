@@ -1,10 +1,15 @@
 #include "python_tool.h"
+#include "datatypes/common.h"
 
 #include <Python.h>
 #include <cstdio>
+#include <dictobject.h>
 #include <listobject.h>
+#include <longobject.h>
 #include <object.h>
+#include <pytypedefs.h>
 #include <string>
+#include <unicodeobject.h>
 
 void RunCallback(PyObject* callbacklist, PyObject* args){
     // callbacks should always be a list
@@ -63,4 +68,23 @@ void ExecuteFile(const std::string &path){
         return;
     }
     PyRun_SimpleFile(f, path.c_str());
+}
+
+PyObject* GetPyDictFromZRange(const ZRange &range){
+    PyObject* rangedict = PyDict_New();
+    PyObject* startdict = PyDict_New();
+    PyObject* enddict = PyDict_New();
+
+    PyDict_SetItemString(startdict, "line", PyLong_FromLong(range.start.line));
+    PyDict_SetItemString(startdict, "character", PyLong_FromLong(range.start.column));
+    PyDict_SetItemString(enddict, "line", PyLong_FromLong(range.end.line));
+    PyDict_SetItemString(enddict, "character", PyLong_FromLong(range.end.column));
+
+    PyDict_SetItemString(rangedict, "start", startdict);
+    PyDict_SetItemString(rangedict, "end", enddict);
+
+    Py_DECREF(startdict);
+    Py_DECREF(enddict);
+
+    return rangedict;
 }

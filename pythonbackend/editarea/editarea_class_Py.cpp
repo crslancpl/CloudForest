@@ -122,10 +122,10 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
     Suggestion* sug = new Suggestion();
     sug->insertText = suggestion;
     sug->label = label;
-    sug->range.startLine = startline;
-    sug->range.startColumn = startpos;
-    sug->range.endLine = endline;
-    sug->range.endColumn = endpos;
+    sug->range.start.line = startline;
+    sug->range.start.column = startpos;
+    sug->range.end.line = endline;
+    sug->range.end.column = endpos;
 
     //lsppopovers::suggestion::Add(sug);
     /*
@@ -162,10 +162,10 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
         args, "ssiiiii",
         &diagnostic->code,
         &message,
-        &diagnostic->range.startLine,
-        &diagnostic->range.startColumn,
-        &diagnostic->range.endLine,
-        &diagnostic->range.endColumn,
+        &diagnostic->range.start.line,
+        &diagnostic->range.start.column,
+        &diagnostic->range.end.line,
+        &diagnostic->range.end.column,
         &diagnostic->severity)
     ){
         Py_RETURN_NAN;

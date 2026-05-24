@@ -45,7 +45,15 @@ static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint co
     parent->CursorMovedByKey();
 }
 
-static void OnTextChanged(GtkTextBuffer* buffer, GParamSpec* pspec, EditArea* parent){
+static void OnTextInserted(GtkTextBuffer* buffer, GtkTextIter* itr, char* text, long int length, EditArea* parent){
+    parent->TextInserted(itr, text, length);
+}
+
+static void OnTextDeleted (GtkTextBuffer* buffer, GtkTextIter* start, GtkTextIter* end, EditArea* parent){
+    parent->TextDeleted(start, end);
+}
+
+static void OnTextChanged (GtkTextBuffer* buffer, EditArea* parent){
     parent->TextChanged();
 }
 
@@ -80,7 +88,7 @@ EditArea::EditArea(FileData* file){
     m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);
 
     /* Initialize variables */
-    m_cursorPos = 0;
+    m_cursorIndex = 0;
     m_isCurMovedByKey = false;
 
     /* Set properties */
@@ -140,7 +148,9 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_mouseMovedEventCtrl, "motion", G_CALLBACK(OnMouseMoved), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_mouseMovedEventCtrl);
     g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
-    g_signal_connect_after(m_textViewBuffer, "notify::text",G_CALLBACK(OnTextChanged),this);
+    g_signal_connect(m_textViewBuffer, "insert-text", G_CALLBACK(OnTextInserted), this);
+    g_signal_connect(m_textViewBuffer, "delete-range", G_CALLBACK(OnTextDeleted), this);
+    g_signal_connect_after(m_textViewBuffer, "changed", G_CALLBACK(OnTextChanged), this);
     g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);//Choose language is done by TextTag.cpp
@@ -149,10 +159,10 @@ void EditArea::ConnectSignals(){
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
-    Range &r = diagnostic->range;
-    if(r.startColumn > 0 && r.startLine == r.endLine && r.startColumn == r.endColumn){
+    ZRange &r = diagnostic->range;
+    if(r.start.column > 0 && r.start.line == r.end.line && r.start.column == r.end.column){
         // diagnostic with 0 length will be marked one char forward
-        r.startColumn--;
+        r.start.column--;
     }
 
     m_diagnosticsList.emplace(diagnostic);
@@ -190,48 +200,49 @@ void EditArea::ClearDiagnostics(){
     for (Diagnostic* diagnostic : m_diagnosticsList){
         delete diagnostic;
     }
-    m_currentDiagnosticRange.startLine = 0;
-    m_currentDiagnosticRange.startColumn = 0;
-    m_currentDiagnosticRange.endLine = 0;
-    m_currentDiagnosticRange.endColumn = 0;
+    m_currentDiagnosticRange.start.line = 0;
+    m_currentDiagnosticRange.start.column = 0;
+    m_currentDiagnosticRange.end.line = 0;
+    m_currentDiagnosticRange.end.column = 0;
     m_diagnosticsList.clear();
     this->ProcessDiagnostics();
 }
 
 Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){
-    int line = gtk_text_iter_get_line(&m_startItr);
-    int index = gtk_text_iter_get_line_index(&m_startItr);
+    ZPosition pos;
+    pos.line = gtk_text_iter_get_line(&m_startItr);
+    pos.column = gtk_text_iter_get_line_index(&m_startItr);
     // printf("line %i index %i\n", line, index);
-    if(tools::IsLineIndexInRange(line, index, &m_currentDiagnosticRange)) return nullptr;
+    if(tools::IsZPosInRange(pos, &m_currentDiagnosticRange)) return nullptr;
 
     // There may be more than 1 diagnostic for a iteer
     for (Diagnostic* diagnostic : m_diagnosticsList) {
-        if(tools::IsLineIndexInRange(line, index, &diagnostic->range)){
+        if(tools::IsZPosInRange(pos, &diagnostic->range)){
             m_currentDiagnosticRange = diagnostic->range;
             return diagnostic;
         }
     }
-    m_currentDiagnosticRange.startLine = 0;
-    m_currentDiagnosticRange.startColumn = 0;
-    m_currentDiagnosticRange.endLine = 0;
-    m_currentDiagnosticRange.endColumn = 0;
+    m_currentDiagnosticRange.start.line = 0;
+    m_currentDiagnosticRange.start.column = 0;
+    m_currentDiagnosticRange.end.line = 0;
+    m_currentDiagnosticRange.end.column = 0;
     m_diagnosticPopover->Hide();
     return nullptr;
 }
 
 void EditArea::LoadCursorPos(){
-    g_object_get(m_textViewBuffer, "cursor-position", &m_cursorPos, nullptr);
+    g_object_get(m_textViewBuffer, "cursor-position", &m_cursorIndex, nullptr);
 
-    gtk_text_buffer_get_iter_at_offset(m_textViewBuffer, &m_cursorItr, m_cursorPos);
-    m_cursorLine = gtk_text_iter_get_line(&m_cursorItr) + 1;
-    m_cursorColumn = gtk_text_iter_get_line_offset(&m_cursorItr) + 1;
+    gtk_text_buffer_get_iter_at_offset(m_textViewBuffer, &m_cursorItr, m_cursorIndex);
+    m_cursorZPos.line = gtk_text_iter_get_line(&m_cursorItr);
+    m_cursorZPos.column = gtk_text_iter_get_line_offset(&m_cursorItr);
     std::string pos =
         "Line: "
-        + std::to_string(m_cursorLine)
+        + std::to_string(m_cursorZPos.line + 1)
         + '/'
         + std::to_string(m_totalLines)
         + " Column: "
-        + std::to_string(m_cursorColumn);
+        + std::to_string(m_cursorZPos.column + 1);
 
     gtk_button_set_label(m_cursorPosBut, pos.c_str());
 
@@ -260,6 +271,10 @@ const char* EditArea::GetFilePath() const{
 
 const unsigned int EditArea::GetFileVersion() const{
     return m_fileVersion;
+}
+
+const Difference &EditArea::GetPendingDiff() const{
+    return m_pendingDif;
 }
 
 void EditArea::SetLanguage(Language* lang){
@@ -409,11 +424,25 @@ void EditArea::CursorMovedByKey(){
     m_isCurMovedByKey = true;
 }
 
-void EditArea::TextChanged(){
+void EditArea::TextInserted(GtkTextIter* itr, char* text, long int length){
     m_fileVersion += 1;
-
     this->LoadCursorPos();
 
+    tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, itr);
+    tools::GetZPosFromGtkTextIter(m_pendingDif.before.end, itr);
+    m_pendingDif.text = text;
+}
+
+void EditArea::TextDeleted(GtkTextIter* start, GtkTextIter* end){
+    m_fileVersion += 1;
+    this->LoadCursorPos();
+
+    tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, start);
+    tools::GetZPosFromGtkTextIter(m_pendingDif.before.end, end);
+    m_pendingDif.text = strdup("");
+}
+
+void EditArea::TextChanged(){
     if(isSaved == true){
         isSaved = false;
         gtk_button_set_label(m_saveBut, "Save");
@@ -423,22 +452,7 @@ void EditArea::TextChanged(){
     m_isTextChanged = true;
 
     syntaxprovider::FastHighlight(this);
-
     editarea_py_invoke_text_changed(this);
-
-    //see if there is any text before the text iter.
-    //if yes then trigger autocompletion
-    /*
-    m_startItr = *gtk_text_iter_copy(&m_cursorItr);
-    gtk_text_iter_backward_char(&m_startItr);
-    char previouschar = gtk_text_iter_get_text(&m_startItr, &m_cursorItr)[0];
-
-    if(previouschar == ' ' || previouschar == '\t' || previouschar == '\n' || previouschar == '\r' || previouschar == 0){
-        // don't trigger auto completion if there is a space before the cursor
-    }else{
-        editarea_py_invoke_completion_requested(this);
-    }
-    */
 }
 
 void EditArea::LangChanged(){
@@ -447,7 +461,7 @@ void EditArea::LangChanged(){
 
 void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
-    editarea_py_invoke_cursor_moved(this, m_cursorLine, m_cursorColumn);
+    editarea_py_invoke_cursor_moved(this, m_cursorZPos);
     if(m_isCurMovedByKey == true){
         gtk_text_view_scroll_to_iter(m_textView, &m_cursorItr, 0.4 ,false, 0.4, 0.4);
         m_isCurMovedByKey = false;

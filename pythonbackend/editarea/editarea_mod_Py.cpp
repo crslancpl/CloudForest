@@ -1,5 +1,6 @@
 #include "editarea_mod_Py.h"
 
+#include "datatypes/common.h"
 #include "editarea_class_Py.h"
 #include "pythonbackend/python_tool.h"
 #include "src/filemanagement/FileOperation.h"
@@ -8,6 +9,7 @@
 #include "datatypes/file.h"
 
 #include <floatobject.h>
+#include <longobject.h>
 #include <methodobject.h>
 #include <object.h>
 #include <unicodeobject.h>
@@ -40,7 +42,8 @@ void editarea_py_invoke_text_changed(EditArea *ea){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
+    const Difference &dif = ea->GetPendingDiff();
+    PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
     RunCallback(py_ea->textChangedCallbacks, args);
     Py_DECREF(args);
 }
@@ -54,11 +57,11 @@ void editarea_py_invoke_lang_changed(EditArea *ea){
     Py_DECREF(args);
 }
 
-void editarea_py_invoke_cursor_moved(EditArea *ea, int line, int column){
+void editarea_py_invoke_cursor_moved(EditArea *ea, const ZPosition &pos){
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(line), PyLong_FromLong(column));
+    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
     RunCallback(py_ea->cursorMovedCallbacks, args);
     Py_DECREF((PyObject*) args);
 }

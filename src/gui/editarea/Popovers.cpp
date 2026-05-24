@@ -135,10 +135,10 @@ void SuggestionPopover::ConfirmSelection(){
     Suggestion sug = m_suggestions[m_selectedItemItr].first;
     std::string sugtext = sug.insertText + " ";
     gtk_text_buffer_get_iter_at_line_offset(
-        m_targetTextBuffer, &m_startItr,sug.range.startLine, sug.range.startColumn);
+        m_targetTextBuffer, &m_startItr,sug.range.start.line, sug.range.start.column);
 
     gtk_text_buffer_get_iter_at_line_offset(
-        m_targetTextBuffer, &m_endItr,sug.range.endLine, sug.range.endColumn);
+        m_targetTextBuffer, &m_endItr,sug.range.end.line, sug.range.end.column);
 
     gtk_text_buffer_delete(m_targetTextBuffer, &m_startItr, &m_endItr);
 
@@ -223,7 +223,7 @@ void DiagnosticPopover::Hide(){
 }
 
 void DiagnosticPopover::ShowDiagnostic(Diagnostic* diagnostic,int textviewline, int textviewindex){
-    gtk_text_buffer_get_iter_at_line_index(m_targetBuffer, &m_iter, textviewline, diagnostic->range.startColumn);
+    gtk_text_buffer_get_iter_at_line_index(m_targetBuffer, &m_iter, textviewline, diagnostic->range.start.column);
     gtk_text_view_get_iter_location(m_targetTextView, &m_iter, &m_rectangle);
     gtk_popover_set_pointing_to(m_popover, &m_rectangle);
     gtk_label_set_label(m_messageLabel, diagnostic->message);

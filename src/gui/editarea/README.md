@@ -7,3 +7,5 @@ All events for EditArea class
 * `COMPLETIONREQUESTED`
 * `FILESAVED`
 * `FILEDATACHANGED`
+
+The GtkTextIter get line and index are zero based
