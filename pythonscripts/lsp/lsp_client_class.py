@@ -3,10 +3,12 @@ import re
 import select
 import shutil
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
 
+# from concurrent.futures import ThreadPoolExecutor
 import cloudforest
 from cloudforest import editarea
+
+from pythonscripts.event import IOEvent
 
 from . import lsp_msg_reader, lsp_msg_writer
 from .lsp_msg_reader import find_method_processor, read_as_error
@@ -28,37 +30,47 @@ class LspClient:
         if self.LSP.stdin:
             self.stdin_thread = self.LSP.stdin
         if self.LSP.stdout:
-            self.stdout_thread = self.LSP.stdout
-            """
-            # GIL should be disabled to run the listener
-            self.out_event: IOEvent = IOEvent(self.stdout_thread)
-            self.out_event.add_listener(self.read_text)
-            """
-
+            self.out_event: IOEvent = IOEvent(self.LSP.stdout)
+            self.out_event.add_listener("line", self.read_out)
+        """
         if self.LSP.stderr:
-            self.stderr_thread = self.LSP.stderr
+            self.err_event: IOEvent = IOEvent(self.LSP.stderr)
+            self.err_event.add_listener("line", self.read_err)
+        """
 
-        self.read()
         cloudforest.add_callback("app-closed", self.exit)
-        self.start()
 
-    def start(self):
+    def read_out(self, text: str):
+        # [!NOTE]
+        # We cannot guarantee how long is the message from
+        # LSP. There may be a lot of messages one after another.
+        # Thereby, we have to set a timeout for the readline()
+        # or it will block the program
+        if text.startswith("Content-Length:"):
+            # get content length. The header looks like this
+            # Content-Length: 100\r\n\r\n
+
+            contentlength = re.findall(r"\d+", str(text))
+            self.out_event.skip_line()  # this will be \r\n\r\n
+            message = self.out_event.read_chars(int(contentlength[0]))
+            # print(f"lsp_client_class stdout: {message}")
+            self.read_msg(message)
+        else:
+            return
+
+    def start(self, init_callback):
         self.send(lsp_msg_writer.initialize_message())
-        self.read()
         self.send(lsp_msg_writer.initialized_notification())
-        self.read()
+        self.init_callback = init_callback
 
     def exit(self):
         print("ending subprocess")
         self.send(lsp_msg_writer.shut_down_message())
-        self.read()
         self.send(lsp_msg_writer.exit_notification())
-        self.read()
         self.LSP.terminate()
 
     def add_workspace(self, name: str, path: str):
         self.send(lsp_msg_writer.new_workspace_notification(name, path))
-        self.read()
         pass
 
     # callbacks
@@ -69,21 +81,18 @@ class LspClient:
         self.send(
             lsp_msg_writer.completion_message(ea.get_file_path(), line, column - 1)
         )
-        self.read()
 
     def editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:
             return
 
         self.send(lsp_msg_writer.did_close_notification(ea.get_file_path()))
-        self.read()
         ea.rm_callback("text-changed", self.editarea_text_changed)
         ea.rm_callback("lang-changed", self.editarea_lang_changed)
 
     def editarea_text_changed(
         self, ea: editarea.EditArea, range, changed_text, version
     ):
-
         message = lsp_msg_writer.did_change_message(
             ea.get_file_path(),
             range,
@@ -93,7 +102,6 @@ class LspClient:
         )
 
         self.send(message)
-        self.read()
 
     def listen_editarea(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_open_message(
@@ -101,7 +109,6 @@ class LspClient:
         )
         # print(f"listening editarea {ea.get_file_path()}")
         self.send(message)
-        self.read()
         ea.add_callback("text-changed", self.editarea_text_changed)
         ea.add_callback("lang-changed", self.editarea_lang_changed)
 
@@ -140,11 +147,6 @@ class LspClient:
         _ = self.LSP.stdin.write(message.encode("utf-8"))
         self.LSP.stdin.flush()
 
-    def read(self):
-        with ThreadPoolExecutor(max_workers=1) as TPExecutor:
-            TPExecutor.submit(self.read_out)
-            # TPExecutor.submit(self.read_err)
-
     def read_msg(self, message: str):
         content = json.loads(message)
         if content.get("id"):
@@ -153,6 +155,7 @@ class LspClient:
                 case 1:
                     # response for initialize message
                     self.load_server_info(content.get("result"))
+                    self.init_callback()
 
         elif content.get("method"):
             find_method_processor(content.get("method"), content.get("params"))
@@ -164,62 +167,12 @@ class LspClient:
             print(f"other message: {message}")
         return content
 
-    def read_err(self):
+    def read_err(self, text: str):
         if self.LSP.stderr is None:
             print("read error")
             return
 
-        timeoutpoll = select.poll()
-        timeoutpoll.register(self.LSP.stderr, select.POLLIN)
-
-        while True:
-            waitforin = timeoutpoll.poll(60)
-            if not waitforin:
-                return
-            # print("reading err")
-            msgbytes = self.LSP.stderr.readline()
-            msg = msgbytes.decode()
-            if msg == "":
-                return
-            print(f"lsp_client_class stderr: {msg}", end="")
-
-    def read_out(self):
-        # [!NOTE]
-        # We cannot guarantee how long is the message from
-        # LSP. There may be a lot of messages one after another.
-        # Thereby, we have to set a timeout for the readline()
-        # or it will block the program
-
-        if self.LSP.stdout is None:
-            print("read error")
-            return
-
-        timeoutpoll = select.poll()
-        timeoutpoll.register(self.LSP.stdout, select.POLLIN)
-        self.read_number += 1
-        # print(f"reading out num {self.read_number}")
-
-        while True:
-            waitforin = timeoutpoll.poll(50)  # wait shorter
-            # The "Content-Length: ...\r\n" message
-            if not waitforin:
-                # print(f"stop reading out {self.read_number}")
-                self.stdout_thread.flush()
-                return
-
-            msgbytes = self.LSP.stdout.readline()
-            msg = msgbytes.decode()
-            if msg.startswith("Content-Length:"):
-                # get content length. The header looks like this
-                # Content-Length: 100\r\n\r\n
-
-                contentlength = re.findall(r"\d+", str(msg))
-                _ = self.LSP.stdout.readline()  # this will be \r\n\r\n
-                message = self.LSP.stdout.read(int(contentlength[0])).decode()
-                # print(f"lsp_client_class stdout: {message}")
-                self.read_msg(message)
-            else:
-                return
+        print(f"lsp_client_class stderr: {text}", end="")
 
 
 def create_lsp_client(
@@ -229,5 +182,5 @@ def create_lsp_client(
         # executable or file not found
         print(f'lsp_client_class: Language server "{lspcommand}" not found.')
         return None
-    # print(f"create client for {lspcommand}")
+    print(f"create client for {lspcommand}")
     return LspClient(lspcommand, language, languageId)

@@ -2,11 +2,13 @@
 #include "datatypes/common.h"
 
 #include <Python.h>
+#include <ceval.h>
 #include <cstdio>
 #include <dictobject.h>
 #include <listobject.h>
 #include <longobject.h>
 #include <object.h>
+#include <pystate.h>
 #include <pytypedefs.h>
 #include <string>
 #include <unicodeobject.h>
@@ -68,6 +70,30 @@ void ExecuteFile(const std::string &path){
         return;
     }
     PyRun_SimpleFile(f, path.c_str());
+}
+
+/*
+ * Threading
+ */
+PyThreadState* thread_state;
+void ReleaseThreadLock(){
+    //printf("release thread\n");
+    thread_state = PyEval_SaveThread();
+}
+
+void RestoreThreadLock(){
+    //printf("restore thread\n");
+    if(!PyGILState_Check()){
+        PyEval_RestoreThread(thread_state);
+    }
+}
+
+void PrintGILState(){
+    if(PyGILState_Check()){
+        printf("gil is available\n");
+    }else {
+        printf("gil is not available\n");
+    }
 }
 
 PyObject* GetPyDictFromZRange(const ZRange &range){

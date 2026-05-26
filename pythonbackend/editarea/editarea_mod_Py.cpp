@@ -8,6 +8,7 @@
 #include "src/gui/editarea/EditArea_if.h"
 #include "datatypes/file.h"
 
+#include <cstdio>
 #include <floatobject.h>
 #include <longobject.h>
 #include <methodobject.h>
@@ -39,58 +40,73 @@ py_EditArea* find_editarea_py(const EditArea *ea){
 }
 
 void editarea_py_invoke_text_changed(EditArea *ea){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
+    if(py_ea == nullptr) {
+        printf("cannot find ea\n");
+        return;
+    }
     Py_INCREF(py_ea);
     const Difference &dif = ea->GetPendingDiff();
     PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
     RunCallback(py_ea->textChangedCallbacks, args);
     Py_DECREF(args);
+    ReleaseThreadLock();
 }
 
 void editarea_py_invoke_lang_changed(EditArea *ea){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->langChangedCallbacks, args);
     Py_DECREF(args);
+    ReleaseThreadLock();
 }
 
 void editarea_py_invoke_cursor_moved(EditArea *ea, const ZPosition &pos){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
     RunCallback(py_ea->cursorMovedCallbacks, args);
     Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
 }
 
 void editarea_py_invoke_completion_requested(EditArea *ea){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->completionRequestedCallbacks, args);
     Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
 }
 
 void editarea_py_invoke_file_saved(EditArea *ea){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->fileSavedCallbacks, args);
     Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
 }
 
 void editarea_py_invoke_filedata_changed(EditArea *ea){
+    RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     RunCallback(py_ea->fileDataChangedCallbacks, args);
     Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
 }
 
 static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
@@ -162,6 +178,7 @@ void editarea_py_register(EditArea *ea){
      * instance of the cf_EditArea, so the python extension can
      * manipulate the edit area
      */
+    RestoreThreadLock();
     py_EditArea *newEa = py_EditArea_create_object();
 
     newEa->editarea = ea;
@@ -172,8 +189,11 @@ void editarea_py_register(EditArea *ea){
     PyObject *args = PyTuple_Pack(1, newEa);
     PyList_Append(registered_editareas, (PyObject*)newEa);
     RunCallback(ea_registered_callback_list, args);
+
     Py_DECREF(filepath);
     Py_DECREF(args);
+
+    ReleaseThreadLock();
 }
 
 PyMODINIT_FUNC PyInit_editarea_module(){

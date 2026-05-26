@@ -18,6 +18,7 @@ std::vector<std::string> TrimText(const std::string &text, const std::string &se
 bool IsZPosInRange(const ZPosition &pos, const ZRange* range);
 bool IsZRangeInRange(const ZRange* input, const ZRange* range);
 bool IsORangeInRange(const ORange* input, const ORange* range);
+bool IsZPosEqual(const ZPosition &pos1, const ZPosition &pos2);
 ZRange GetZRange(const ZPosition &pos1, const ZPosition &pos2);
 void GetZPosFromGtkTextIter(ZPosition &pos, GtkTextIter* itr);
 }

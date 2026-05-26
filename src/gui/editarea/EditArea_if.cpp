@@ -34,7 +34,6 @@ void editarea::SetFocusedEditArea(EditArea* editarea){
 
 void editarea::CreateEmptyFile(){
     auto neweditarea = new EditArea(filemanagement::CreateVirtualFile());
-
     editarea::SetFocusedEditArea(neweditarea);
 
     for(auto cb : editarea_created_callbacks){
@@ -61,7 +60,7 @@ void editarea::OpenFile(FileData *file){
         cb(neweditarea);
     }
 
-    tablayout::Show((CfContent*)neweditarea);
+    tablayout::Show(neweditarea);
 }
 
 void editarea::CloseFile(FileData *file){

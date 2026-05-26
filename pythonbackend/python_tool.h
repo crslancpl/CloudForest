@@ -16,6 +16,10 @@ void ExecuteFile(const std::string &path);
 
 PyThreadState* GetMainThreadState();
 
+void ReleaseThreadLock();
+void RestoreThreadLock();
+void PrintGILState();
+
 PyObject* GetPyDictFromZRange(const ZRange &range);
 
 #endif

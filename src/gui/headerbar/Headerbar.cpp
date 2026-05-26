@@ -25,11 +25,7 @@ static void IdeButtonClicked(GtkButton *self, void* userdata){
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
-    editarea::OpenFile(nullptr);
-    //
-    //auto newEditArea = gui::NewEditArea(nullptr);
-    //gui::FocusedEAHolder->Show(*newEditArea);
-    //gtk_widget_grab_focus(GTK_WIDGET((*newEditArea)->m_textView));
+    editarea::CreateEmptyFile();
 }
 
 static void SearchClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {

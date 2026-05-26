@@ -5,10 +5,13 @@
 #include "python_tool.h"
 
 #include <Python.h>
+#include <ceval.h>
+#include <pystate.h>
 #include <string>
 
 
 #define PY_SSIZE_T_CLEAN
+
 
 void pybackend::Start(){
     PyImport_AppendInittab("cloudforest", PyInit_cloudforest_module);
@@ -33,6 +36,7 @@ void pybackend::Start(){
     ExecuteFile("pythonscripts/entry.py");
     ExecuteFile("data/extension/init.py");
 
+    ReleaseThreadLock();
     return;
 
 exception:
@@ -40,7 +44,9 @@ exception:
     Py_ExitStatusException(status);
 }
 
+
 void pybackend::End(){
+    RestoreThreadLock();
     cloudforest_module_invoke_app_closed();
     if (Py_FinalizeEx() < 0) {
         exit(120);

@@ -69,7 +69,9 @@ static PyObject *py_EditArea_add_callback(py_EditArea *self, PyObject *args){
     }
 
     PyObject* callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
-    if(callbacklist == nullptr) Py_RETURN_NAN;
+    if(callbacklist == nullptr) {
+        Py_RETURN_NAN;
+    }
 
     AddToList(callbacklist, func);
 

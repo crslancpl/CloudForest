@@ -87,6 +87,14 @@ bool tools::IsORangeInRange(const ORange *input, const ORange *range){
     return false;
 }
 
+bool tools::IsZPosEqual(const ZPosition &pos1, const ZPosition &pos2){
+    if(pos1.line == pos2.line && pos1.column == pos2.column){
+        return true;
+    }
+
+    return false;
+}
+
 ZRange tools::GetZRange(const ZPosition &pos1, const ZPosition &pos2){
     ZRange range;
     if(pos1.line < pos2.line){

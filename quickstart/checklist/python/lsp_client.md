@@ -3,10 +3,10 @@
 
 The LSP support is done by python. The scripts for language server clients are under *pythonscripts/lsp* directory. The *lsp_client_class.py* defined a `LspClient` class. `LspClient` provides the basic funtionalities of lsp including opens the server and listen for events in `EditArea`. Messages are written by *lsp_msg_writer.py* and read by *lsp_msg_reader.py*
 
-- [ ] run clients parallelly/concurrently
+- [x] run clients parallelly/concurrently
 - [ ] getting server capabilities
 - [ ] readding errors
-- [ ] diagnostics
+- [x] diagnostics
 - [ ] completion on text changed
 
 

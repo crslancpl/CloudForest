@@ -6,6 +6,7 @@
 #include "editarea/editarea_mod_Py.h"
 
 #include <abstract.h>
+#include <cstdio>
 #include <cstdlib>
 #include <dictobject.h>
 #include <floatobject.h>
@@ -22,12 +23,14 @@ static PyObject *lang_to_callbacks_dict;
 
 
 void language_module_invoke_new_editarea(const char* langname, EditArea* ea){
+    RestoreThreadLock();
     PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
     if(callbacklist == NULL){
         return;
     }
     PyObject* arg = PyTuple_Pack(1, find_editarea_py(ea));
     RunCallback(callbacklist, arg);
+    ReleaseThreadLock();
 }
 
 

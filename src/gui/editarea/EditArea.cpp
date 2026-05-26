@@ -15,6 +15,7 @@
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
+#include "pythonbackend/python_tool.h"
 
 #include <cstdio>
 #include <cstring>
@@ -159,12 +160,6 @@ void EditArea::ConnectSignals(){
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
-    ZRange &r = diagnostic->range;
-    if(r.start.column > 0 && r.start.line == r.end.line && r.start.column == r.end.column){
-        // diagnostic with 0 length will be marked one char forward
-        r.start.column--;
-    }
-
     m_diagnosticsList.emplace(diagnostic);
 }
 

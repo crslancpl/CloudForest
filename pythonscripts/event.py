@@ -4,7 +4,8 @@ from typing import IO, Callable
 
 class IOEvent:
     def __init__(self, io: IO):
-        self.callbacks: list = []
+        self.line_callbacks: list = []
+        self.close_callbacks: list = []
         self.io = io
         self.terminate = False
         self.thread = threading.Thread(target=self.read_thread, daemon=True)
@@ -19,7 +20,8 @@ class IOEvent:
                 return
 
             text = line.decode()
-            for cb in self.callbacks:
+
+            for cb in self.line_callbacks:
                 cb(text)
 
     def skip_line(self) -> None:
@@ -31,5 +33,8 @@ class IOEvent:
     def read_chars(self, length: int) -> str:
         return self.io.read(length).decode()
 
-    def add_listener(self, cb: Callable):
-        self.callbacks.append(cb)
+    def add_listener(self, event: str, cb: Callable):
+        match event:
+            case "line":
+                # new line written to the buffer
+                self.line_callbacks.append(cb)

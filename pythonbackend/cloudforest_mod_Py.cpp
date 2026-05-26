@@ -30,9 +30,11 @@ static PyObject *cloudforest_module_new_workspace_callbacks;
 
 
 static void OnNewWorkspace(Workspace* ws){
+    RestoreThreadLock();
     PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->name), PyUnicode_FromString(ws->rootFolderData->absoPath));
     RunCallback(cloudforest_module_new_workspace_callbacks, args);
     Py_DECREF(args);
+    ReleaseThreadLock();
 }
 
 static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
@@ -59,7 +61,6 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
 
         PyList_Append(wslist, wsproperty);
     }
-
     return wslist;
 }
 
@@ -112,6 +113,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyModule_AddObject(cfmodule, "editarea", (PyObject*)PyInit_editarea_module());
     PyModule_AddObject(cfmodule, "setting_panel", (PyObject*)PyInit_setting_panel_module());
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
+
     filemanagement::ListenEvent(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     return cfmodule;
 }
