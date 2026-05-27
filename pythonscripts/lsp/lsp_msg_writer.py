@@ -96,7 +96,7 @@ def exit_notification() -> str:
     return message
 
 
-def did_open_message(path: str, content: str, langid: str) -> str:
+def did_open_message(path: str, content: str, version: int, langid: str) -> str:
     did_open = {
         "jsonrpc": "2.0",
         "method": "textDocument/didOpen",
@@ -104,7 +104,7 @@ def did_open_message(path: str, content: str, langid: str) -> str:
             "textDocument": {
                 "uri": "file://" + path,
                 "languageId": langid,
-                "version": 0,
+                "version": version,
                 "text": content,
             },
         },

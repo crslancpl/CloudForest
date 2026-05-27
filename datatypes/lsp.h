@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include <string>
+#include <unordered_set>
 
 
 typedef struct Suggestion{
@@ -14,11 +15,14 @@ typedef struct Suggestion{
     ZRange range;// where to insert the text
 }Suggestion;
 
+
 typedef struct Diagnostic{
     char* code;
     char* message;
     int severity;
     ZRange range;
 }Diagnostic;
+
+typedef std::unordered_set<Diagnostic*> DiagnosticList;
 
 #endif

@@ -1,8 +1,9 @@
 import json
 import re
-import select
 import shutil
 import subprocess
+import uuid
+from typing import Dict
 
 # from concurrent.futures import ThreadPoolExecutor
 import cloudforest
@@ -10,11 +11,18 @@ from cloudforest import editarea
 
 from pythonscripts.event import IOEvent
 
-from . import lsp_msg_reader, lsp_msg_writer
-from .lsp_msg_reader import find_method_processor, read_as_error
+from . import lsp_msg_writer
+from .lsp_msg_reader import (
+    read_as_completion,
+    read_as_error,
+    read_as_publish_diagnostics,
+    read_as_show_message,
+)
 
 
 class LspClient:
+    file_version_dict: Dict[str, int] = {}
+
     def __init__(self, lspcommand: str, language: str, languageId: str):
         self.LSP = subprocess.Popen(
             lspcommand,
@@ -93,8 +101,10 @@ class LspClient:
     def editarea_text_changed(
         self, ea: editarea.EditArea, range, changed_text, version
     ):
+        path = ea.get_file_path()
+        self.file_version_dict[path] = version
         message = lsp_msg_writer.did_change_message(
-            ea.get_file_path(),
+            path,
             range,
             changed_text,
             version,
@@ -103,10 +113,22 @@ class LspClient:
 
         self.send(message)
 
+    def find_method_processor(self, method: str, params: dict):
+        match method:
+            case "window/showMessage":
+                read_as_show_message(params)
+            case "textDocument/publishDiagnostics":
+                read_as_publish_diagnostics(params, self.file_version_dict)
+            case "textDocument/completion":
+                read_as_completion(params)
+
     def listen_editarea(self, ea: editarea.EditArea):
+        path = ea.get_file_path()
+        version = ea.get_file_version()
         message = lsp_msg_writer.did_open_message(
-            ea.get_file_path(), ea.get_content(), self.language_id
+            path, ea.get_content(), version, self.language_id
         )
+        self.file_version_dict[path] = version
         # print(f"listening editarea {ea.get_file_path()}")
         self.send(message)
         ea.add_callback("text-changed", self.editarea_text_changed)
@@ -158,7 +180,7 @@ class LspClient:
                     self.init_callback()
 
         elif content.get("method"):
-            find_method_processor(content.get("method"), content.get("params"))
+            self.find_method_processor(content.get("method"), content.get("params"))
         elif content.get("error"):
             read_as_error(content.get("error"))
         elif content.get("result"):
@@ -168,10 +190,6 @@ class LspClient:
         return content
 
     def read_err(self, text: str):
-        if self.LSP.stderr is None:
-            print("read error")
-            return
-
         print(f"lsp_client_class stderr: {text}", end="")
 
 
@@ -182,5 +200,4 @@ def create_lsp_client(
         # executable or file not found
         print(f'lsp_client_class: Language server "{lspcommand}" not found.')
         return None
-    print(f"create client for {lspcommand}")
     return LspClient(lspcommand, language, languageId)

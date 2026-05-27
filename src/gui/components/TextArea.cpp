@@ -5,6 +5,7 @@
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/style/Style.h"
 
+#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -85,7 +86,9 @@ void TextArea::SetLanguage(Language *lang){
 
 void TextArea::ClearHighlight(){
     gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
-    gtk_text_buffer_remove_all_tags(m_textViewBuffer, &m_startItr, &m_endItr);
+    for (const char* tag : style::GetTextTagNamesForHighlight()){
+        gtk_text_buffer_remove_tag_by_name(m_textViewBuffer, tag, &m_startItr, &m_endItr);
+    }
 }
 
 void TextArea::ApplyTagByRange(ZRange *range, const char *tagname){

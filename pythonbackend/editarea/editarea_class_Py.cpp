@@ -194,7 +194,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"get_content", (PyCFunction)py_EditArea_get_content, METH_VARARGS, "get content from edit area"},
     {"add_callback", (PyCFunction)py_EditArea_add_callback, METH_VARARGS, "add callback"},
     {"rm_callback", (PyCFunction)py_EditArea_rm_callback, METH_VARARGS, "remove callback"},
-    {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 1) pos(>= 1) length(>= 1) with tagname"},
+    {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 0) pos(>= 0) length(>= 0) with tagname"},
     {"set_language", (PyCFunction)py_EditArea_set_lang, METH_VARARGS, "set the language of edit area"},
     {"get_language", (PyCFunction)py_EditArea_get_lang, METH_VARARGS, "get the language of edit area"},
     {"add_suggestion", (PyCFunction)py_EditArea_add_suggestion, METH_VARARGS, "add a suggestion to the autocomplete"},
