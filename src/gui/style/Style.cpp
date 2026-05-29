@@ -1,9 +1,7 @@
 #include "Style.h"
-#include "datatypes/common.h"
 
 #include <gtk/gtk.h>
 #include <pango/pango-attributes.h>
-#include <unordered_set>
 
 void style::LoadCssFile(const std::string &path){
     GtkCssProvider *CssProvider = gtk_css_provider_new();
@@ -66,7 +64,7 @@ const std::list<const char*>& style::GetTextTagNamesForHighlight(){
 }
 
 const std::list<const char*> tag_names_for_diagnostic = {
-    "error", "warn", "info", "hint"
+    "error", "warning", "info", "hint"
 };
 
 const std::list<const char*>& style::GetTextTagNamesForDiagnostic(){

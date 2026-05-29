@@ -1,6 +1,3 @@
-/*
- * now the gui parts of the app will not interact with core directly
- */
 #include "Gui_if.h"
 
 #include "editarea/EditArea_if.h"

@@ -1,5 +1,5 @@
-#ifndef SUGGESTION_H_
-#define SUGGESTION_H_
+#ifndef LSP_DATA_H_
+#define LSP_DATA_H_
 
 #include "common.h"
 

@@ -22,7 +22,7 @@ def editarea_created(ea: editarea.EditArea):
         client.listen_editarea(ea)
     else:
         pending_ea = ea
-        client = create_lsp_client("rust-analyzer", "Rust", "rust")
+        client = create_lsp_client("rust-analyzer", "Rust", "rust", False)
         if client:
             client.start(server_started)
         else:

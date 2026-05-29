@@ -23,7 +23,9 @@ from .lsp_msg_reader import (
 class LspClient:
     file_version_dict: Dict[str, int] = {}
 
-    def __init__(self, lspcommand: str, language: str, languageId: str):
+    def __init__(
+        self, lspcommand: str, language: str, languageId: str, read_stderr: bool
+    ):
         self.LSP = subprocess.Popen(
             lspcommand,
             stdin=subprocess.PIPE,
@@ -40,11 +42,9 @@ class LspClient:
         if self.LSP.stdout:
             self.out_event: IOEvent = IOEvent(self.LSP.stdout)
             self.out_event.add_listener("line", self.read_out)
-        """
-        if self.LSP.stderr:
+        if read_stderr and self.LSP.stderr:
             self.err_event: IOEvent = IOEvent(self.LSP.stderr)
             self.err_event.add_listener("line", self.read_err)
-        """
 
         cloudforest.add_callback("app-closed", self.exit)
 
@@ -170,13 +170,17 @@ class LspClient:
         self.LSP.stdin.flush()
 
     def read_msg(self, message: str):
+        # print(message)
         content = json.loads(message)
         if content.get("id"):
             # response
             match content.get("id"):
                 case 1:
                     # response for initialize message
-                    self.load_server_info(content.get("result"))
+                    result = content.get("result")
+                    # print(f"result {result}")
+
+                    self.load_server_info(result)
                     self.init_callback()
 
         elif content.get("method"):
@@ -194,10 +198,10 @@ class LspClient:
 
 
 def create_lsp_client(
-    lspcommand: str, language: str, languageId: str
+    lspcommand: str, language: str, languageId: str, read_stderr: bool
 ) -> LspClient | None:
     if not shutil.which(lspcommand):
         # executable or file not found
         print(f'lsp_client_class: Language server "{lspcommand}" not found.')
         return None
-    return LspClient(lspcommand, language, languageId)
+    return LspClient(lspcommand, language, languageId, read_stderr)

@@ -1,6 +1,7 @@
 #include "Popovers.h"
 
 #include "datatypes/lsp.h"
+#include <cstdio>
 #include <gtk/gtk.h>
 
 TipPopover::TipPopover(GdkRectangle *cursorrect){
@@ -212,8 +213,7 @@ DiagnosticPopover::DiagnosticPopover(GtkTextView* textview, GtkTextBuffer* targe
     gtk_label_set_single_line_mode(m_messageLabel, false);
     gtk_popover_set_autohide(m_popover, false);
     gtk_popover_set_child(m_popover, GTK_WIDGET(m_messageLabel));
-    gtk_popover_set_position(m_popover, GTK_POS_RIGHT);
-    gtk_popover_set_offset(m_popover, 0, 30);
+    gtk_popover_set_position(m_popover, GTK_POS_BOTTOM);
     gtk_popover_set_has_arrow(m_popover, false);
     gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_targetTextView));
 }

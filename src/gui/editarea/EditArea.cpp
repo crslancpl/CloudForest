@@ -10,12 +10,14 @@
 #include "datatypes/file.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/gui/components/TextArea.h"
+#include "src/gui/style/Style.h"
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -158,10 +160,13 @@ void EditArea::ConnectSignals(){
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
+    m_mutex.lock();
     m_diagnosticsList.emplace(diagnostic);
+    m_mutex.unlock();
 }
 
 void EditArea::ProcessDiagnostics(){
+    m_mutex.lock();
     char severityList[5] = {-1, 0, 0, 0, 0};
     // [0      , 1    , 2      , 3          , 4   ]
     // [Unknown, Error, Warning, Information, Hint]
@@ -187,9 +192,11 @@ void EditArea::ProcessDiagnostics(){
         std::to_string(severityList[3]) +
         "</span>";
     gtk_label_set_markup(m_errorButLabel, s.c_str());
+    m_mutex.unlock();
 }
 
 void EditArea::ClearDiagnostics(){
+    //m_mutex.lock();
     for (Diagnostic* diagnostic : m_diagnosticsList){
         delete diagnostic;
     }
@@ -198,6 +205,13 @@ void EditArea::ClearDiagnostics(){
     m_currentDiagnosticRange.end.line = 0;
     m_currentDiagnosticRange.end.column = 0;
     m_diagnosticsList.clear();
+
+    gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
+    for (const char* tag : style::GetTextTagNamesForDiagnostic()){
+        gtk_text_buffer_remove_tag_by_name(m_textViewBuffer, tag, &m_startItr, &m_endItr);
+    }
+
+    m_mutex.unlock();// ProcessDiagnostics() will lock the mutex
     this->ProcessDiagnostics();
 }
 

@@ -1,5 +1,5 @@
-#ifndef COMMON_H_
-#define COMMON_H_
+#ifndef COMMON_DATA_H_
+#define COMMON_DATA_H_
 
 /*
  * Zero based

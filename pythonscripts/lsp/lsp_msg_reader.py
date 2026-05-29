@@ -50,8 +50,9 @@ def read_as_publish_diagnostics(params: dict, version_dict: dict) -> None:
         return
 
     path = str(uri).removeprefix("file://")
+    v = version_dict.get(path)
 
-    if version < version_dict.get(path):
+    if version < v:
         # version too old
         return
     # print(f"diagnostics: {path} version {version}")

@@ -77,12 +77,12 @@ void ExecuteFile(const std::string &path){
  */
 PyThreadState* thread_state;
 void ReleaseThreadLock(){
-    //printf("release thread\n");
+    //printf("> GIL release thread\n");
     thread_state = PyEval_SaveThread();
 }
 
 void RestoreThreadLock(){
-    //printf("restore thread\n");
+    //printf("> GIL restore thread\n");
     if(!PyGILState_Check()){
         PyEval_RestoreThread(thread_state);
     }

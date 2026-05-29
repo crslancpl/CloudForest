@@ -6,6 +6,7 @@
 #include <gtk/gtk.h>
 #include <memory>
 #include <unordered_set>
+#include <mutex>
 
 // Forward declaration
 class DiagnosticPopover;
@@ -62,6 +63,7 @@ private:
     GdkRectangle m_cursorRec;
 
     DiagnosticPopover* m_diagnosticPopover;
+    std::mutex m_mutex;
 
     bool m_isCurMovedByKey = false;
     bool m_isTextChanged = false;
