@@ -34,7 +34,6 @@ void pybackend::Start(){
 
     ExecuteFile("pythonscripts/init.py");
     ExecuteFile("pythonscripts/entry.py");
-    ExecuteFile("data/extension/init.py");
 
     ReleaseThreadLock();
     return;

@@ -2,7 +2,6 @@
 
 #include "LanguageManager_if.h"
 #include "datatypes/common.h"
-#include "datatypes/language.h"
 #include "pythonbackend/language_mod_Py.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"

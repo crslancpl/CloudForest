@@ -43,7 +43,7 @@ void style::LoadTextTag(GtkTextBuffer *buffer){
         "underline", PANGO_UNDERLINE_SINGLE,
         "underline-rgba", &infostyle,
         nullptr);
-    GdkRGBA hintstyle = {0, 0, 1, 1};
+    GdkRGBA hintstyle = {0.4, 0.6, 1, 1};
     gtk_text_buffer_create_tag(buffer, "hint",
         "underline", PANGO_UNDERLINE_SINGLE,
         "underline-rgba", &hintstyle,

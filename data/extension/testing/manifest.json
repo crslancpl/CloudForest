@@ -1,0 +1,5 @@
+{
+  "name": "test",
+  "entry-file": "test1.py",
+  "description": "A extension for testing"
+}

@@ -3,10 +3,10 @@
 #include "EditArea_if.h"
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
+#include "DiagnosticPanel.h"
 #include "Popovers.h"
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
-#include "datatypes/language.h"
 #include "datatypes/file.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/gui/components/TextArea.h"
@@ -17,12 +17,12 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
-#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <string>
 
 /*
  * EditArea class
@@ -67,7 +67,11 @@ static void OnSaveButtonClicked(GtkButton *self, EditArea* parent){
 }
 
 static void OnLangButtonClicked(GtkButton *self, EditArea *parent){
-    langpanel::ChooseLanguage(parent);
+    OpenLangPanelForEditArea(parent);
+}
+
+static void OnDiagnButtonClicked(GtkButton *self, EditArea *parent){
+    OpenDiagnosticPanelForEditArea(parent);
 }
 
 static void OnLangChanged(TextArea *parent, Language* lang){
@@ -119,8 +123,8 @@ void EditArea::LoadGui(){
     m_saveBut = GTK_BUTTON(gtk_builder_get_object(builder, "save-btn"));
     // Misc panel(bottom)
     m_outlineBut = GTK_BUTTON(gtk_builder_get_object(builder, "outline-btn"));
-    m_errorBut = GTK_BUTTON(gtk_builder_get_object(builder, "error-btn"));
-    m_errorButLabel = GTK_LABEL(gtk_builder_get_object(builder, "error-btn-label"));
+    m_diagnBut = GTK_BUTTON(gtk_builder_get_object(builder, "diagn-btn"));
+    m_diagnButLabel = GTK_LABEL(gtk_builder_get_object(builder, "diagn-btn-label"));
     m_langBut = GTK_BUTTON(gtk_builder_get_object(builder, "lang-btn"));
     m_cursorPosBut = GTK_BUTTON(gtk_builder_get_object(builder, "cursor-pos-btn"));
 
@@ -154,7 +158,8 @@ void EditArea::ConnectSignals(){
     g_signal_connect_after(m_textViewBuffer, "changed", G_CALLBACK(OnTextChanged), this);
     g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
-    g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);//Choose language is done by TextTag.cpp
+    g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
+    g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
 
     this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
 }
@@ -190,13 +195,17 @@ void EditArea::ProcessDiagnostics(){
         std::to_string(severityList[2]) +
         "</span> <span color=\"greenyellow\">i" +
         std::to_string(severityList[3]) +
+        "</span> <span color=\"cyan\">h" +
+        std::to_string(severityList[4]) +
         "</span>";
-    gtk_label_set_markup(m_errorButLabel, s.c_str());
+    gtk_label_set_markup(m_diagnButLabel, s.c_str());
     m_mutex.unlock();
 }
 
 void EditArea::ClearDiagnostics(){
     //m_mutex.lock();
+    CloseDiagnosticPanel();
+
     for (Diagnostic* diagnostic : m_diagnosticsList){
         delete diagnostic;
     }
@@ -213,6 +222,10 @@ void EditArea::ClearDiagnostics(){
 
     m_mutex.unlock();// ProcessDiagnostics() will lock the mutex
     this->ProcessDiagnostics();
+}
+
+const std::unordered_set<Diagnostic*>& EditArea::GetDiagnosticsList(){
+    return m_diagnosticsList;
 }
 
 Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){

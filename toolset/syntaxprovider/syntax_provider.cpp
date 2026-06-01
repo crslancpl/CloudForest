@@ -1,7 +1,7 @@
 #include "syntax_provider.h"
 
 
-#include "datatypes/language.h"
+#include "datatypes/common.h"
 #include "src/gui/components/TextArea.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/editarea/EditArea.h"

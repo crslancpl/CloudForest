@@ -1,7 +1,7 @@
 #ifndef SYNTAX_PROVIDER_H_
 #define SYNTAX_PROVIDER_H_
 
-#include "datatypes/language.h"
+#include "datatypes/common.h"
 
 // Forward declaration
 class TextArea;

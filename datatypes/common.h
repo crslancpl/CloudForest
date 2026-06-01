@@ -1,6 +1,9 @@
 #ifndef COMMON_DATA_H_
 #define COMMON_DATA_H_
 
+#include <string>
+#include <unordered_set>
+
 /*
  * Zero based
  */
@@ -40,5 +43,23 @@ typedef struct Difference{
 } Difference;
 
 typedef void(*EventCallback)();// void (*)()
+
+
+/*
+ * Be careful. The "language" here is programming language.
+ */
+
+typedef struct Language {
+    std::string name;
+    std::string id;
+    std::unordered_set<std::string> fileExtensions;
+    std::string syntaxTemplateFile;
+} Language;
+
+typedef struct Extension {
+    const char* name;
+    const char* description;
+    bool enabled;
+} Extension;
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef SETTINGPANEL_H_
 #define SETTINGPANEL_H_
 
+#include "src/gui/components/CfContent.h"
+#include "src/gui/settingpanel/SettingPage.h"
 #include <gtk/gtk.h>
 #include <gtk/gtkdropdown.h>
 #include <gtk/gtkshortcut.h>
@@ -13,10 +15,11 @@ public:
     SettingPanel();
 
     void Show();
-    void SwitchPage();
+    void SwitchPage(const char* name);
     void AddTabButton(const char* name);
-    GtkWindow* GetWindowWidget();
+    void AddPage(const char* name, SettingPage* page);
 
+    GtkWindow* GetWindowWidget();
 
 private:
     GtkWindow *m_window;

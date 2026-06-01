@@ -35,6 +35,7 @@ public:
     void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
     void ProcessDiagnostics(); // read data from all diagnostics and show highlight
     void ClearDiagnostics(); // clear the diagnostics list
+    const std::unordered_set<Diagnostic*>& GetDiagnosticsList();
     Diagnostic* FindDiagnostic(GtkTextIter* itr);
     void LoadCursorPos();
     void LoadFile(FileData *file);
@@ -76,8 +77,8 @@ private:
     GtkGrid *m_baseGrid;
     GtkButton *m_locationBut;// showing path
     GtkButton *m_saveBut;
-    GtkButton *m_errorBut;
-    GtkLabel *m_errorButLabel;
+    GtkButton *m_diagnBut;
+    GtkLabel *m_diagnButLabel;
     GtkButton *m_outlineBut;// not working now
     GtkButton *m_langBut;
     GtkButton *m_cursorPosBut;// showing cursor's current line and offset

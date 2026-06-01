@@ -3,10 +3,12 @@ project(GUILIB)
 set(COMPONENTS
     components/TextArea.cpp
     components/CfContent.cpp
+    components/Flyout.cpp
 )
 
 set(EDITAREA
     editarea/LangPanel.cpp
+    editarea/DiagnosticPanel.cpp
     editarea/Popovers.cpp
     editarea/SearchReplaceDialog.cpp
     editarea/EditArea_if.cpp
@@ -38,6 +40,8 @@ set(MAINWINDOW
 set(SETTINGPANEL
     settingpanel/SettingPanel.cpp
     settingpanel/SettingPanel_if.cpp
+    settingpanel/SettingPage.cpp
+    settingpanel/ExtensionPage.cpp
 )
 
 set(STYLE

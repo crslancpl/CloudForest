@@ -44,10 +44,10 @@
                     </object>
                 </child>
                 <child>
-                    <object id="error-btn" class="GtkButton">
+                    <object id="diagn-btn" class="GtkButton">
                         <property name="name">error-btn</property>
                         <child>
-                            <object id="error-btn-label" class="GtkLabel">
+                            <object id="diagn-btn-label" class="GtkLabel">
                                 <property name="name">error-btn-label</property>
                             </object>
                         </child>

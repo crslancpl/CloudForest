@@ -15,7 +15,7 @@
 #include "src/gui/editarea/EditArea.h"
 #include "src/languages/LanguageManager_if.h"
 #include "datatypes/lsp.h"
-#include "datatypes/language.h"
+#include "datatypes/common.h"
 
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){

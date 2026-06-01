@@ -1,7 +1,6 @@
 #include "TextArea.h"
 
 #include "datatypes/common.h"
-#include "datatypes/language.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/style/Style.h"
 
@@ -44,7 +43,7 @@ TextArea::TextArea(){
     g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(TextChanged), this);
 
     g_object_ref(m_baseBox);
-    SetContentWidget(GTK_WIDGET(m_baseBox));
+    this->SetContentWidget(GTK_WIDGET(m_baseBox));
     CountLines();
 
     g_object_unref(builder);
@@ -69,7 +68,7 @@ void TextArea::SetEditable(bool editable){
 
 void TextArea::SetFirstLineNumber(int number){
     m_firstLineNumber = number;
-    CountLines();
+    this->CountLines();
 }
 
 const Language *TextArea::GetLanguage() const{

@@ -4,21 +4,29 @@
 
 The `LspClient` class is not finished yet. You also can create a Language Client from scratch.
 ## Createing files
-Extensions are stored in *data/extension*. Create a folder in *data/extension*. And create a entry file.
+Extensions are stored in *data/extension*. Create a folder in *data/extension*. Then create a *manifest.json* and a entry file.
 ```
 # in data/extension
 
 my-server
 |- my_server.py
+|- manifest.json
 ```
-Add the extension to *enabled.json* and define the entry file.
+Add the folder of your extension to enabled *data/setting/extension-list.json*.
 ```json
 /* data/extension/enabled.json */
 {
-  "my-server":{
-    "entry": "data/extension/my-server/my_server.py"
-  }
+  "enabled" : ["my-server"]
 }
+```
+Write the information in *manifest.json*
+```json
+{
+  "name": "My Language Server",
+  "entry-file": "entry.py",
+  "description": "Language server for my language"
+}
+
 ```
 
 ## Import modules

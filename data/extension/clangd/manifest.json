@@ -1,0 +1,5 @@
+{
+  "name": "Clangd Language Server",
+  "entry-file": "entry.py",
+  "description": "Language server for C and C++"
+}

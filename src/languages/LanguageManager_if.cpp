@@ -1,6 +1,6 @@
 #include "LanguageManager_if.h"
 
-#include "datatypes/language.h"
+#include "datatypes/common.h"
 #include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
@@ -62,6 +62,10 @@ Language* langmanager::FindFileLanguage(const char* filename){
 
     auto result = extension_map.find(file_ext_pair[1]);
     return result != language_list.end() ? result->second : &unknow_lang;
+}
+
+const std::unordered_map<std::string, Language*>& langmanager::GetLanguageList(){
+    return language_list;
 }
 
 void langmanager::ListenEvent(Event event, void (*callback)()){

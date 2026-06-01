@@ -1,7 +1,7 @@
 .setting-panel {
     border-radius: 15px;
     padding: 5px;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgb(0, 0, 0);
 }
 
 .setting-tab-button-box button {
@@ -24,6 +24,16 @@
 
 .setting-page {
     margin: 15px 5px;
+}
+
+.setting-page .header1 {
+    font-size: 30px;
+    border-bottom: 2px solid white;
+}
+
+.setting-page .header2 {
+    font-size: 20px;
+    border-bottom: 2px solid white;
 }
 
 .setting-page spinbutton {

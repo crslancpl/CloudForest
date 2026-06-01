@@ -1,58 +1,68 @@
 #include "LangPanel.h"
 
 #include "datatypes/common.h"
-#include "datatypes/language.h"
 #include "EditArea.h"
 #include "src/gui/Gui_if.h"
+#include "src/gui/components/Flyout.h"
 #include "src/gui/windows/MainWindow.h"
 #include "src/languages/LanguageManager_if.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
-#include <vector>
 
-static GtkWindow *lang_choosing_window = nullptr;
-static EditArea *editarea_to_chonge_lang;
-static std::vector<GtkButton*> lang_buttons;
-static GtkBox* lang_but_box;
-static GtkEventController *focus_event_ctrl;
+static LangPanel* lang_panel = nullptr;
 
-static void LangChoosen(GtkButton* self, void* data){
-    editarea_to_chonge_lang->SetLanguage((Language*)data);
+/*
+ * Callbacks
+ */
+static void OnLangChoosen(GtkButton* self, Language* lang){
+    lang_panel->LangChoosen(lang);
 }
 
-static void FocusLost(GtkEventControllerFocus* self, void* data){
-    gtk_widget_set_visible(GTK_WIDGET(lang_choosing_window), false);
+static void OnFocusLost(GtkEventControllerFocus* self, void* data){
+    lang_panel->Hide();
 }
 
-static void CreateButton(Language* lang){
-    GtkButton *newlangbut = GTK_BUTTON(gtk_button_new_with_label(lang->name.c_str()));
-    lang_buttons.push_back(newlangbut);
-    gtk_box_append(lang_but_box, GTK_WIDGET(newlangbut));
-    gtk_widget_add_css_class(GTK_WIDGET(newlangbut), "normal-button");
-    g_signal_connect(newlangbut, "clicked", G_CALLBACK(LangChoosen), lang);
-}
 
-void langpanel::Construct(){
+LangPanel::LangPanel() : Flyout(gui::g_mainwindow->GetGtkWindow()){
     /*
      * Create the language choosing window and set it as
      * the flyout of g_mainwindow's GtkWindow.
      */
-    lang_choosing_window = GTK_WINDOW(gtk_window_new());
-    focus_event_ctrl = gtk_event_controller_focus_new();
-    gtk_window_set_transient_for(lang_choosing_window, gui::g_mainwindow->GetGtkWindow());
-    gtk_window_set_decorated(lang_choosing_window, false);
-    gtk_window_set_default_size(lang_choosing_window, 200, 100);
-    g_signal_connect(focus_event_ctrl, "leave", G_CALLBACK(FocusLost), nullptr);
-    gtk_widget_add_controller(GTK_WIDGET(lang_choosing_window), focus_event_ctrl);
+    this->SetSize(200, 100);
+    m_langBtnBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
 
-    lang_but_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
-    gtk_window_set_child(lang_choosing_window, GTK_WIDGET(lang_but_box));
+    this->SetChild(GTK_WIDGET(m_langBtnBox));
 
-    langmanager::ListenEvent(langmanager::LANG_MANAGER_NEW_LANG, (EventCallback)CreateButton);
+    auto langlist = langmanager::GetLanguageList();
+
+    for(auto itr : langlist){
+        this->AddLanguage(itr.second);
+    }
 }
 
-void langpanel::ChooseLanguage(EditArea *editarea){
-    editarea_to_chonge_lang = editarea;
-    gtk_widget_set_visible(GTK_WIDGET(lang_choosing_window), true);
+
+
+void LangPanel::AddLanguage(Language* lang){
+    GtkButton *newlangbut = GTK_BUTTON(gtk_button_new_with_label(lang->name.c_str()));
+    m_langBtns.push_back(newlangbut);
+    gtk_box_append(m_langBtnBox, GTK_WIDGET(newlangbut));
+    gtk_widget_add_css_class(GTK_WIDGET(newlangbut), "normal-button");
+    g_signal_connect(newlangbut, "clicked", G_CALLBACK(OnLangChoosen), lang);
+}
+
+void LangPanel::ChooseFor(EditArea* target){
+    m_target = target;
+    this->Show();
+}
+
+void LangPanel::LangChoosen(Language* lang){
+    m_target->SetLanguage(lang);
+}
+
+void OpenLangPanelForEditArea(EditArea *target){
+    if (!lang_panel) {
+        lang_panel = new LangPanel();
+    }
+    lang_panel->ChooseFor(target);
 }

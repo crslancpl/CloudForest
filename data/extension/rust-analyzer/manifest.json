@@ -1,0 +1,5 @@
+{
+  "name": "Rust Analyzer Language Server",
+  "entry-file": "entry.py",
+  "description": "Language server for Rust"
+}

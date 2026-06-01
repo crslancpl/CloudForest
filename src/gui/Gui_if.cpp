@@ -25,7 +25,6 @@ void gui::Init(){
 
     mainwindow::Construct();
     filepanel::Construct();
-    langpanel::Construct();
     settingpanel::Construct();
 }
 
