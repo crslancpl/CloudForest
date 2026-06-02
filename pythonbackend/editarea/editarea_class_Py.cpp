@@ -179,7 +179,11 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
 }
 
 static PyObject* py_EditArea_process_diagnostics(py_EditArea* self, PyObject *args){
-    self->editarea->ProcessDiagnostics();
+    int version;
+    if(!PyArg_ParseTuple(args, "i", &version)){
+        Py_RETURN_NAN;
+    }
+    self->editarea->ProcessDiagnostics(version);
     Py_RETURN_NONE;
 }
 

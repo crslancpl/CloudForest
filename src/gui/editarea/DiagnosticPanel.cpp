@@ -6,7 +6,6 @@
 #include "src/gui/Gui_if.h"
 #include "src/gui/windows/MainWindow.h"
 
-#include <cstdio>
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <unordered_set>

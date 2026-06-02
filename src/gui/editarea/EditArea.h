@@ -33,7 +33,7 @@ public:
 
 
     void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
-    void ProcessDiagnostics(); // read data from all diagnostics and show highlight
+    void ProcessDiagnostics(int version); // read data from all diagnostics and show highlight
     void ClearDiagnostics(); // clear the diagnostics list
     const std::unordered_set<Diagnostic*>& GetDiagnosticsList();
     Diagnostic* FindDiagnostic(GtkTextIter* itr);

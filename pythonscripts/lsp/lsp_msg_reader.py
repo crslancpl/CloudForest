@@ -81,4 +81,4 @@ def read_as_publish_diagnostics(params: dict, version_dict: dict) -> None:
             diagnostic.get("severity"),
         )
 
-    ea.process_diagnostics()
+    ea.process_diagnostics(version)

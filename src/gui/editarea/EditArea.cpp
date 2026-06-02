@@ -17,6 +17,7 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -170,8 +171,16 @@ void EditArea::AddDiagnostic(Diagnostic* diagnostic){
     m_mutex.unlock();
 }
 
-void EditArea::ProcessDiagnostics(){
+void EditArea::ProcessDiagnostics(int version){
     m_mutex.lock();
+    if(version == -1){
+        //reset
+    }else if (version != m_fileVersion) {
+        // printf("> file version not the same\n");
+        m_mutex.unlock();
+        return;
+    }
+
     char severityList[5] = {-1, 0, 0, 0, 0};
     // [0      , 1    , 2      , 3          , 4   ]
     // [Unknown, Error, Warning, Information, Hint]
@@ -203,7 +212,7 @@ void EditArea::ProcessDiagnostics(){
 }
 
 void EditArea::ClearDiagnostics(){
-    //m_mutex.lock();
+    m_mutex.lock();
     CloseDiagnosticPanel();
 
     for (Diagnostic* diagnostic : m_diagnosticsList){
@@ -221,7 +230,7 @@ void EditArea::ClearDiagnostics(){
     }
 
     m_mutex.unlock();// ProcessDiagnostics() will lock the mutex
-    this->ProcessDiagnostics();
+    this->ProcessDiagnostics(-1);
 }
 
 const std::unordered_set<Diagnostic*>& EditArea::GetDiagnosticsList(){

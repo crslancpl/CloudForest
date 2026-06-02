@@ -1,7 +1,6 @@
 #include "TextArea.h"
 
 #include "datatypes/common.h"
-#include "src/gui/editarea/EditArea.h"
 #include "src/gui/style/Style.h"
 
 #include <cstdio>
@@ -92,9 +91,17 @@ void TextArea::ClearHighlight(){
 
 void TextArea::ApplyTagByRange(ZRange *range, const char *tagname){
     gtk_text_iter_set_line(&m_startItr, range->start.line);
-    gtk_text_iter_set_line_offset(&m_startItr, range->start.column);
     gtk_text_iter_set_line(&m_endItr, range->end.line);
+
+    int startlinemaxchar = gtk_text_iter_get_chars_in_line(&m_startItr);
+    int endlinemaxchar = gtk_text_iter_get_chars_in_line(&m_endItr);
+    if(range->start.column > startlinemaxchar || range->end.column > endlinemaxchar){
+        return;
+    }
+
+    gtk_text_iter_set_line_offset(&m_startItr, range->start.column);
     gtk_text_iter_set_line_offset(&m_endItr, range->end.column);
+
     gtk_text_buffer_apply_tag_by_name(m_textViewBuffer, tagname, &m_startItr, &m_endItr);
 }
 

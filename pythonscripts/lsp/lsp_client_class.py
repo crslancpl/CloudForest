@@ -24,7 +24,11 @@ class LspClient:
     file_version_dict: Dict[str, int] = {}
 
     def __init__(
-        self, lspcommand: str, language: str, languageId: str, read_stderr: bool
+        self,
+        lspcommand: list[str],
+        language: str,
+        languageId: str,
+        read_stderr: bool,
     ):
         self.LSP = subprocess.Popen(
             lspcommand,
@@ -198,10 +202,10 @@ class LspClient:
 
 
 def create_lsp_client(
-    lspcommand: str, language: str, languageId: str, read_stderr: bool
+    lspcommand: list[str], language: str, languageId: str, read_stderr: bool
 ) -> LspClient | None:
-    if not shutil.which(lspcommand):
+    if not shutil.which(lspcommand[0]):
         # executable or file not found
-        print(f'lsp_client_class: Language server "{lspcommand}" not found.')
+        print(f'lsp_client_class: Language server "{lspcommand[0]}" not found.')
         return None
     return LspClient(lspcommand, language, languageId, read_stderr)
