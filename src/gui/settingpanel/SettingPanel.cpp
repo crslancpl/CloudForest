@@ -11,7 +11,7 @@
 #include <gtk/gtkshortcut.h>
 
 static void OnCloseClicked(GtkButton *self, SettingPanel* parent){
-    gtk_widget_set_visible(GTK_WIDGET(gui::g_settingpanel->GetWindowWidget()), false);
+    gtk_widget_set_visible(GTK_WIDGET(gui::GetSettingPanel()->GetGtkWindow()), false);
 }
 
 static void OnSwitcherClicked(GtkButton *self, SettingPanel* parent){
@@ -37,7 +37,7 @@ SettingPanel::SettingPanel(){
     m_baseLayout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);
     gtk_window_set_child(m_window, GTK_WIDGET(m_baseLayout->GetBaseWidget()));
     gtk_window_set_decorated(m_window, false);
-    gtk_window_set_transient_for(m_window, gui::g_mainwindow->GetGtkWindow());
+    gtk_window_set_transient_for(m_window, gui::GetMainWindow()->GetGtkWindow());
 
     this->BindTabButtons(builder);
 
@@ -62,7 +62,7 @@ SettingPanel::SettingPanel(){
     g_object_unref(builder);
 }
 
-GtkWindow* SettingPanel::GetWindowWidget(){
+GtkWindow* SettingPanel::GetGtkWindow(){
     return m_window;
 }
 
@@ -72,7 +72,7 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    GtkWidget *mainwindow = GTK_WIDGET(gui::g_mainwindow->GetGtkWindow());
+    GtkWidget *mainwindow = GTK_WIDGET(gui::GetMainWindow()->GetGtkWindow());
     int w = gtk_widget_get_width(mainwindow)/1.5;
     int h = gtk_widget_get_height(mainwindow)/1.5;
 

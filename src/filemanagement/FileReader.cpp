@@ -9,7 +9,10 @@
  * To reduce resource usage, file tree would not read its chile/descendant automatically.
  * Use ExpandFileBranch() to read the child of a branch.
  */
-FileBranch* filemanagement::CreateFileTree(FileData* rootfolderdata){
+
+namespace filemanagement {
+
+FileBranch* CreateFileTree(FileData* rootfolderdata){
     if(rootfolderdata->type != G_FILE_TYPE_DIRECTORY){
         return nullptr;
     }
@@ -21,7 +24,7 @@ FileBranch* filemanagement::CreateFileTree(FileData* rootfolderdata){
     return fb;
 }
 
-void filemanagement::ExpandFileBranch(FileBranch *branch){
+void ExpandFileBranch(FileBranch *branch){
     if(!branch->childBranch.empty()){
         // already expanded
         return;
@@ -46,7 +49,7 @@ void filemanagement::ExpandFileBranch(FileBranch *branch){
 }
 
 
-FileData* filemanagement::LoadFileData(GFile *file, GFileInfo* info){
+FileData* LoadFileData(GFile *file, GFileInfo* info){
     FileData *newfile = new FileData();
     newfile->isVirtual = false;
     newfile->file = file;
@@ -68,6 +71,8 @@ FileData* filemanagement::LoadFileData(GFile *file, GFileInfo* info){
     return newfile;
 }
 
-void filemanagement::ReadFileText(FileData *file, char **output){
+void ReadFileText(FileData *file, char **output){
     g_file_load_contents(file->file, nullptr, output, nullptr, nullptr, nullptr);
 }
+
+}// namespace filemanagment

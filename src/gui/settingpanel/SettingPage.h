@@ -8,6 +8,7 @@
 class SettingPage : public CfContent{
 public:
     SettingPage();
+    ~SettingPage();
 
     GtkLabel* AddHeader1(const char* text);
     GtkLabel* AddHeader2(const char* text);

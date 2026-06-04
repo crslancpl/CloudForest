@@ -34,10 +34,10 @@ public:
     void NewWorkspace(Workspace* ws);
 
 private:
-    GtkBox *m_workspaceArea;
-    std::unordered_set<WorkspaceBox*> m_workspaceList;
     void AddWorkspace(Workspace* ws);
 
+    GtkBox *m_workspaceArea;
+    std::unordered_set<WorkspaceBox*> m_workspaceList;
 };
 
 

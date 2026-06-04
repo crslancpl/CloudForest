@@ -67,14 +67,9 @@ void FileOperationInit(){
     file_dialog = gtk_file_dialog_new();
 }
 
-/*
-void filemanagement::CreateFile(GFile* file){
-    gtk_file_dialog_set_title(file_dialog, "Save file");
-    gtk_file_dialog_save(file_dialog, gui::g_mainwindow->m_window, nullptr, FileSaved, nullptr);
-}
-*/
+namespace filemanagement{
 
-FileData* filemanagement::CreateVirtualFile(){
+FileData* CreateVirtualFile(){
     FileData* data = new FileData();
     data->fileName = strdup("untitled");
     data->absoPath = strdup(("virtual/" + tools::GenerateId()).c_str());
@@ -85,12 +80,12 @@ FileData* filemanagement::CreateVirtualFile(){
 }
 
 
-void filemanagement::SaveFile(FileData* filedata, char *content, void (*savedcallback)(FileData*)){
+void SaveFile(FileData* filedata, char *content, void (*savedcallback)(FileData*)){
     if(filedata->isVirtual){
         file_content = content;
         file_saved_callback = savedcallback;
         gtk_file_dialog_set_title(file_dialog, "Save file");
-        gtk_file_dialog_save(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FileSaved, nullptr);
+        gtk_file_dialog_save(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, FileSaved, nullptr);
         return;
     }
 
@@ -100,7 +95,7 @@ void filemanagement::SaveFile(FileData* filedata, char *content, void (*savedcal
         strlen(content),
         nullptr,
         false,
-        GFileCreateFlags::G_FILE_CREATE_REPLACE_DESTINATION,
+        G_FILE_CREATE_REPLACE_DESTINATION,
         nullptr,
         nullptr,
         nullptr);
@@ -110,17 +105,17 @@ void filemanagement::SaveFile(FileData* filedata, char *content, void (*savedcal
     }
 }
 
-void filemanagement::ChooseFile(){
+void ChooseFile(){
     gtk_file_dialog_set_title(file_dialog, "choose a file");
-    gtk_file_dialog_open(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FileSelected, nullptr);
+    gtk_file_dialog_open(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, FileSelected, nullptr);
 }
 
-void filemanagement::ChooseFolder(){
+void ChooseFolder(){
     gtk_file_dialog_set_title(file_dialog, "Choose a folder");
-    gtk_file_dialog_select_folder(file_dialog, gui::g_mainwindow->GetGtkWindow(), nullptr, FolderSelected, nullptr);
+    gtk_file_dialog_select_folder(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, FolderSelected, nullptr);
 }
 
-void filemanagement::NewWorkspace(FileData* rootfolderdata){
+void NewWorkspace(FileData* rootfolderdata){
     if(rootfolderdata->type != G_FILE_TYPE_DIRECTORY) return;
     Workspace* ws = new Workspace();
     ws->name = rootfolderdata->fileName;
@@ -130,11 +125,11 @@ void filemanagement::NewWorkspace(FileData* rootfolderdata){
     InvokeNewWorkspace(ws);
 }
 
-const std::unordered_set<Workspace*> &filemanagement::GetWorkspaceList(){
+const std::unordered_set<Workspace*> &GetWorkspaceList(){
     return workspace_list;
 }
 
-Workspace* filemanagement::FindWorkspace(FileData *filedata){
+Workspace* FindWorkspace(FileData *filedata){
     for(Workspace* ws : workspace_list){
         if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
             return ws;
@@ -144,7 +139,7 @@ Workspace* filemanagement::FindWorkspace(FileData *filedata){
     return nullptr;
 }
 
-Workspace* filemanagement::FindWorkspaceFromPath(const char* path){
+Workspace* FindWorkspaceFromPath(const char* path){
     for(Workspace* ws : workspace_list){
         if(tools::StartWith(path, ws->rootFolderData->absoPath)){
             return ws;
@@ -154,15 +149,18 @@ Workspace* filemanagement::FindWorkspaceFromPath(const char* path){
     return nullptr;
 }
 
-void filemanagement::OpenFile(FileData *filedata){
+void OpenFile(FileData *filedata){
     for(Workspace* ws : workspace_list){
         if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
-
+            //
+            //
         }
     }
     editarea::OpenFile(filedata);
 }
 
-void filemanagement::CloseFile(FileData *filedata){
+void CloseFile(FileData *filedata){
     editarea::CloseFile(filedata);
 }
+
+}// namespace filemanager

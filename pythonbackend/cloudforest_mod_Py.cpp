@@ -3,7 +3,6 @@
 #include "python_tool.h"
 #include "language_mod_Py.h"
 #include "editarea/editarea_mod_Py.h"
-#include "settingpanel/setting_panel_mod_Py.h"
 #include "src/filemanagement/FileCallback.h"
 #include "src/filemanagement/FileOperation.h"
 #include "datatypes/file.h"
@@ -108,7 +107,6 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     cloudforest_module_app_closed_callbacks = PyList_New(0);
     cloudforest_module_new_workspace_callbacks = PyList_New(0);
     PyModule_AddObject(cfmodule, "editarea", (PyObject*)PyInit_editarea_module());
-    PyModule_AddObject(cfmodule, "setting_panel", (PyObject*)PyInit_setting_panel_module());
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
 
     filemanagement::ListenEvent(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);

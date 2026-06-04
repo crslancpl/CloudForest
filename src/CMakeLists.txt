@@ -1,7 +1,7 @@
 add_subdirectory(filemanagement)
 add_subdirectory(languages)
 add_subdirectory(gui)
-add_executable(${CMAKE_PROJECT_NAME} Entry.cpp Global.cpp )
+add_executable(${CMAKE_PROJECT_NAME} Entry.cpp Session.cpp)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CLOUDFOREST_ROOT_DIR})
 

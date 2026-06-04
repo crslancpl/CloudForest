@@ -17,7 +17,6 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
-#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>

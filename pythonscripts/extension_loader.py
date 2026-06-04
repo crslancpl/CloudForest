@@ -8,8 +8,6 @@ import json
 import os
 import sys
 
-from cloudforest import setting_panel
-
 EXTENSION_DIR = "data/extension"  # os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, EXTENSION_DIR)
 

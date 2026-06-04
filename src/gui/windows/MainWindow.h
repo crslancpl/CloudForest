@@ -10,12 +10,15 @@ class CfLayout;
 class MainWindow{
 public:
     MainWindow();
+    ~MainWindow();
+
     void Show();
-    void SetHeaderBar(HeaderBar *headerbar);
     void Insert(CfContent *content);
     GtkWindow* GetGtkWindow();
 
 private:
+    HeaderBar *m_headderBar;
+
     GtkWindow *m_window;
     CfLayout *m_layout;
 };

@@ -24,7 +24,7 @@ static void OnFocusLost(GtkEventControllerFocus* self, void* data){
 }
 
 
-LangPanel::LangPanel() : Flyout(gui::g_mainwindow->GetGtkWindow()){
+LangPanel::LangPanel() : Flyout(gui::GetMainWindow()->GetGtkWindow()){
     /*
      * Create the language choosing window and set it as
      * the flyout of g_mainwindow's GtkWindow.

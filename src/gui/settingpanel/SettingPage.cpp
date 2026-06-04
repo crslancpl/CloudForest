@@ -17,6 +17,11 @@ SettingPage::SettingPage(){
     this->SetVerticalExpand(true);
 }
 
+
+SettingPage::~SettingPage(){
+    //
+}
+
 GtkLabel* SettingPage::AddHeader1(const char* text){
     GtkLabel* header1 = CreateLabel(text);
     gtk_widget_add_css_class(GTK_WIDGET(header1), "header1");

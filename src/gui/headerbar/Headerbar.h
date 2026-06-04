@@ -12,14 +12,9 @@ public:
 private:
     GtkHeaderBar *m_headerBarWidget;
     GtkMenuButton *m_fileBut;
-    // Other buttons are not funtioning yet
     GtkButton *m_compileBut;
     GtkButton *m_ideBut;
     GtkSearchEntry *m_searchBar;
 };
-
-namespace headerbar {
-    void Construct();
-}
 
 #endif

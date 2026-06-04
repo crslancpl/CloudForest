@@ -4,7 +4,7 @@
 #include <gio/gmenumodel.h>
 #include <gtk/gtkshortcut.h>
 
-#include "src/Global.h"
+#include "src/Session.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "src/gui/Gui_if.h"
@@ -21,7 +21,7 @@ static void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpoint
 }
 
 static void IdeButtonClicked(GtkButton *self, void* userdata){
-    gui::g_settingpanel->Show();
+    gui::GetSettingPanel()->Show();
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
@@ -59,15 +59,9 @@ HeaderBar::HeaderBar(){
     m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "app-btn"));
 
     g_signal_connect(m_ideBut, "clicked",G_CALLBACK(IdeButtonClicked), nullptr);
-    g_action_map_add_action_entries (G_ACTION_MAP (global::g_gtkApplication), app_entries, G_N_ELEMENTS (app_entries), global::g_gtkApplication);
+    g_action_map_add_action_entries (G_ACTION_MAP (session::GetApplication()), app_entries, G_N_ELEMENTS (app_entries), session::GetApplication());
 }
 
 GtkWidget *HeaderBar::GetBaseWidget(){
     return GTK_WIDGET(m_headerBarWidget);
-}
-
-void headerbar::Construct(){
-    if(!gui::g_headerbar){
-        gui::g_headerbar = new HeaderBar();
-    }
 }

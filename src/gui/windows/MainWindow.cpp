@@ -9,27 +9,27 @@
 
 #include "../layouts/layout/CfLayout.h"
 #include "../headerbar/Headerbar.h"
-
-#include "src/Global.h"
+#include "src/Session.h"
+#include "src/gui/Gui_if.h"
 
 MainWindow::MainWindow(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/MainWindow.ui");
     m_window = GTK_WINDOW(gtk_builder_get_object(builder, "main-window"));
+
+    m_headderBar = new HeaderBar();
+    gtk_window_set_titlebar(m_window, m_headderBar->GetBaseWidget());
+
     m_layout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);
     gtk_window_set_child(m_window, GTK_WIDGET(m_layout->GetBaseWidget()));
 
     gtk_window_set_default_size(m_window, 1000, 600);
     gtk_window_set_hide_on_close(m_window, false);
 
-    if(global::g_gtkApplication == nullptr){
-        g_print("null gtkapp\n");
-    }
-
-    gtk_application_add_window(global::g_gtkApplication, m_window);
+    gtk_application_add_window(session::GetApplication(), m_window);
 }
 
-void MainWindow::SetHeaderBar(HeaderBar *headerbar){
-    gtk_window_set_titlebar(m_window, headerbar->GetBaseWidget());
+MainWindow::~MainWindow(){
+    //
 }
 
 void MainWindow::Show(){

@@ -16,7 +16,6 @@ set(EDITAREA
 )
 
 set(FILEPANEL
-    filepanel/FilePanel_if.cpp
     filepanel/FilePanel.cpp
     filepanel/FilePanelButtons.cpp
 )
@@ -32,14 +31,12 @@ set(LAYOUTS
     layouts/tab/CfTabSwitcher.cpp
 )
 
-set(MAINWINDOW
+set(WINDOWS
     windows/MainWindow.cpp
-    windows/MainWindow_if.cpp
 )
 
 set(SETTINGPANEL
     settingpanel/SettingPanel.cpp
-    settingpanel/SettingPanel_if.cpp
     settingpanel/SettingPage.cpp
     settingpanel/ExtensionPage.cpp
 )
@@ -54,7 +51,7 @@ add_library(${PROJECT_NAME} STATIC
     ${FILEPANEL}
     ${HEADERBAR}
     ${LAYOUTS}
-    ${MAINWINDOW}
+    ${WINDOWS}
     ${SETTINGPANEL}
     ${STYLE}
 

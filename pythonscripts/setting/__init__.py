@@ -1,1 +1,0 @@
-from .settingpanel import initialize_setting_panel

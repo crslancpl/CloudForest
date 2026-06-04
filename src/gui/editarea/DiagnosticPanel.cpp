@@ -12,7 +12,7 @@
 
 static DiagnosticPanel* diag_panel = nullptr;
 
-DiagnosticPanel::DiagnosticPanel() : Flyout(gui::g_mainwindow->GetGtkWindow()){
+DiagnosticPanel::DiagnosticPanel() : Flyout(gui::GetMainWindow()->GetGtkWindow()){
     this->SetSize(200, 100);
     m_diagnBtnBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
     this->SetChild(GTK_WIDGET(m_diagnBtnBox));
