@@ -153,10 +153,9 @@ void OpenFile(FileData *filedata){
     for(Workspace* ws : workspace_list){
         if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
             //
-            //
         }
     }
-    editarea::OpenFile(filedata);
+    editarea::EditFile(filedata);
 }
 
 void CloseFile(FileData *filedata){

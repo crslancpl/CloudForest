@@ -2,6 +2,7 @@
 
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
+#include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 
 #include "src/Session.h"
@@ -25,7 +26,7 @@ static void IdeButtonClicked(GtkButton *self, void* userdata){
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
-    editarea::CreateEmptyFile();
+    editarea::EditNewFile();
 }
 
 static void SearchClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
@@ -51,7 +52,7 @@ static GActionEntry app_entries[] =
 };
 
 
-HeaderBar::HeaderBar(){
+HeaderBar::HeaderBar(GtkApplication* app){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/HeaderBar.ui");
 
     m_headerBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "headerbar"));
@@ -59,7 +60,7 @@ HeaderBar::HeaderBar(){
     m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "app-btn"));
 
     g_signal_connect(m_ideBut, "clicked",G_CALLBACK(IdeButtonClicked), nullptr);
-    g_action_map_add_action_entries (G_ACTION_MAP (session::GetApplication()), app_entries, G_N_ELEMENTS (app_entries), session::GetApplication());
+    g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
 }
 
 GtkWidget *HeaderBar::GetBaseWidget(){

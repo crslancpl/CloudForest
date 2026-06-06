@@ -90,7 +90,7 @@ EditArea::EditArea(FileData* file){
     /* Load gui */
     this->LoadGui();
     this->LoadFile(file);
-    m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);
+    m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);// freed on EditArea deleted
 
     /* Initialize variables */
     m_cursorIndex = 0;
@@ -108,6 +108,7 @@ EditArea::EditArea(FileData* file){
 }
 
 EditArea::~EditArea(){
+    this->ClearDiagnostics();
     delete m_diagnosticPopover;
 }
 
@@ -215,8 +216,11 @@ void EditArea::ClearDiagnostics(){
     CloseDiagnosticPanel();
 
     for (Diagnostic* diagnostic : m_diagnosticsList){
+        delete [] diagnostic->message;
+        delete [] diagnostic->code;
         delete diagnostic;
     }
+
     m_currentDiagnosticRange.start.line = 0;
     m_currentDiagnosticRange.start.column = 0;
     m_currentDiagnosticRange.end.line = 0;

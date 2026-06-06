@@ -7,7 +7,7 @@ class ExtensionPage : public SettingPage {
 public:
     ExtensionPage();
 
-    void AddEnabledExtension();
+    void ShowExtensions();
 private:
     GtkBox* m_enabledExtensonBox;
     GtkBox* m_disabledExtensonBox;

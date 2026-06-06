@@ -4,7 +4,6 @@
 #include "datatypes/common.h"
 
 #include <gtk/gtk.h>
-#include <string>
 
 //forward declaration
 class EditArea;
@@ -12,11 +11,11 @@ typedef struct FileData FileData ;
 
 
 namespace editarea {
-void OpenFile(FileData* file);//pass nullptr to create empty file
-void CreateEmptyFile();
-void OpenFileWithAbsoPath(const std::string &absoPath);
+void EditFile(FileData* file);//pass nullptr to create empty file
+void EditNewFile();
+
 void CloseFile(FileData* file);
-void SaveFile(FileData* file);
+
 EditArea* GetFocusedEditArea();
 void SetFocusedEditArea(EditArea* editarea);
 void InsertToEditAreaList(EditArea* ea);

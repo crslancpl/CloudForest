@@ -2,23 +2,25 @@
 
 #include "src/gui/layouts/layout/CfLayout.h"
 #include "src/gui/components/CfContent.h"
-#include "src/gui/Gui_if.h"
 #include "src/gui/settingpanel/ExtensionPage.h"
 #include "src/gui/settingpanel/SettingPage.h"
 #include "src/gui/windows/MainWindow.h"
+#include "src/gui/windows/Window.h"
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 
 static void OnCloseClicked(GtkButton *self, SettingPanel* parent){
-    gtk_widget_set_visible(GTK_WIDGET(gui::GetSettingPanel()->GetGtkWindow()), false);
+    parent->Hide();
 }
 
 static void OnSwitcherClicked(GtkButton *self, SettingPanel* parent){
     parent->SwitchPage(gtk_button_get_label(self));
 }
 
-SettingPanel::SettingPanel(){
+SettingPanel::SettingPanel(MainWindow* parentwindow): Window(false)
+    ,m_parentWindow(parentwindow)
+    {
     /*
      * The ui is constructed from UI/SettingPanel.ui
      *
@@ -33,11 +35,11 @@ SettingPanel::SettingPanel(){
 
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
 
-    m_window = GTK_WINDOW(gtk_builder_get_object(builder, "SettingWindow"));
-    m_baseLayout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);
+    m_window = GTK_WINDOW(gtk_builder_get_object(builder, "setting-window"));
+    m_baseLayout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);// freed on app closed
     gtk_window_set_child(m_window, GTK_WIDGET(m_baseLayout->GetBaseWidget()));
     gtk_window_set_decorated(m_window, false);
-    gtk_window_set_transient_for(m_window, gui::GetMainWindow()->GetGtkWindow());
+    gtk_window_set_transient_for(m_window, m_parentWindow->GetGtkWindow());
 
     this->BindTabButtons(builder);
 
@@ -47,7 +49,7 @@ SettingPanel::SettingPanel(){
 
     m_stack = GTK_STACK(gtk_stack_new());
     gtk_widget_set_hexpand(GTK_WIDGET(m_stack), true);
-    gtk_widget_add_css_class(GTK_WIDGET(m_stack), "SettingPage");
+    gtk_widget_add_css_class(GTK_WIDGET(m_stack), "setting-page");
 
 
     auto stack = cfcontent::PackAsCfContent(GTK_WIDGET(m_stack));
@@ -56,14 +58,10 @@ SettingPanel::SettingPanel(){
 
     m_baseLayout->InsertChild(stack);
 
-    this->AddPage("Settings", new SettingPage());
-    this->AddPage("Extension", new ExtensionPage());
+    this->AddPage("Settings", new SettingPage());//freed on app closed
+    this->AddPage("Extension", new ExtensionPage());//freed on app closed
 
     g_object_unref(builder);
-}
-
-GtkWindow* SettingPanel::GetGtkWindow(){
-    return m_window;
 }
 
 void SettingPanel::Show(){
@@ -72,7 +70,7 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    GtkWidget *mainwindow = GTK_WIDGET(gui::GetMainWindow()->GetGtkWindow());
+    GtkWidget *mainwindow = GTK_WIDGET(m_parentWindow->GetGtkWindow());
     int w = gtk_widget_get_width(mainwindow)/1.5;
     int h = gtk_widget_get_height(mainwindow)/1.5;
 
@@ -101,15 +99,15 @@ void SettingPanel::BindTabButtons(GtkBuilder* builder){
     /*
      * The left hand side of the setting panel
      */
-    m_tabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "TabButtonBox"));
+    m_tabButtonBox = GTK_BOX(gtk_builder_get_object(builder, "tab-btn-box"));
 
     gtk_widget_set_hexpand(GTK_WIDGET(m_tabButtonBox), false);
 
-    m_closeButton = GTK_BUTTON(gtk_builder_get_object(builder,"CloseButton"));
+    m_closeButton = GTK_BUTTON(gtk_builder_get_object(builder,"close-btn"));
 
     gtk_widget_add_css_class(GTK_WIDGET(m_window), "setting-panel");
     gtk_widget_add_css_class(GTK_WIDGET(m_tabButtonBox), "setting-tab-button-box");
     gtk_widget_add_css_class(GTK_WIDGET(m_closeButton), "close-button");
 
-    g_signal_connect(m_closeButton, "clicked", G_CALLBACK(OnCloseClicked), nullptr);
+    g_signal_connect(m_closeButton, "clicked", G_CALLBACK(OnCloseClicked), this);
 }

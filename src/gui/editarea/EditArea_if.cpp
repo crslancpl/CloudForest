@@ -25,16 +25,18 @@ static std::unordered_set<EditAreaLangChangedCallback> lang_changed_callbacks;
 
 static EditArea* focused_editarea;
 
-void editarea::SetFocusedEditArea(EditArea* editarea){
+namespace editarea {
+
+void SetFocusedEditArea(EditArea* editarea){
     focused_editarea = editarea;
     for(auto callback : focused_changed_callbacks){
         callback(focused_editarea);
     }
 }
 
-void editarea::CreateEmptyFile(){
-    auto neweditarea = new EditArea(filemanagement::CreateVirtualFile());
-    editarea::SetFocusedEditArea(neweditarea);
+void EditNewFile(){
+    auto neweditarea = new EditArea(filemanagement::CreateVirtualFile());//freed on EditArea closed(Editarea.Destroy())
+    SetFocusedEditArea(neweditarea);
 
     for(auto cb : editarea_created_callbacks){
         cb(neweditarea);
@@ -43,7 +45,7 @@ void editarea::CreateEmptyFile(){
     tablayout::Show(neweditarea);
 }
 
-void editarea::OpenFile(FileData *file){
+void EditFile(FileData *file){
     auto result = open_editareas.find(file);
     if(result != open_editareas.end()){
         tablayout::Show((CfContent*)result->second);
@@ -51,9 +53,9 @@ void editarea::OpenFile(FileData *file){
     }
 
 
-    auto neweditarea = new EditArea(file);
+    auto neweditarea = new EditArea(file);//freed on EditArea closed(Editarea.Destroy())
 
-    editarea::SetFocusedEditArea(neweditarea);
+    SetFocusedEditArea(neweditarea);
     open_editareas.emplace(file, neweditarea);
 
     for(auto cb : editarea_created_callbacks){
@@ -63,24 +65,24 @@ void editarea::OpenFile(FileData *file){
     tablayout::Show(neweditarea);
 }
 
-void editarea::CloseFile(FileData *file){
+void CloseFile(FileData *file){
     open_editareas.erase(file);
 }
 
-void editarea::InsertToEditAreaList(EditArea *ea){
+void InsertToEditAreaList(EditArea *ea){
     editarea_list.emplace(std::string(ea->GetFilePath()), ea);
 }
 
-void editarea::RemoveFromEditAreaList(EditArea* ea){
+void RemoveFromEditAreaList(EditArea* ea){
     editarea_list.erase(ea->GetFilePath());
 }
 
-EditArea* editarea::FindEditArea(const char* absopath){
+EditArea* FindEditArea(const char* absopath){
     auto result = editarea_list.find(std::string(absopath));
     return result == editarea_list.end() ? nullptr : result->second;
 }
 
-void editarea::ListenEvent(Event event, EventCallback callback){
+void ListenEvent(Event event, EventCallback callback){
     switch (event) {
     case EDITAREA_CREATED:
         editarea_created_callbacks.insert((EditAreaCreatedCallback)callback);
@@ -96,7 +98,7 @@ void editarea::ListenEvent(Event event, EventCallback callback){
     }
 }
 
-void editarea::StopListenEvent(Event event, EventCallback callback){
+void StopListenEvent(Event event, EventCallback callback){
     switch (event) {
     case EDITAREA_CREATED:
         editarea_created_callbacks.erase((EditAreaCreatedCallback)callback);
@@ -111,3 +113,5 @@ void editarea::StopListenEvent(Event event, EventCallback callback){
         break;
     }
 }
+
+}//namespace editarea

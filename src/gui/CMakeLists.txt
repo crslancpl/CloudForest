@@ -32,6 +32,7 @@ set(LAYOUTS
 )
 
 set(WINDOWS
+    windows/Window.cpp
     windows/MainWindow.cpp
 )
 

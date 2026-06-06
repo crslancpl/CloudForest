@@ -5,9 +5,6 @@
 
 namespace session{
 
-GtkApplication* GetApplication();
-void SetApplication(GtkApplication* app);
-
 }// namespace session
 
 

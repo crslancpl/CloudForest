@@ -1,25 +1,24 @@
 #ifndef MAINWINDOW_H_
 #define MAINWINDOW_H_
 
+#include "Window.h"
+
 #include <gtk/gtk.h>
 
 class CfContent;
 class HeaderBar;
 class CfLayout;
 
-class MainWindow{
+class MainWindow : public Window{
 public:
-    MainWindow();
+    MainWindow(GtkApplication* app);
     ~MainWindow();
 
-    void Show();
     void Insert(CfContent *content);
-    GtkWindow* GetGtkWindow();
 
 private:
     HeaderBar *m_headderBar;
 
-    GtkWindow *m_window;
     CfLayout *m_layout;
 };
 

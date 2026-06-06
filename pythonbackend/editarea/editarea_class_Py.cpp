@@ -121,7 +121,7 @@ static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
             Py_RETURN_NAN;
     }
 
-    Suggestion* sug = new Suggestion();
+    Suggestion* sug = new Suggestion();//freed on EditArea clear suggestion
     sug->insertText = suggestion;
     sug->label = label;
     sug->range.start.line = startline;
@@ -158,11 +158,12 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
      * The message cannot be paseds directly to diagnostic as Python will free the char*
      */
 
-    Diagnostic* diagnostic = new Diagnostic();
+    Diagnostic* diagnostic = new Diagnostic();// freed on "EditArea::ClearDiagnostics()"
     char* message;
+    char* code;
     if(!PyArg_ParseTuple(
         args, "ssiiiii",
-        &diagnostic->code,
+        &code,
         &message,
         &diagnostic->range.start.line,
         &diagnostic->range.start.column,
@@ -170,10 +171,12 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
         &diagnostic->range.end.column,
         &diagnostic->severity)
     ){
+        delete diagnostic;
         Py_RETURN_NAN;
     }
 
     diagnostic->message = strdup(message);
+    diagnostic->code = strdup(code);
     self->editarea->AddDiagnostic(diagnostic);
     Py_RETURN_NONE;
 }

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <interface>
-    <object class="GtkBox" id="TabButtonBox">
+    <object class="GtkBox" id="tab-btn-box">
         <property name="hexpand">true</property>
         <property name="orientation">vertical</property>
         <child>
@@ -10,13 +10,13 @@
             </object>
         </child>
         <child>
-            <object class="GtkButton" id="CloseButton">
+            <object class="GtkButton" id="close-btn">
                 <property name="hexpand">true</property>
                 <property name="label">Close</property>
             </object>
         </child>
     </object>
-    <object id="SettingWindow" class="GtkWindow">
+    <object class="GtkWindow" id="setting-window">
         <property name="name">SettingWindow</property>
     </object>
 </interface>

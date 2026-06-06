@@ -8,6 +8,8 @@ import json
 import os
 import sys
 
+from cloudforest import setting
+
 EXTENSION_DIR = "data/extension"  # os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, EXTENSION_DIR)
 
@@ -17,6 +19,9 @@ def run_extension(folder_name: str):
     try:
         with open(f"{EXTENSION_DIR}/{folder_name}/manifest.json") as manifest_file:
             manifest = json.load(manifest_file)
+            setting.add_enabled_extension(
+                manifest.get("name"), f"{EXTENSION_DIR}/{folder_name}", "description"
+            )
             mod = manifest.get("entry-file").removesuffix(".py").replace("/", ".")
             try:
                 importlib.import_module(f"{folder_name}.{mod}")

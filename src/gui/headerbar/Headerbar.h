@@ -7,7 +7,7 @@
 
 class HeaderBar : public CfComponent{
 public:
-    HeaderBar();
+    HeaderBar(GtkApplication* app);
     GtkWidget * GetBaseWidget() override;
 private:
     GtkHeaderBar *m_headerBarWidget;

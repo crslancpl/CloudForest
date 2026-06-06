@@ -7,14 +7,12 @@ class SettingPanel;
 
 namespace gui{
 
-void OpenSettingPanel();
-void Init();
-void Start();
+int RunApp(int argc, char* argv[]);// start the gtk application
 
 MainWindow* GetMainWindow();
 FilePanel* GetFilePanel();
 SettingPanel* GetSettingPanel();
 
-}
+}// namespace gui
 
  #endif
