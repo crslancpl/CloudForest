@@ -1,5 +1,7 @@
 #include "SettingPage.h"
+
 #include <gtk/gtk.h>
+#include <pango/pango-layout.h>
 
 static inline GtkLabel* CreateLabel(const char* text){
     // Create a label that align the text to left
@@ -34,6 +36,16 @@ GtkLabel* SettingPage::AddHeader2(const char* text){
     gtk_widget_add_css_class(GTK_WIDGET(header2), "header2");
     gtk_box_append(m_baseBox, GTK_WIDGET(header2));
     return header2;
+}
+
+GtkLabel* SettingPage::AddParagraph(const char* text){
+    GtkLabel* paragraph = CreateLabel(text);
+    gtk_widget_add_css_class(GTK_WIDGET(paragraph), "paragraph");
+    gtk_label_set_wrap(paragraph, true);
+    gtk_label_set_wrap_mode(paragraph, PANGO_WRAP_WORD);
+    gtk_label_set_xalign(paragraph, 0);
+    gtk_box_append(m_baseBox, GTK_WIDGET(paragraph));
+    return paragraph;
 }
 
 void SettingPage::AddWidget(GtkWidget* child){

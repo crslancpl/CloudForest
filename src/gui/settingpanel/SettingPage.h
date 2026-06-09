@@ -12,6 +12,7 @@ public:
 
     GtkLabel* AddHeader1(const char* text);
     GtkLabel* AddHeader2(const char* text);
+    GtkLabel* AddParagraph(const char* text);
     void AddWidget(GtkWidget* child);
 protected:
     GtkBox* m_baseBox;

@@ -56,11 +56,4 @@ typedef struct Language {
     std::string syntaxTemplateFile;
 } Language;
 
-typedef struct Extension {
-    const char* name;
-    const char* folder;
-    const char* description;
-    bool enabled;
-} Extension;
-
 #endif

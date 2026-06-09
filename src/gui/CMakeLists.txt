@@ -1,9 +1,10 @@
 project(GUILIB)
 
 set(COMPONENTS
-    components/TextArea.cpp
     components/CfContent.cpp
     components/Flyout.cpp
+    components/TextArea.cpp
+    components/ToggleBlock.cpp
 )
 
 set(EDITAREA

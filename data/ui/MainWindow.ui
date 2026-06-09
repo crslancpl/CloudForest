@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<interface>
-<requires lib="gtk" version="4.0" />
-  <object id="main-window" class="GtkWindow">
-    <property name="name">main-window</property>
-  </object>
-</interface>

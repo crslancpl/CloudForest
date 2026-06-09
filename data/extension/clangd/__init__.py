@@ -8,11 +8,10 @@ pending_ea: editarea.EditArea
 
 
 def server_started():
-    global client, pending_ea
     if not client:
         return
 
-    print(f"rust-analyzer running version {client.version}")
+    print(f"clangd running version {client.version}")
     client.listen_editarea(pending_ea)
 
 
@@ -22,12 +21,11 @@ def editarea_created(ea: editarea.EditArea):
         client.listen_editarea(ea)
     else:
         pending_ea = ea
-        command = ["rust-analyzer", "--verbose"]
-        client = create_lsp_client(command, "Rust", "rust", False)
+        client = create_lsp_client(["clangd"], "C++", "cpp", False)
         if client:
             client.start(server_started)
         else:
-            language.stop_listen("Rust", editarea_created)
+            language.stop_listen("C++", editarea_created)
 
 
-language.listen("Rust", editarea_created)
+language.listen("C++", editarea_created)

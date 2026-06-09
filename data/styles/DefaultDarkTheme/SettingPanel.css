@@ -4,7 +4,7 @@
     background-color: rgb(0, 0, 0);
 }
 
-.setting-tab-button-box button {
+.tab-btn-box button {
     border: transparent;
     background-image: none;
     background-color: transparent;
@@ -12,14 +12,17 @@
     border: solid 2px transparent;
 }
 
-.setting-tab-button-box button:hover {
-    background-image: none;
+.tab-btn:hover {
     border: solid 2px skyblue;
 }
 
-.close-button {
+.close-btn {
     color: red;
     font-weight: bolder;
+}
+
+.close-btn:hover {
+    border: solid 2px red;
 }
 
 .setting-page {
@@ -34,6 +37,11 @@
 .setting-page .header2 {
     font-size: 20px;
     border-bottom: 2px solid white;
+}
+
+.setting-page .paragraph {
+    font-size: 15px;
+    padding: 5px;
 }
 
 .setting-page spinbutton {
@@ -60,4 +68,15 @@
 
 #section-name {
     font-size: 17px;
+}
+
+.toggle-block {
+    padding: 5px;
+    background-color: rgb(31, 31, 31);
+    border-radius: 5px;
+}
+
+.toggle-block-name {
+    padding: 5px;
+    font-size: 15px;
 }

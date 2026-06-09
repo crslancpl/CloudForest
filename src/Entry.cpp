@@ -12,6 +12,7 @@ int main (int argc,char *argv[]){
     langmanager::Init();// connects only static events
 
     pybackend::Start();
+    pybackend::RunEnabledExtensions();
 
     int status = gui::RunApp(argc, argv);// this runs a loop for GTK and shows the gui
 

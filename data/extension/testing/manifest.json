@@ -1,5 +1,4 @@
 {
   "name": "test",
-  "entry-file": "test1.py",
-  "description": "A extension for testing"
+  "description": "A extension for testing. This is a very long description about the extension. The extension is simply used for testing. It doesn't do anything"
 }

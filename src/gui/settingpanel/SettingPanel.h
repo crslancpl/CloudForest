@@ -22,7 +22,7 @@ public:
     void AddPage(const char* name, SettingPage* page);
 
 private:
-    void BindTabButtons(GtkBuilder* builder);
+    void BindUI(GtkBuilder* builder);
 
     MainWindow *m_parentWindow;// the main window will only be freed on app closed
 

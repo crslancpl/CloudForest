@@ -2,18 +2,22 @@
 
 
 #include "cloudforest_mod_Py.h"
+#include "datatypes/extension.h"
 #include "python_tool.h"
+#include "src/Setting.h"
 
 #include <Python.h>
 #include <ceval.h>
+#include <import.h>
 #include <pystate.h>
 #include <string>
 
 
 #define PY_SSIZE_T_CLEAN
 
+namespace pybackend{
 
-void pybackend::Start(){
+void Start(){
     PyImport_AppendInittab("cloudforest", PyInit_cloudforest_module);
 
     PyStatus status;
@@ -44,10 +48,24 @@ exception:
 }
 
 
-void pybackend::End(){
+void End(){
     RestoreThreadLock();
     cloudforest_module_invoke_app_closed();
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
 }
+
+void RunEnabledExtensions(){
+    RestoreThreadLock();
+    auto extensions = setting::GetAllExtensions();
+
+    for(Extension* ext : extensions){
+        if(ext->enabled){
+            ext->module = PyImport_ImportModule(ext->folder);
+        }
+    }
+    ReleaseThreadLock();
+}
+
+}// namespace pybackend
