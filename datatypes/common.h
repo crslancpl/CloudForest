@@ -50,10 +50,11 @@ typedef void(*EventCallback)();// void (*)()
  */
 
 typedef struct Language {
-    std::string name;
-    std::string id;
+    const char* name;
+    const char* id;
     std::unordered_set<std::string> fileExtensions;
-    std::string syntaxTemplateFile;
+    const char* syntaxTemplateFile;
+    bool used = false;
 } Language;
 
 #endif

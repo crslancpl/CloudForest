@@ -5,6 +5,7 @@
 #include "pythonbackend/python_tool.h"
 #include "src/Setting.h"
 
+#include <cstdio>
 #include <cstring>
 #include <listobject.h>
 #include <object.h>
@@ -16,15 +17,19 @@ static PyObject* extension_enabled_callback_list;
 static PyObject* extension_disabled_callback_list;
 
 static void OnExtensionEnabled(Extension* extension){
-    PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(extension->folder));
+    RestoreThreadLock();
+    PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(strdup(extension->folder)));
     RunCallback(extension_enabled_callback_list, arg);
     Py_DECREF(arg);
+    ReleaseThreadLock();
 }
 
 static void OnExtensionDisabled(Extension* extension){
+    RestoreThreadLock();
     PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(extension->folder));
     RunCallback(extension_disabled_callback_list, arg);
     Py_DECREF(arg);
+    ReleaseThreadLock();
 }
 
 static PyObject* setting_module_add_extension(PyObject* self, PyObject* args){

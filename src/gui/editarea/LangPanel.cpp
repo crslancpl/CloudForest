@@ -44,7 +44,7 @@ LangPanel::LangPanel() : Flyout(gui::GetMainWindow()->GetGtkWindow()){
 
 
 void LangPanel::AddLanguage(Language* lang){
-    GtkButton *newlangbut = GTK_BUTTON(gtk_button_new_with_label(lang->name.c_str()));
+    GtkButton *newlangbut = GTK_BUTTON(gtk_button_new_with_label(lang->name));
     m_langBtns.push_back(newlangbut);
     gtk_box_append(m_langBtnBox, GTK_WIDGET(newlangbut));
     gtk_widget_add_css_class(GTK_WIDGET(newlangbut), "normal-button");

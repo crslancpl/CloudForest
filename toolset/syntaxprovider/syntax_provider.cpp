@@ -32,7 +32,7 @@ void syntaxprovider::SetLanguage(TextArea *ta, Language* language){
     auto result = lang_to_provider_map.find(language);
     SyntaxProvider *provider;
     if(result == lang_to_provider_map.end()){
-        cf::LoadTemplate(language->id.c_str());
+        cf::LoadTemplate(language->id);
         provider = new SyntaxProvider(language);
         provider_map.emplace(ta, provider);
     }else{
@@ -44,5 +44,5 @@ void syntaxprovider::SetLanguage(TextArea *ta, Language* language){
 
 void syntaxprovider::FastHighlight(EditArea* ea){
     ea->ClearHighlight();
-    cf::ReadFile(ea->GetFilePath(), ea->GetLanguage()->id.c_str());
+    cf::ReadFile(ea->GetFilePath(), ea->GetLanguage()->id);
 }

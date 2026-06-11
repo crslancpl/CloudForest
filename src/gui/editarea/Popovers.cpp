@@ -1,7 +1,7 @@
 #include "Popovers.h"
 
 #include "datatypes/lsp.h"
-#include <cstdio>
+
 #include <gtk/gtk.h>
 
 TipPopover::TipPopover(GdkRectangle *cursorrect){
@@ -206,6 +206,11 @@ void SuggestionPopover::UnSelectSelected(){
     gtk_widget_add_css_class(m_selectedItem, "normalitem");
 }
 
+
+
+/*
+ * Diagnostic Popover
+ */
 DiagnosticPopover::DiagnosticPopover(GtkTextView* textview, GtkTextBuffer* targetbuffer)
     : m_targetTextView(textview),m_targetBuffer(targetbuffer){
     m_popover = GTK_POPOVER(gtk_popover_new());

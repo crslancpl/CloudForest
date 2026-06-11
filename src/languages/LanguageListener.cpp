@@ -7,6 +7,7 @@
 #include "src/gui/editarea/EditArea_if.h"
 
 
+#include <cstdio>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -22,7 +23,7 @@ public:
 
     void Run(EditArea* ea){
         for(auto cb : m_callbacks){
-            cb(m_lang->name.c_str(), ea);
+            cb(m_lang->name, ea);
         }
     }
 
@@ -36,13 +37,13 @@ static std::unordered_map<Language*, LangCallback*> lang_and_callbacks_map;
 
 static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
     // the callback for EditArea->SetLanguage
-    language_module_invoke_new_editarea(lang->name.c_str(), (EditArea*)ta);
+    language_module_invoke_new_editarea(lang->name, (EditArea*)ta);
 }
 
 static void OnEditAreaCreated(EditArea* ea){
     // pass to editarea::AddNewEditAreaCallback()
     ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
-    language_module_invoke_new_editarea(ea->GetLanguage()->name.c_str(), ea);
+    language_module_invoke_new_editarea(ea->GetLanguage()->name, ea);
 }
 
 void LanguageNewEditArea(EditArea* ea, Language* lang){

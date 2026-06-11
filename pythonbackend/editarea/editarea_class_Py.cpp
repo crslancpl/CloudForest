@@ -29,7 +29,7 @@ static PyObject *py_EditArea_get_file_version(py_EditArea *self, PyObject *args)
 }
 
 static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
-    std::string text = self->editarea->GetLanguage()->name.c_str();
+    std::string text = self->editarea->GetLanguage()->name;
 
     if(text.empty()){
         Py_RETURN_NAN;

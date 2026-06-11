@@ -313,9 +313,9 @@ void EditArea::SetLanguage(Language* lang){
     if (lang == m_language) {
         return;
     }
-
+    langmanager::UpdateEditAreaLanguage(this, lang);
     m_language = lang;
-    gtk_button_set_label(m_langBut, m_language->name.c_str());
+    gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
     //call callbacks
     for (auto callback : m_langChangedCallbacks) {

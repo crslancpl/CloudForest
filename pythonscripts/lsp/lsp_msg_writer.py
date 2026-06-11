@@ -11,12 +11,12 @@ ClientCapabilities = {"workspace": {"workspaceFolders": True}}
 
 InitMessage = {
     **BaseMessage,
-    "id": 1,
+    "id": 1000,
     "method": "initialize",
     "params": {"capabilities": ClientCapabilities, "workspaceFolders": []},
 }
 
-ExitMessage = {**BaseMessage, "id": 2, "method": "exit"}
+ExitMessage = {**BaseMessage, "id": 1001, "method": "exit"}
 
 PositionProperty = {"line": 0, "character": 0}
 

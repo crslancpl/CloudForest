@@ -1,12 +1,18 @@
 #include "LanguageManager_if.h"
 
 #include "datatypes/common.h"
+#include "pythonbackend/language_mod_Py.h"
+#include "src/gui/editarea/EditArea.h"
 #include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
+#include <cstdio>
 #include <unordered_map>
 #include <string>
+#include <unordered_set>
 
+static std::unordered_map<const Language*, std::unordered_set<const EditArea*>> lang_to_editarea_map = {};
+static std::unordered_map<const EditArea*, const Language*> editarea_to_lang_map = {};
 
 static std::unordered_set<void(*)(Language*)> new_lang_callback_list = {};
 
@@ -21,7 +27,7 @@ static std::unordered_map<std::string, Language*> language_list = {
     {"Unknown", &unknow_lang}
 };
 
-static std::unordered_map<std::string, Language*> extension_map = {};
+static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
 
 namespace langmanager{
 
@@ -33,21 +39,32 @@ void Clear(){
     language_list.clear();
 }
 
-void NewLanguage(const std::string& langname, const std::string& id, const std::string& syntaxfile, const std::string& fileextensions){
-    Language *lang = new Language();
-    lang->name = langname;
-    lang->id = id;
-    lang->syntaxTemplateFile = syntaxfile;
-
-    auto extlist = tools::TrimText(fileextensions, "[],' ");
-    for(auto ext : extlist){
-        extension_map.emplace(ext,lang);
+void NewLanguage(Language* lang){
+    language_list.emplace(lang->name, lang);
+    for (const std::string& fileext: lang->fileExtensions) {
+        file_extension_to_language_map.emplace(fileext, lang);
     }
-    language_list.emplace(langname, lang);
 
     for(auto callback : new_lang_callback_list){
         callback(lang);
     }
+}
+
+void UpdateEditAreaLanguage(const EditArea* ea, Language* lang){
+    auto itr = editarea_to_lang_map.find(ea);
+
+    if(itr != editarea_to_lang_map.end()){
+        const Language* oldlang = itr->second;
+        lang_to_editarea_map[oldlang].erase(ea);
+    }
+
+    if(!lang->used){
+        language_module_invoke_language_used(lang->name);
+        lang->used = true;
+    }
+
+    editarea_to_lang_map.emplace(ea, lang);
+    lang_to_editarea_map[lang].emplace(ea);
 }
 
 Language* FindLanguage(const char* langname){
@@ -57,13 +74,16 @@ Language* FindLanguage(const char* langname){
 
 Language* FindFileLanguage(const char* filename){
     auto file_ext_pair = tools::TrimText(filename, ".");//"/path/file.txt" -> "/path/file" and "txt"
-
     if(file_ext_pair.size() != 2){
         return &unknow_lang;
     }
 
-    auto result = extension_map.find(file_ext_pair[1]);
+    auto result = file_extension_to_language_map.find(file_ext_pair[1]);
     return result != language_list.end() ? result->second : &unknow_lang;
+}
+
+const std::unordered_set<const EditArea*>& GetEditAreasFromLanguage(const Language* lang){
+    return lang_to_editarea_map[lang];
 }
 
 const std::unordered_map<std::string, Language*>& GetLanguageList(){
