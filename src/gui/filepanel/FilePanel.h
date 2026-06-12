@@ -1,8 +1,8 @@
 #ifndef FILEPANEL_H_
 #define FILEPANEL_H_
 
-#include "src/gui/components/CfComponent.h"
-#include "src/gui/components/CfContent.h"
+#include "components/CfComponent.h"
+#include "components/CfContent.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>

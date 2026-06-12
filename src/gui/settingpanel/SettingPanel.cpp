@@ -1,11 +1,12 @@
 #include "SettingPanel.h"
 
-#include "src/gui/layouts/layout/CfLayout.h"
-#include "src/gui/components/CfContent.h"
-#include "src/gui/settingpanel/ExtensionPage.h"
-#include "src/gui/settingpanel/SettingPage.h"
-#include "src/gui/windows/MainWindow.h"
-#include "src/gui/windows/Window.h"
+#include "layouts/layout/CfLayout.h"
+#include "components/CfContent.h"
+#include "settingpanel/ExtensionPage.h"
+#include "settingpanel/SettingPage.h"
+#include "windows/MainWindow.h"
+#include "windows/Window.h"
+
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>

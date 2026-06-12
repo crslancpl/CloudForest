@@ -2,9 +2,11 @@
 #define CFTABLAYOUT_H_
 
 
-#include <unordered_map>
-#include "src/gui/components/CfContent.h"
+
+#include "components/CfContent.h"
 #include "CfTabSwitcher.h"
+
+#include <unordered_map>
 
 class CfTabLayout : public CfContent{
 public:

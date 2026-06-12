@@ -3,7 +3,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../../components/CfContent.h"
+#include "components/CfContent.h"
 
 class CfTabLayout;
 class CfTabSwitcher;

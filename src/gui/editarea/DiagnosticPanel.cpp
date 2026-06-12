@@ -1,10 +1,10 @@
 #include "DiagnosticPanel.h"
 
 #include "datatypes/lsp.h"
-#include "src/gui/components/Flyout.h"
-#include "src/gui/editarea/EditArea.h"
-#include "src/gui/Gui_if.h"
-#include "src/gui/windows/MainWindow.h"
+#include "components/Flyout.h"
+#include "editarea/EditArea.h"
+#include "Gui_if.h"
+#include "windows/MainWindow.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>

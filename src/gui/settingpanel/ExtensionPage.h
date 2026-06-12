@@ -3,7 +3,7 @@
 
 #include "SettingPage.h"
 #include "datatypes/extension.h"
-#include "src/gui/components/ToggleBlock.h"
+#include "components/ToggleBlock.h"
 
 class ExtensionBlock : public ToggleBlock {
 public:

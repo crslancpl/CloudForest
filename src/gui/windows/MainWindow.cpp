@@ -7,11 +7,11 @@
 
 #include <gtk/gtk.h>
 
-#include "../layouts/layout/CfLayout.h"
-#include "../headerbar/Headerbar.h"
-#include "src/Session.h"
-#include "src/gui/Gui_if.h"
-#include "src/gui/windows/Window.h"
+#include "Gui_if.h"
+#include "layouts/layout/CfLayout.h"
+#include "windows/Window.h"
+#include "headerbar/Headerbar.h"
+
 
 MainWindow::MainWindow(GtkApplication* app) : Window(true){
     gtk_widget_add_css_class(GTK_WIDGET(m_window), "main-window");

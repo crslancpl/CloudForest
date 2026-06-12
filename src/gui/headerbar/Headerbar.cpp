@@ -5,11 +5,10 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 
-#include "src/Session.h"
 #include "src/filemanagement/FileManagement_if.h"
-#include "src/gui/editarea/EditArea_if.h"
-#include "src/gui/Gui_if.h"
-#include "../settingpanel/SettingPanel.h"
+#include "editarea/EditArea_if.h"
+#include "Gui_if.h"
+#include "settingpanel/SettingPanel.h"
 
 
 

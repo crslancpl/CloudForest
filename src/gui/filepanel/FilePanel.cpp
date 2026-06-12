@@ -3,7 +3,7 @@
 #include "FilePanelButtons.h"
 #include "datatypes/file.h"
 #include "src/filemanagement/FileManagement_if.h"
-#include "src/gui/Gui_if.h"
+#include "Gui_if.h"
 
 #include <gio/gio.h>
 #include <glib-object.h>

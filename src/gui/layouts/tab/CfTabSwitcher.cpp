@@ -1,7 +1,7 @@
 #include "CfTabSwitcher.h"
 
 #include "CfTabLayout.h"
-#include "src/gui/components/CfContent.h"
+#include "components/CfContent.h"
 
 
 

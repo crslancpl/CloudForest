@@ -1,7 +1,7 @@
 #ifndef DIAGNOSTICPANEL_H_
 #define DIAGNOSTICPANEL_H_
 
-#include "src/gui/components/Flyout.h"
+#include "components/Flyout.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>

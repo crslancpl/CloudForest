@@ -2,15 +2,15 @@
 
 #include "datatypes/common.h"
 #include "EditArea.h"
-#include "src/gui/Gui_if.h"
-#include "src/gui/components/Flyout.h"
-#include "src/gui/windows/MainWindow.h"
+#include "Gui_if.h"
+#include "components/Flyout.h"
+#include "windows/MainWindow.h"
 #include "src/languages/LanguageManager_if.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-static LangPanel* lang_panel = nullptr;
+static LangPanel *lang_panel = nullptr;
 
 /*
  * Callbacks
@@ -62,7 +62,7 @@ void LangPanel::LangChoosen(Language* lang){
 
 void OpenLangPanelForEditArea(EditArea *target){
     if (!lang_panel) {
-        lang_panel = new LangPanel();
+        lang_panel = new LangPanel();//freed on app clised
     }
     lang_panel->ChooseFor(target);
 }

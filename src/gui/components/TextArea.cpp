@@ -1,9 +1,8 @@
 #include "TextArea.h"
 
 #include "datatypes/common.h"
-#include "src/gui/style/Style.h"
+#include "style/Style.h"
 
-#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>

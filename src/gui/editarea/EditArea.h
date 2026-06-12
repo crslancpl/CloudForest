@@ -1,7 +1,7 @@
 #ifndef EDITAREA_H_
 #define EDITAREA_H_
 
-#include "../components/TextArea.h"
+#include "components/TextArea.h"
 
 #include <gtk/gtk.h>
 #include <memory>

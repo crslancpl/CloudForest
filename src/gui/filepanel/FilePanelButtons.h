@@ -2,7 +2,7 @@
 #define FILEPANELBUTTONS_H_
 
 #include "datatypes/file.h"
-#include "src/gui/components/CfComponent.h"
+#include "components/CfComponent.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>

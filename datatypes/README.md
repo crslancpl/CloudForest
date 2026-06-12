@@ -1,4 +1,4 @@
-All codes under `datatypes` directory should be c style, which means no C++ features like public/private
+All structs under `datatypes` directory should be c style, which means no C++ features like public/private
 
 file name
 ```

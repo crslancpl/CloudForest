@@ -50,38 +50,22 @@ class LspServerData:
 class LspClient:
     def __init__(
         self,
-        lspcommand: list[str],
+        lsp_command: list[str],
         language: str,
-        languageId: str,
-        read_stderr: bool,
+        language_id: str,
+        enable_stderr: bool,
     ):
         self.file_version_dict: dict[str, int] = {}
-        self.lsp_command = lspcommand
+        self.lsp_command = lsp_command
         self.language = language
-        self.language_id: str = languageId
-        self.read_number: int = 0
+        self.language_id: str = language_id
         self.server_data = LspServerData()
-        self.read_stderr = read_stderr
-
-    def read_out(self, text: str):
-        # [!NOTE]
-        # We cannot guarantee how long is the message from
-        # LSP. There may be a lot of messages one after another.
-        # Thereby, we have to set a timeout for the readline()
-        # or it will block the program
-        if text.startswith("Content-Length:"):
-            # get content length. The header looks like this
-            # Content-Length: 100\r\n\r\n
-
-            contentlength = re.findall(r"\d+", str(text))
-            self.out_event.skip_line()  # this will be \r\n\r\n
-            message = self.out_event.read_chars(int(contentlength[0]))
-            # print(f"lsp_client_class stdout: {message}\n")
-            self.read_msg(message)
-        else:
-            return
+        self.enable_stderr = enable_stderr
 
     def start(self) -> bool:
+        """
+        Return false if the command not found
+        """
         if not shutil.which(self.lsp_command[0]):
             # executable or file not found
             print(
@@ -100,7 +84,8 @@ class LspClient:
         if self.LSP.stdout:
             self.out_event = IOEvent(self.LSP.stdout)
             self.out_event.add_listener("line", self.read_out)
-        if self.read_stderr and self.LSP.stderr:
+
+        if self.enable_stderr and self.LSP.stderr:
             self.err_event = IOEvent(self.LSP.stderr)
             self.err_event.add_listener("line", self.read_err)
 
@@ -114,14 +99,20 @@ class LspClient:
         self.send(lsp_msg_writer.exit_notification())
         self.LSP.terminate()
 
-    def __on_server_initialized(self, result: dict):
-        self.server_data.load_server_data(result)
-        print(f"{self.server_data.name} running version {self.server_data.version}")
-        for ea in language.get_all_editareas(self.language):
-            self.listen_editarea(ea)
-
     def add_workspace(self, name: str, path: str):
         self.send(lsp_msg_writer.new_workspace_notification(name, path))
+
+    def listen_editarea(self, ea: editarea.EditArea):
+        path = ea.get_file_path()
+        version = ea.get_file_version()
+        message = lsp_msg_writer.did_open_message(
+            path, ea.get_content(), version, self.language_id
+        )
+        self.file_version_dict[path] = version
+        # print(f"listening editarea {ea.get_file_path()}")
+        self.send(message)
+        ea.add_callback("text-changed", self.__editarea_text_changed)
+        ea.add_callback("lang-changed", self.__editarea_lang_changed)
 
     # callbacks
     def editarea_completion_requested(
@@ -131,6 +122,16 @@ class LspClient:
         self.send(
             lsp_msg_writer.completion_message(ea.get_file_path(), line, column - 1)
         )
+
+    """
+    private method
+    """
+
+    def __on_server_initialized(self, result: dict):
+        self.server_data.load_server_data(result)
+        print(f"{self.server_data.name} running version {self.server_data.version}")
+        for ea in language.get_all_editareas(self.language):
+            self.listen_editarea(ea)
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:
@@ -164,17 +165,9 @@ class LspClient:
             case "textDocument/completion":
                 read_as_completion(params)
 
-    def listen_editarea(self, ea: editarea.EditArea):
-        path = ea.get_file_path()
-        version = ea.get_file_version()
-        message = lsp_msg_writer.did_open_message(
-            path, ea.get_content(), version, self.language_id
-        )
-        self.file_version_dict[path] = version
-        # print(f"listening editarea {ea.get_file_path()}")
-        self.send(message)
-        ea.add_callback("text-changed", self.__editarea_text_changed)
-        ea.add_callback("lang-changed", self.__editarea_lang_changed)
+    """
+    IO
+    """
 
     def send(self, message: str):
         # self.stop_reading()
@@ -183,10 +176,28 @@ class LspClient:
         ContentLengthHeader = lsp_msg_writer.content_length_header(message)
         # print(f"send message: {message}\n")
         self.LSP.stdin.flush()
-        _ = self.LSP.stdin.write(ContentLengthHeader.encode("utf-8"))
+        self.LSP.stdin.write(ContentLengthHeader.encode("utf-8"))
         self.LSP.stdin.flush()
-        _ = self.LSP.stdin.write(message.encode("utf-8"))
+        self.LSP.stdin.write(message.encode("utf-8"))
         self.LSP.stdin.flush()
+
+    def read_out(self, text: str):
+        # [!NOTE]
+        # We cannot guarantee how long is the message from
+        # LSP. There may be a lot of messages one after another.
+        # Thereby, we have to set a timeout for the readline()
+        # or it will block the program
+        if text.startswith("Content-Length:"):
+            # get content length. The header looks like this
+            # Content-Length: 100\r\n\r\n
+
+            contentlength = re.findall(r"\d+", str(text))
+            self.out_event.skip_line()  # this will be \r\n\r\n
+            message = self.out_event.read_chars(int(contentlength[0]))
+            # print(f"lsp_client_class stdout: {message}\n")
+            self.read_msg(message)
+        else:
+            return
 
     def read_msg(self, message: str):
         # print(f"lsp_client_class stdout: {message}\n")

@@ -1,0 +1,14 @@
+{
+  "C": {
+    "servers": [{ "clangd": { "command": ["clangd"] } }]
+  },
+  "C++": {
+    "servers": [{ "clangd": { "command": ["clangd"] } }]
+  },
+  "Python": {
+    "servers": [{ "pyright": { "command": ["pyright"] } }]
+  },
+  "Rust": {
+    "servers": [{ "rust-analyzer": { "command": ["rust-analyzer"] } }]
+  }
+}

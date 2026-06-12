@@ -23,7 +23,8 @@ static void AppActivated (GtkApplication *app, gpointer user_data){
     current_setting_panel = new SettingPanel(current_main_window);// freed on app closed
 
     current_main_window->Insert(current_file_panel);
-    current_main_window->Insert(tablayout::NewTabLayout());
+    CfTabLayout* tab = tablayout::NewTabLayout();// freed on app closed
+    current_main_window->Insert(tab);
 
     editarea::EditNewFile();
     current_main_window->Show();

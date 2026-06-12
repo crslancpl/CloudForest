@@ -1,7 +1,8 @@
 #include "CfTab_if.h"
+
 #include "CfTabLayout.h"
-#include "src/gui/components/CfContent.h"
-#include "src/gui/layouts/tab/CfTabSwitcher.h"
+#include "components/CfContent.h"
+#include "layouts/tab/CfTabSwitcher.h"
 
 #include <unordered_map>
 

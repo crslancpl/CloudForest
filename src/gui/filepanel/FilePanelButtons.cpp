@@ -1,12 +1,13 @@
 #include "FilePanelButtons.h"
 
-#include "../editarea/EditArea_if.h"
-#include "datatypes/file.h"
 
 #include "FilePanel.h"
-#include "../Gui_if.h"
+#include "editarea/EditArea_if.h"
+#include "datatypes/file.h"
+#include "Gui_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/filemanagement/FileReader.h"
+
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>

@@ -1,7 +1,7 @@
 #ifndef POPOVERS_H_
 #define POPOVERS_H_
 
-#include "src/gui/editarea/EditArea.h"
+#include "editarea/EditArea.h"
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 

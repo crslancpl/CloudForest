@@ -1,6 +1,6 @@
 #include "ExtensionPage.h"
 
-#include "src/gui/components/ToggleBlock.h"
+#include "components/ToggleBlock.h"
 #include "datatypes/extension.h"
 #include "src/Setting.h"
 

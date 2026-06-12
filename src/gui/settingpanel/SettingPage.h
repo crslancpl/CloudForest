@@ -1,7 +1,7 @@
 #ifndef SETTINGPAGE_H_
 #define SETTINGPAGE_H_
 
-#include "src/gui/components/CfContent.h"
+#include "components/CfContent.h"
 
 #include <gtk/gtk.h>
 

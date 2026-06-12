@@ -1,7 +1,7 @@
 #ifndef LANGPANEL_H_
 #define LANGPANEL_H_
 
-#include "src/gui/components/Flyout.h"
+#include "components/Flyout.h"
 #include "datatypes/common.h"
 
 #include <vector>

@@ -4,7 +4,7 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-#include "../../components/CfContent.h"
+#include "components/CfContent.h"
 
 typedef struct{
     /*

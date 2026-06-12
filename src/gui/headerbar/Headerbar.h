@@ -3,7 +3,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../components/CfComponent.h"
+#include "components/CfComponent.h"
 
 class HeaderBar : public CfComponent{
 public:

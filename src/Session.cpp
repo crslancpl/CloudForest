@@ -1,7 +1,8 @@
 #include "Session.h"
+#include "datatypes/file.h"
 
 #include <gtk/gtk.h>
 
-namespace session{
-
-} // namespace session
+void Session::AddWorkspace(Workspace* ws){
+    m_workspaces.emplace_back(ws);
+}
