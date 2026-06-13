@@ -2,6 +2,7 @@
 
 #include "datatypes/common.h"
 #include "style/Style.h"
+#include "toolset/event/Event.h"
 
 #include <glib-object.h>
 #include <glib.h>
@@ -29,6 +30,10 @@ TextArea::TextArea(){
     m_textViewBuffer = gtk_text_view_get_buffer(m_textView);
     m_lineNoArea = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "line-no-area"));
     m_lineNoAreaBuffer = gtk_text_view_get_buffer(m_lineNoArea);
+
+    m_eventMap = {
+        {TEXTAREA_CLASS_LANG_CHANGED, SimpleEvent()}
+    };
 
     gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(m_lineNoArea), gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(m_textView)));
     gtk_text_view_set_bottom_margin (m_textView, 80);
@@ -76,8 +81,9 @@ const Language *TextArea::GetLanguage() const{
 void TextArea::SetLanguage(Language *lang){
     m_language = lang;
     //call callbacks
-    for (auto callback : m_langChangedCallbacks) {
-        callback(this, lang);
+    const SimpleEvent &event = m_eventMap.at(TEXTAREA_CLASS_LANG_CHANGED);
+    for (auto callback : event.GetCallbackSet()) {
+        ((LangChangedCallback)callback)(this, lang);
     }
 }
 
@@ -164,22 +170,16 @@ void TextArea::CountLines(){
 
 
 
-void TextArea::ListenEvent(Event event, EventCallback callback){
-    switch (event) {
-    case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.insert((LangChangedCallback)callback);
-        break;
-    default:
-        break;
+void TextArea::Listen(Signal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if(itr != m_eventMap.end()){
+        itr->second.Connect(callback);
     }
 }
 
-void TextArea::StopListenEvent(Event event, EventCallback callback){
-    switch (event) {
-    case TEXTAREA_CLASS_LANG_CHANGED:
-        m_langChangedCallbacks.erase((LangChangedCallback)callback);
-        break;
-    default:
-        break;
+void TextArea::StopListenEvent(Signal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if(itr != m_eventMap.end()){
+        itr->second.Disconnect(callback);
     }
 }

@@ -42,8 +42,6 @@ typedef struct Difference{
     char* text;
 } Difference;
 
-typedef void(*EventCallback)();// void (*)()
-
 
 /*
  * Be careful. The "language" here is programming language.

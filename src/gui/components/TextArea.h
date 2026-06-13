@@ -3,6 +3,7 @@
 
 #include "CfContent.h"
 #include "datatypes/common.h"
+#include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <unordered_set>
@@ -35,15 +36,15 @@ public:
     void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,const char *tagname);
     void CountLines();
 
-    enum Event{
+    enum Signal{
         TEXTAREA_CLASS_LANG_CHANGED
     };
 
-    void ListenEvent(Event event, EventCallback callback);
-    void StopListenEvent(Event event, EventCallback callback);
+    void Listen(Signal signal, EventCallback callback);
+    void StopListenEvent(Signal signal, EventCallback callback);
 
 protected:
-    std::unordered_set<LangChangedCallback> m_langChangedCallbacks;
+    std::unordered_map<Signal, SimpleEvent> m_eventMap;
 
     Language* m_language = nullptr;
     int m_firstLineNumber = 1;

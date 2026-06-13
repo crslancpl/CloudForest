@@ -5,6 +5,7 @@
 #include "pythonbackend/language_mod_Py.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
+#include "toolset/event/Event.h"
 
 
 #include <cstdio>
@@ -42,7 +43,7 @@ static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
 
 static void OnEditAreaCreated(EditArea* ea){
     // pass to editarea::AddNewEditAreaCallback()
-    ea->ListenEvent(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
+    ea->Listen(EditArea::TEXTAREA_CLASS_LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
     language_module_invoke_new_editarea(ea->GetLanguage()->name, ea);
 }
 
@@ -78,5 +79,5 @@ void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const c
 }
 
 void LanguageListenerStart(){
-    editarea::ListenEvent(editarea::EDITAREA_CREATED, (void (*)())OnEditAreaCreated);
+    editarea::Listen(editarea::EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
 }

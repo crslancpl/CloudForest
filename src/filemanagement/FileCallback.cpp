@@ -2,62 +2,55 @@
 #include "datatypes/file.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/filemanagement/FileOperation.h"
+#include "toolset/event/Event.h"
 
 #include <gio/gio.h>
-#include <unordered_set>
+#include <unordered_map>
 
 typedef void(*FileChoosenCallback)(FileData*);
 typedef void(*FolderChoosenCallback)(FileData*);
 typedef void(*NewWorkspaceCallback)(const Workspace*) ;
 
-static std::unordered_set<FileChoosenCallback> file_choosen_callbacks;
-static std::unordered_set<FolderChoosenCallback> folder_choosen_callbacks;
-static std::unordered_set<NewWorkspaceCallback> new_workspace_callbacks;
+namespace filemanagement{
 
-void filemanagement::ListenEvent(filemanagement::Event event, EventCallback callback){
-    switch (event) {
-    case FILE_EVENT_FILE_CHOOSEN:
-        file_choosen_callbacks.emplace((FileChoosenCallback)callback);
-        break;
-    case FILE_EVENT_FOLDER_CHOOSEN:
-        folder_choosen_callbacks.emplace((FolderChoosenCallback)callback);
-        break;
-    case FILE_EVENT_NEW_WORKSPACE:
-        new_workspace_callbacks.emplace((NewWorkspaceCallback)callback);
-        break;
-    default:
-        break;
+static std::unordered_map<Signal, SimpleEvent> event_map = {
+    {FILE_EVENT_NEW_WORKSPACE, SimpleEvent()},
+    {FILE_EVENT_FILE_CHOOSEN, SimpleEvent()},
+    {FILE_EVENT_FOLDER_CHOOSEN, SimpleEvent()}
+};
+
+void Listen(Signal signal, EventCallback callback){
+    auto itr = event_map.find(signal);
+    if(itr != event_map.end()){
+        itr->second.Connect(callback);
     }
 }
 
-void filemanagement::StopListenEvent(filemanagement::Event event, EventCallback callback){
-    switch (event) {
-    case FILE_EVENT_FILE_CHOOSEN:
-        file_choosen_callbacks.erase((FileChoosenCallback)callback);
-        break;
-    case FILE_EVENT_FOLDER_CHOOSEN:
-        folder_choosen_callbacks.erase((FolderChoosenCallback)callback);
-        break;
-    case FILE_EVENT_NEW_WORKSPACE:
-        new_workspace_callbacks.erase((NewWorkspaceCallback)callback);
-        break;
-    default:
-        break;
+void StopListen(Signal signal, EventCallback callback){
+    auto itr = event_map.find(signal);
+    if(itr != event_map.end()){
+        itr->second.Disconnect(callback);
     }
 }
 
-void filemanagement::InvokeFileChoosen(FileData* file){
-    for (FileChoosenCallback cb: file_choosen_callbacks){
-        cb(file);
+void InvokeFileChoosen(FileData* file){
+    const SimpleEvent &event = event_map.at(FILE_EVENT_FILE_CHOOSEN);
+    for(EventCallback callback : event.GetCallbackSet()){
+        ((FileChoosenCallback)callback)(file);
     }
 }
-void filemanagement::InvokeFolderChoosen(FileData* file){
-    for (FolderChoosenCallback cb: folder_choosen_callbacks){
-        cb(file);
+
+void InvokeFolderChoosen(FileData* file){
+    const SimpleEvent &event = event_map.at(FILE_EVENT_FOLDER_CHOOSEN);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((FolderChoosenCallback)callback)(file);
     }
 }
-void filemanagement::InvokeNewWorkspace(const Workspace* ws){
-    for (NewWorkspaceCallback cb: new_workspace_callbacks){
-        cb(ws);
+void InvokeNewWorkspace(const Workspace* ws){
+    const SimpleEvent &event = event_map.at(FILE_EVENT_NEW_WORKSPACE);
+    for (EventCallback callback: event.GetCallbackSet()){
+        ((NewWorkspaceCallback)callback)(ws);
     }
 }
+
+}// namespace filemanagement

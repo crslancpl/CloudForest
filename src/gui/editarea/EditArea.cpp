@@ -13,6 +13,7 @@
 #include "style/Style.h"
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
+#include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
@@ -162,7 +163,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
 
-    this->ListenEvent(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
+    this->Listen(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
@@ -318,8 +319,9 @@ void EditArea::SetLanguage(Language* lang){
     gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
     //call callbacks
-    for (auto callback : m_langChangedCallbacks) {
-        callback(this, lang);
+    const SimpleEvent &event =  m_eventMap.at(TEXTAREA_CLASS_LANG_CHANGED);
+    for (auto callback : event.GetCallbackSet()) {
+        ((LangChangedCallback)callback)(this, lang);
     }
 }
 

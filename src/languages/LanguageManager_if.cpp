@@ -3,18 +3,19 @@
 #include "datatypes/common.h"
 #include "pythonbackend/language_mod_Py.h"
 #include "src/gui/editarea/EditArea.h"
+#include "toolset/event/Event.h"
 #include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
-#include <cstdio>
 #include <unordered_map>
 #include <string>
 #include <unordered_set>
 
+typedef void (*NewLanguageCallback)(Language*);
+
 static std::unordered_map<const Language*, std::unordered_set<const EditArea*>> lang_to_editarea_map = {};
 static std::unordered_map<const EditArea*, const Language*> editarea_to_lang_map = {};
-
-static std::unordered_set<void(*)(Language*)> new_lang_callback_list = {};
+static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
 
 Language unknow_lang = {
     .name = "Unknown",
@@ -27,9 +28,13 @@ static std::unordered_map<std::string, Language*> language_list = {
     {"Unknown", &unknow_lang}
 };
 
-static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
+
 
 namespace langmanager{
+
+std::unordered_map<Signal, SimpleEvent> event_map = {
+    {LANG_MANAGER_NEW_LANG, SimpleEvent()}
+};
 
 void Init(){
     LanguageListenerStart();
@@ -45,8 +50,9 @@ void NewLanguage(Language* lang){
         file_extension_to_language_map.emplace(fileext, lang);
     }
 
-    for(auto callback : new_lang_callback_list){
-        callback(lang);
+    const SimpleEvent &event = event_map.at(LANG_MANAGER_NEW_LANG);
+    for(EventCallback callback : event.GetCallbackSet()){
+        ((NewLanguageCallback)callback)(lang);
     }
 }
 
@@ -90,23 +96,17 @@ const std::unordered_map<std::string, Language*>& GetLanguageList(){
     return language_list;
 }
 
-void ListenEvent(Event event, void (*callback)()){
-    switch (event) {
-    case LANG_MANAGER_NEW_LANG:
-        new_lang_callback_list.emplace((void(*)(Language*))callback);
-        break;
-    default:
-        break;
+void Listen(Signal signal, void (*callback)()){
+    auto itr = event_map.find(signal);
+    if(itr != event_map.end()){
+        itr->second.Connect(callback);
     }
 }
 
-void StopListenEvent(Event event, void (*callback)()){
-    switch (event) {
-    case LANG_MANAGER_NEW_LANG:
-        new_lang_callback_list.erase((void(*)(Language*))callback);
-        break;
-    default:
-        break;
+void StopListen(Signal signal, void (*callback)()){
+    auto itr = event_map.find(signal);
+    if(itr != event_map.end()){
+        itr->second.Disconnect(callback);
     }
 }
 

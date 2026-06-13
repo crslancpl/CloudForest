@@ -11,7 +11,10 @@ add_library( ${PROJECT_NAME}
     FileReader.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CLOUDFOREST_ROOT_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${CLOUDFOREST_ROOT_DIR}
+  ${CLOUDFOREST_ROOT_DIR}/src/gui
+)
 
 target_link_libraries(${PROJECT_NAME}
     PkgConfig::GTK4

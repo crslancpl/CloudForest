@@ -46,7 +46,7 @@ unsigned short FilePanel::Offset = 20;
 FilePanel::FilePanel(){
     GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_workspaceArea = GTK_BOX(gtk_builder_get_object(builder, "ws-area"));
-    filemanagement::ListenEvent(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
+    filemanagement::Listen(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     SetDefaultSize(270, 20);
     SetHorizontalExpand(false);
     SetVerticalExpand(true);

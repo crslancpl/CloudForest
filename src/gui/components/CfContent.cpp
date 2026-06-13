@@ -1,5 +1,5 @@
 #include "CfContent.h"
-#include "datatypes/common.h"
+#include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
@@ -11,6 +11,10 @@ CfContent::CfContent(){
     m_base = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
     gtk_scrolled_window_set_child(m_base, GTK_WIDGET(m_viewport));
     gtk_viewport_set_scroll_to_focus(m_viewport, false);
+
+    m_eventMap = {
+        {CFCONTENT_CLASS_NAME_CHANGED, SimpleEvent()}
+    };
 }
 
 GtkWidget *CfContent::GetBaseWidget(){
@@ -61,28 +65,23 @@ void CfContent::SetChild(CfContent* child){
 void CfContent::SetContentName(const std::string &name){
     m_contentName = name;
     //call event callbacks
-    for (void (*callback)(const std::string&, CfContent*) : m_nameChangedCallbacks) {
-        callback(name, this);
+    const SimpleEvent &event = m_eventMap.at(CFCONTENT_CLASS_NAME_CHANGED);
+    for (EventCallback callback : event.GetCallbackSet()) {
+        ((NameChangedCallback)callback)(name, this);
     }
 }
 
-void CfContent::ListenEvent(Event event, EventCallback callback){
-    switch (event) {
-    case CFCONTENT_CLASS_NAME_CHANGED:
-        m_nameChangedCallbacks.emplace((NameChangedCallback)callback);
-        break;
-    default:
-        break;
+void CfContent::Listen(Signal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if (itr != m_eventMap.end()) {
+        itr->second.Connect(callback);
     }
 }
 
-void CfContent::StopListenEvent(Event event, EventCallback callback){
-    switch (event) {
-    case CFCONTENT_CLASS_NAME_CHANGED:
-        m_nameChangedCallbacks.erase((NameChangedCallback)callback);
-        break;
-    default:
-        break;
+void CfContent::StopListen(Signal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if (itr != m_eventMap.end()) {
+        itr->second.Disconnect(callback);
     }
 }
 

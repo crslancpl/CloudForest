@@ -1,7 +1,7 @@
 #ifndef FILECALLBACK_H_
 #define FILECALLBACK_H_
 
-#include "datatypes/common.h"
+#include "toolset/event/Event.h"
 #include "src/filemanagement/FileOperation.h"
 
 #include <gio/gio.h>
@@ -11,15 +11,15 @@ typedef struct Workspace Workspace;
 
 namespace filemanagement{
 
-enum Event : char{
+enum Signal : char{
     FILE_EVENT_FILE_CHOOSEN,
     FILE_EVENT_FOLDER_CHOOSEN,
     FILE_EVENT_FILE_SAVED,
     FILE_EVENT_NEW_WORKSPACE
 };
 
-void ListenEvent(Event event, EventCallback callback);
-void StopListenEvent(Event event, EventCallback callback);
+void Listen(Signal event, EventCallback callback);
+void StopListen(Signal event, EventCallback callback);
 
 void InvokeFileChoosen(FileData* file);
 void InvokeFolderChoosen(FileData* file);

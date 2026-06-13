@@ -2,11 +2,11 @@
 #define CFCONTENT_H_
 
 #include "CfComponent.h"
-#include "datatypes/common.h"
+#include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 
 //forward declaration
 class CfContent;
@@ -31,12 +31,12 @@ public:
     CfContent *GetChild();
     void SetChild(CfContent* child);
 
-    enum Event{
+    enum Signal{
         CFCONTENT_CLASS_NAME_CHANGED
     };
 
-    void ListenEvent(Event event, EventCallback callback);
-    void StopListenEvent(Event event, EventCallback callback);
+    void Listen(Signal signal, EventCallback callback);
+    void StopListen(Signal signal, EventCallback callback);
 
     virtual void Destroy();
     virtual void ChildDataChanged(CfContent* child);
@@ -52,7 +52,8 @@ private:
     GtkViewport *m_viewport;
     GtkWidget *m_contentWidget;
     std::string m_contentName;
-    std::unordered_set<NameChangedCallback> m_nameChangedCallbacks;
+
+    std::unordered_map<Signal, SimpleEvent> m_eventMap;
 };
 
 namespace cfcontent{

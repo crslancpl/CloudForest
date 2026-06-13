@@ -111,7 +111,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     PyModule_AddObject(cfmodule, "setting", (PyObject*)PyInit_setting_module());
 
-    filemanagement::ListenEvent(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
+    filemanagement::Listen(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     return cfmodule;
 }
 

@@ -3,9 +3,8 @@
 
 #include "datatypes/common.h"
 #include "src/gui/components/TextArea.h"
-#include "src/gui/editarea/EditArea_if.h"
-#include "src/gui/editarea/EditArea.h"
 #include "CFCore.h"
+#include "editarea/EditArea.h"
 
 #include <unordered_map>
 

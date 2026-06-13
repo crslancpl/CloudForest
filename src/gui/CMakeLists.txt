@@ -65,7 +65,7 @@ target_link_libraries(${PROJECT_NAME}
     PkgConfig::GTK4 Python::Python
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
   ${CLOUDFOREST_ROOT_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
 )

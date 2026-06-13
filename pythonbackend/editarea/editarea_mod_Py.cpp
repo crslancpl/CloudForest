@@ -7,6 +7,7 @@
 #include "src/gui/editarea/EditArea.h"
 #include "src/gui/editarea/EditArea_if.h"
 #include "datatypes/file.h"
+#include "toolset/event/Event.h"
 
 #include <cstdio>
 #include <floatobject.h>
@@ -204,6 +205,6 @@ PyMODINIT_FUNC PyInit_editarea_module(){
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());
-    editarea::ListenEvent(editarea::EDITAREA_CREATED, (void (*)())editarea_py_register);
+    editarea::Listen(editarea::EDITAREA_CREATED, (EventCallback)editarea_py_register);
     return eamodule;
 }

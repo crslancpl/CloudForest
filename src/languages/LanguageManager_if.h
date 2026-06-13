@@ -2,6 +2,7 @@
 #define LANGUAGEMANAGER_IF_H_
 
 #include "src/gui/editarea/EditArea.h"
+#include "toolset/event/Event.h"
 #include <string>
 #include <unordered_map>
 
@@ -24,12 +25,12 @@ Language* FindFileLanguage(const char* filename);
 const std::unordered_set<const EditArea*>& GetEditAreasFromLanguage(const Language* lang);
 const std::unordered_map<std::string, Language*>& GetLanguageList();
 
-enum Event{
+enum Signal{
     LANG_MANAGER_NEW_LANG,
 };
 
-void ListenEvent(Event event, void (*callback)());
-void StopListenEvent(Event event, void (*callback)());
+void Listen(Signal signal, EventCallback callback);
+void StopListen(Signal signal, EventCallback callback);
 
 }
 

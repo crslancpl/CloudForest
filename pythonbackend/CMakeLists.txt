@@ -14,6 +14,9 @@ add_library(${PROJECT_NAME} STATIC
     ${EDITAREA}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CLOUDFOREST_ROOT_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${CLOUDFOREST_ROOT_DIR}
+  ${CLOUDFOREST_ROOT_DIR}/src/gui
+)
 
 target_link_libraries(${PROJECT_NAME} Python::Python PkgConfig::GTK4)

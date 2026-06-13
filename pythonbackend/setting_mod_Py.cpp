@@ -91,8 +91,8 @@ static struct PyModuleDef setting_moddule = {
 PyMODINIT_FUNC PyInit_setting_module(){
     extension_enabled_callback_list = PyList_New(0);
     extension_disabled_callback_list = PyList_New(0);
-    setting::ListenEvent(setting::SETTING_EXTENSION_ENABLED, (EventCallback)OnExtensionEnabled);
-    setting::ListenEvent(setting::SETTING_EXTENSION_DISABLED, (EventCallback)OnExtensionDisabled);
+    setting::Listen(setting::SETTING_EXTENSION_ENABLED, (EventCallback)OnExtensionEnabled);
+    setting::Listen(setting::SETTING_EXTENSION_DISABLED, (EventCallback)OnExtensionDisabled);
     PyObject *settingmodule = PyModule_Create(&setting_moddule);
     return settingmodule;
 }
