@@ -2,9 +2,12 @@
 #include "datatypes/common.h"
 
 #include <Python.h>
+#include <abstract.h>
 #include <ceval.h>
 #include <cstdio>
 #include <dictobject.h>
+#include <floatobject.h>
+#include <iterobject.h>
 #include <listobject.h>
 #include <longobject.h>
 #include <object.h>
@@ -13,6 +16,45 @@
 #include <string>
 #include <unicodeobject.h>
 
+
+/*
+ * PythonEvents
+ */
+
+
+void PythonEvent::Connect(PyObject* callback){
+    if(PyCallable_Check(callback)){
+        Py_INCREF(callback);
+        m_callbacksSet.emplace(callback);
+    }
+}
+
+void PythonEvent::Disconnect(PyObject* callback){
+    if(PyCallable_Check(callback)){
+        for (PyObject* cb : m_callbacksSet) {
+            if(Py_Is(cb, callback)){
+                Py_DECREF(callback);
+                m_callbacksSet.erase(callback);
+            }
+        }
+    }
+}
+
+void PythonEvent::Invoke(PyObject* args){
+    for (PyObject* callback : m_callbacksSet) {
+        if(!PyCallable_Check(callback)){
+            // check again
+            m_callbacksSet.erase(callback);
+            continue;
+        }
+
+        PyObject_CallObject(callback, args);
+    }
+}
+
+/*
+ * PythonEvent is recommended
+ */
 void RunCallback(PyObject* callbacklist, PyObject* args){
     // callbacks should always be a list
     for(size_t itr = 0; itr < PyList_GET_SIZE(callbacklist); itr++){

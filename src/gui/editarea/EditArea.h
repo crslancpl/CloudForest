@@ -2,9 +2,11 @@
 #define EDITAREA_H_
 
 #include "components/TextArea.h"
+#include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <mutex>
 
@@ -19,11 +21,15 @@ public:
     EditArea(FileData* file);
     ~EditArea();
 
+    enum EditAreaSignal{
+        EDITAREA_CLASS_LANG_CHANGED,
+        EDITAREA_CLASS_CLOSED
+    };
+
     bool isSaved = true;
 
     //override
     void SetLanguage(Language*) override;
-    void Destroy() override;
 
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
@@ -40,6 +46,7 @@ public:
     void LoadCursorPos();
     void LoadFile(FileData *file);
     void Save();
+    void Close();
     void ShowSearchDialog();
     void ShowReplaceDialog();
     void Insert(unsigned int line, unsigned int column, const char* text);
@@ -60,7 +67,11 @@ public:
     void FileSaved(FileData *file);
     void RangeSelected(ZRange* range);
 
+    void Listen(EditAreaSignal signal, EventCallback callback);
+    void StopListen(EditAreaSignal signal, EventCallback callback);
+
 private:
+    std::unordered_map<EditAreaSignal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
     DiagnosticPopover* m_diagnosticPopover;

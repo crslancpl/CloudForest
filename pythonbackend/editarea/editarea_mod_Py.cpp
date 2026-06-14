@@ -14,8 +14,13 @@
 #include <longobject.h>
 #include <methodobject.h>
 #include <object.h>
+#include <string>
 #include <unicodeobject.h>
+#include <unordered_map>
 
+
+#define EVENT_NEW_EDITAREA "new-editarea"
+#define EVENT_LANGUAGE_CHANGED "language-changed"
 
 /*
  * Module
@@ -23,8 +28,11 @@
 
 // lists
 static PyObject *registered_editareas = nullptr;
-static PyObject *ea_registered_callback_list = nullptr;
-static PyObject *ea_language_changed_callback_list = nullptr;
+
+static PythonEventMap event_map = {
+    {EVENT_LANGUAGE_CHANGED, PythonEvent()},
+    {EVENT_NEW_EDITAREA, PythonEvent()}
+};
 
 py_EditArea* find_editarea_py(const EditArea *ea){
     if (registered_editareas == nullptr) {
@@ -50,7 +58,8 @@ void editarea_py_invoke_text_changed(EditArea *ea){
     Py_INCREF(py_ea);
     const Difference &dif = ea->GetPendingDiff();
     PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
-    RunCallback(py_ea->textChangedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_TEXT_CHANGED);
+    event.Invoke(args);
     Py_DECREF(args);
     ReleaseThreadLock();
 }
@@ -61,7 +70,8 @@ void editarea_py_invoke_lang_changed(EditArea *ea){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->langChangedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_LANG_CHANGED);
+    event.Invoke(args);
     Py_DECREF(args);
     ReleaseThreadLock();
 }
@@ -72,7 +82,8 @@ void editarea_py_invoke_cursor_moved(EditArea *ea, const ZPosition &pos){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
-    RunCallback(py_ea->cursorMovedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CURSOR_MOVED);
+    event.Invoke(args);
     Py_DECREF((PyObject*) args);
     ReleaseThreadLock();
 }
@@ -83,7 +94,8 @@ void editarea_py_invoke_completion_requested(EditArea *ea){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->completionRequestedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
+    event.Invoke(args);
     Py_DECREF((PyObject*) args);
     ReleaseThreadLock();
 }
@@ -94,7 +106,8 @@ void editarea_py_invoke_file_saved(EditArea *ea){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->fileSavedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_SAVED);
+    event.Invoke(args);
     Py_DECREF((PyObject*) args);
     ReleaseThreadLock();
 }
@@ -105,25 +118,25 @@ void editarea_py_invoke_filedata_changed(EditArea *ea){
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
-    RunCallback(py_ea->fileDataChangedCallbacks, args);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_DATA_CHANGED);
+    event.Invoke(args);
     Py_DECREF((PyObject*) args);
     ReleaseThreadLock();
 }
 
 static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
     char* event;
-    PyObject* callbackfunc;
-    if(!PyArg_ParseTuple(args, "sO", &event, &callbackfunc)){
+    PyObject* callback;
+    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
         return nullptr;
     }
-    if(!PyCallable_Check(callbackfunc)){
+    if(!PyCallable_Check(callback)){
         return nullptr;
     }
 
-    if (strcmp(event, "new-editarea") == 0) {
-        PyList_Append(ea_registered_callback_list, callbackfunc);
-    } else if(strcmp(event, "language-changed") == 0){
-        PyList_Append(ea_language_changed_callback_list, callbackfunc);
+    auto itr = event_map.find(event);
+    if (itr != event_map.end()){
+        itr->second.Connect(callback);
     }
 
     Py_RETURN_NONE;
@@ -189,7 +202,9 @@ void editarea_py_register(EditArea *ea){
     PyObject *filepath = PyUnicode_FromString(ea->GetFilePath());
     PyObject *args = PyTuple_Pack(1, newEa);
     PyList_Append(registered_editareas, (PyObject*)newEa);
-    RunCallback(ea_registered_callback_list, args);
+
+    PythonEvent &event = event_map.at(EVENT_NEW_EDITAREA);
+    event.Invoke(args);
 
     Py_DECREF(filepath);
     Py_DECREF(args);
@@ -199,8 +214,6 @@ void editarea_py_register(EditArea *ea){
 
 PyMODINIT_FUNC PyInit_editarea_module(){
     registered_editareas = PyList_New(0);
-    ea_registered_callback_list = PyList_New(0);
-    ea_language_changed_callback_list = PyList_New(0);
 
     PyObject *eamodule = PyModule_Create(&editarea_module);
 

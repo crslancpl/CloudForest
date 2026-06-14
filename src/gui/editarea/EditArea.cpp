@@ -118,6 +118,11 @@ void EditArea::LoadGui(){
     /* Loading EditArea from UI/EditArea.ui */
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/EditArea.ui");
 
+    m_eventMap = {
+        {EDITAREA_CLASS_CLOSED, SimpleEvent()},
+        {EDITAREA_CLASS_LANG_CHANGED, SimpleEvent()}
+    };
+
     /* Binding */
     m_baseGrid = GTK_GRID(gtk_builder_get_object(builder, "base-grid"));
     // FileInfo panel(top)
@@ -163,7 +168,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
 
-    this->Listen(TEXTAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
+    this->Listen(EDITAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
@@ -319,7 +324,7 @@ void EditArea::SetLanguage(Language* lang){
     gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
     //call callbacks
-    const SimpleEvent &event =  m_eventMap.at(TEXTAREA_CLASS_LANG_CHANGED);
+    const SimpleEvent &event =  m_eventMap.at(EDITAREA_CLASS_LANG_CHANGED);
     for (auto callback : event.GetCallbackSet()) {
         ((LangChangedCallback)callback)(this, lang);
     }
@@ -354,12 +359,6 @@ void EditArea::LoadFile(FileData* newfile){
     editarea_py_invoke_filedata_changed(this);
 }
 
-
-
-void EditArea::Destroy(){
-    editarea::CloseFile(m_editingFile);
-}
-
 void EditArea::Save(){
     gtk_text_buffer_get_start_iter(m_textViewBuffer, &m_startItr);
     gtk_text_buffer_get_end_iter(m_textViewBuffer, &m_endItr);
@@ -367,6 +366,15 @@ void EditArea::Save(){
 
     saving_editarea = this;
     filemanagement::SaveFile(m_editingFile, content, OnFileSaved);
+}
+
+void EditArea::Close(){
+    SimpleEvent &event = m_eventMap.at(EDITAREA_CLASS_CLOSED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((void (*)(EditArea*)) callback)(this);
+    }
+
+    editarea::CloseFile(m_editingFile);
 }
 
 void EditArea::ShowSearchDialog() {
@@ -528,6 +536,15 @@ void EditArea::FileSaved(FileData *file){
 
 }
 
-/*
- * Private
- */
+void EditArea::Listen(EditAreaSignal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if(itr != m_eventMap.end()){
+        itr->second.Connect(callback);
+    }
+}
+void EditArea::StopListen(EditAreaSignal signal, EventCallback callback){
+    auto itr = m_eventMap.find(signal);
+    if(itr != m_eventMap.end()){
+        itr->second.Disconnect(callback);
+    }
+}

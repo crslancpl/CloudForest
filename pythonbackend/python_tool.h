@@ -2,9 +2,26 @@
 #define PYTHON_TOOL_H_
 
 #include "datatypes/common.h"
+
 #include <Python.h>
 #include <pytypedefs.h>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+
+class PythonEvent;
+
+typedef std::unordered_map<std::string, PythonEvent> PythonEventMap;
+
+class PythonEvent{
+public:
+    virtual void Connect(PyObject* callback);
+    virtual void Disconnect(PyObject* callback);
+    virtual void Invoke(PyObject* args);
+
+protected:
+    std::unordered_set<PyObject*> m_callbacksSet;
+};
 
 void RunCallback(PyObject* callbacklist, PyObject* args);
 void CheckList(PyObject* list);
@@ -16,6 +33,9 @@ void ExecuteFile(const std::string &path);
 
 PyThreadState* GetMainThreadState();
 
+/*
+ * GIL
+ */
 void ReleaseThreadLock();
 void RestoreThreadLock();
 void PrintGILState();

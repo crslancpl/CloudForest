@@ -170,14 +170,14 @@ void TextArea::CountLines(){
 
 
 
-void TextArea::Listen(Signal signal, EventCallback callback){
+void TextArea::Listen(TextAreaSignal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);
     if(itr != m_eventMap.end()){
         itr->second.Connect(callback);
     }
 }
 
-void TextArea::StopListenEvent(Signal signal, EventCallback callback){
+void TextArea::StopListen(TextAreaSignal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);
     if(itr != m_eventMap.end()){
         itr->second.Disconnect(callback);

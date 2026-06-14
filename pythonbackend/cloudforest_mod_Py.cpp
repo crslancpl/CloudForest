@@ -10,7 +10,6 @@
 
 #include <cstdio>
 #include <abstract.h>
-#include <cstring>
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
@@ -21,21 +20,34 @@
 #include <pylifecycle.h>
 #include <pystate.h>
 #include <pytypedefs.h>
+#include <string>
 #include <tupleobject.h>
 #include <unicodeobject.h>
+#include <unordered_map>
+
+#define EVENT_APP_CLOSED "app-closed"
+#define EVENT_NEW_WORKSPACE "new-workspace"
 
 //callback lists
-static PyObject *cloudforest_module_app_closed_callbacks;
-static PyObject *cloudforest_module_new_workspace_callbacks;
 
+static std::unordered_map<std::string, PythonEvent> event_map= {
+    {EVENT_APP_CLOSED, PythonEvent()},
+    {EVENT_NEW_WORKSPACE, PythonEvent()}
+};
 
 static void OnNewWorkspace(Workspace* ws){
     RestoreThreadLock();
     PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->name), PyUnicode_FromString(ws->rootFolderData->absoPath));
-    RunCallback(cloudforest_module_new_workspace_callbacks, args);
+    PythonEvent &event = event_map.at(EVENT_NEW_WORKSPACE);
+    event.Invoke(args);
     Py_DECREF(args);
     ReleaseThreadLock();
 }
+
+
+/*
+ * Module function
+ */
 
 static PyObject *cloudforest_module_test(PyObject *self, PyObject *args){
     printf("this is from CloudForest module\n");
@@ -66,20 +78,20 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
 
 static PyObject* cloudforest_module_add_callback(PyObject *self, PyObject *args){
     char* event;
-    PyObject* callbackfunc;
+    PyObject* callback;
 
-    if(!PyArg_ParseTuple(args, "sO", &event, &callbackfunc)){
+    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
         Py_RETURN_NAN;
     }
-    if(!PyCallable_Check(callbackfunc)){
+    if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
 
-    if (strcmp(event, "app-closed") == 0) {
-        PyList_Append(cloudforest_module_app_closed_callbacks, callbackfunc);
-    }else if(strcmp(event, "new-workspace") == 0){
-        PyList_Append(cloudforest_module_new_workspace_callbacks, callbackfunc);
+    auto itr = event_map.find(event);
+    if (itr != event_map.end()){
+        itr->second.Connect(callback);
     }
+
     Py_RETURN_NONE;
 }
 
@@ -105,8 +117,7 @@ static struct PyModuleDef cloudforest_module = {
 
 PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyObject *cfmodule = PyModule_Create(&cloudforest_module);
-    cloudforest_module_app_closed_callbacks = PyList_New(0);
-    cloudforest_module_new_workspace_callbacks = PyList_New(0);
+
     PyModule_AddObject(cfmodule, "editarea", (PyObject*)PyInit_editarea_module());
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     PyModule_AddObject(cfmodule, "setting", (PyObject*)PyInit_setting_module());
@@ -118,6 +129,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
 void cloudforest_module_invoke_app_closed(){
     printf("cpp: cloudforest_module app closed\n");
     PyObject *args = PyTuple_Pack(0);
-    RunCallback(cloudforest_module_app_closed_callbacks, args);
+    PythonEvent &event = event_map.at(EVENT_APP_CLOSED);
+    event.Invoke(args);
     Py_DECREF(args);
 }

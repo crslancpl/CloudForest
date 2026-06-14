@@ -67,5 +67,5 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CLOUDFOREST_ROOT_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CLOUDFOREST_ROOT_DIR}/src/gui
 )

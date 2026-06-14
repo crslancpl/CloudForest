@@ -6,7 +6,6 @@
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
-#include <unordered_set>
 
 
 //forward declaration
@@ -36,15 +35,15 @@ public:
     void ApplyTagByLinePos(unsigned int line, unsigned int pos, unsigned int length,const char *tagname);
     void CountLines();
 
-    enum Signal{
+    enum TextAreaSignal{
         TEXTAREA_CLASS_LANG_CHANGED
     };
 
-    void Listen(Signal signal, EventCallback callback);
-    void StopListenEvent(Signal signal, EventCallback callback);
+    void Listen(TextAreaSignal signal, EventCallback callback);
+    void StopListen(TextAreaSignal signal, EventCallback callback);
 
 protected:
-    std::unordered_map<Signal, SimpleEvent> m_eventMap;
+    std::unordered_map<TextAreaSignal, SimpleEvent> m_eventMap;
 
     Language* m_language = nullptr;
     int m_firstLineNumber = 1;

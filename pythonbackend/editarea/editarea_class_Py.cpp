@@ -57,45 +57,42 @@ static PyObject *py_EditArea_get_content(py_EditArea *self, PyObject *args){
 }
 
 static PyObject *py_EditArea_add_callback(py_EditArea *self, PyObject *args){
-    char *eventtype;
-    PyObject *func;
+    char *event;
+    PyObject *callback;
 
-    if(!PyArg_ParseTuple(args, "sO", &eventtype, &func)){
+    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
         Py_RETURN_NAN;
     }
 
-    if(!PyCallable_Check(func)){
+    if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
 
-    PyObject* callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
-    if(callbacklist == nullptr) {
-        Py_RETURN_NAN;
+    auto itr = self->eventMap->find(event);
+    if (itr != self->eventMap->end()){
+        itr->second.Connect(callback);
     }
-
-    AddToList(callbacklist, func);
 
     Py_RETURN_NONE;
 }
 
 static PyObject *py_EditArea_rm_callback(py_EditArea *self, PyObject *args){
     static unsigned int rm_id = 0;
-    char *eventtype;
-    PyObject *func;
+    char *event;
+    PyObject *callback;
 
-    if(!PyArg_ParseTuple(args, "sO",&eventtype,&func)){
+    if(!PyArg_ParseTuple(args, "sO",&event,&callback)){
         Py_RETURN_NAN;
     }
 
-    if(!PyCallable_Check(func)){
+    if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
 
-    PyObject *callbacklist = PyDict_GetItemString(self->callbackDictionary, eventtype);
-
-    if(callbacklist == Py_None) Py_RETURN_NAN;
-
-    RemoveFromList(callbacklist, func);
+    auto itr = self->eventMap->find(event);
+    if (itr != self->eventMap->end()){
+        itr->second.Disconnect(callback);
+    }
 
     Py_RETURN_NONE;
 }
@@ -216,20 +213,17 @@ static PyMethodDef py_EditArea_class_method[]={
 
 static PyObject* py_EditArea_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
     py_EditArea *self = (py_EditArea*)type->tp_alloc(type, 0);
-    self->callbackDictionary = PyDict_New();
-    self->cursorMovedCallbacks = PyList_New(0);
-    self->textChangedCallbacks = PyList_New(0);
-    self->completionRequestedCallbacks = PyList_New(0);
-    self->langChangedCallbacks = PyList_New(0);
-    self->fileSavedCallbacks = PyList_New(0);
-    self->fileDataChangedCallbacks = PyList_New(0);
 
-    PyDict_SetItemString(self->callbackDictionary, "cursor-moved", self->cursorMovedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "text-changed", self->textChangedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "completion-requested", self->completionRequestedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "lang-changed", self->langChangedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "file-saved", self->fileSavedCallbacks);
-    PyDict_SetItemString(self->callbackDictionary, "file-data-changed", self->fileDataChangedCallbacks);
+    self->eventMap = new PythonEventMap();// freed on aedit area closed
+
+    self->eventMap->emplace(PY_EDITAREA_EVENT_CLOSED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_COMPLETION_REQUESTED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_CURSOR_MOVED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_FILE_DATA_CHANGED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_FILE_SAVED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_LANG_CHANGED, PythonEvent());
+    self->eventMap->emplace(PY_EDITAREA_EVENT_TEXT_CHANGED, PythonEvent());
+
     return (PyObject *) self;
 }
 
@@ -239,7 +233,7 @@ PyTypeObject py_EditArea_class = {
     .tp_basicsize = sizeof(py_EditArea),
     .tp_doc = "Edit area of the CloudForest",
     .tp_methods = py_EditArea_class_method,
-    .tp_new = py_EditArea_new
+    .tp_new = py_EditArea_new,
 };
 
 py_EditArea* py_EditArea_create_object(){

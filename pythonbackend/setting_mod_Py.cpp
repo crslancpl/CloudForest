@@ -1,34 +1,39 @@
 #include "setting_mod_Py.h"
 
-#include "datatypes/common.h"
 #include "datatypes/extension.h"
 #include "pythonbackend/python_tool.h"
 #include "src/Setting.h"
 
-#include <cstdio>
-#include <cstring>
 #include <listobject.h>
 #include <object.h>
 #include <pytypedefs.h>
 #include <tupleobject.h>
 #include <unicodeobject.h>
+#include <unordered_map>
 
-static PyObject* extension_enabled_callback_list;
-static PyObject* extension_disabled_callback_list;
+#define EVENT_EXTENSION_ENABLED "extension-enabled"
+#define EVENT_EXTENSION_DISABLED "extension-disabled"
+
+static PythonEventMap event_map = {
+    {EVENT_EXTENSION_DISABLED, PythonEvent()},
+    {EVENT_EXTENSION_ENABLED, PythonEvent()}
+};
 
 static void OnExtensionEnabled(Extension* extension){
     RestoreThreadLock();
-    PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(strdup(extension->folder)));
-    RunCallback(extension_enabled_callback_list, arg);
-    Py_DECREF(arg);
+    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(strdup(extension->folder)));
+    PythonEvent &event = event_map.at(EVENT_EXTENSION_ENABLED);
+    event.Invoke(args);
+    Py_DECREF(args);
     ReleaseThreadLock();
 }
 
 static void OnExtensionDisabled(Extension* extension){
     RestoreThreadLock();
-    PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(extension->folder));
-    RunCallback(extension_disabled_callback_list, arg);
-    Py_DECREF(arg);
+    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(extension->folder));
+    PythonEvent &event = event_map.at(EVENT_EXTENSION_DISABLED);
+    event.Invoke(args);
+    Py_DECREF(args);
     ReleaseThreadLock();
 }
 
@@ -65,10 +70,9 @@ static PyObject* setting_module_add_callback(PyObject* self, PyObject* args){
         Py_RETURN_NAN;
     }
 
-    if (strcmp(event, "extension-enabled") == 0) {
-        PyList_Append(extension_enabled_callback_list, callback);
-    }else if (strcmp(event, "extension-disabled") == 0) {
-        PyList_Append(extension_disabled_callback_list, callback);
+    auto itr = event_map.find(event);
+    if (itr != event_map.end()){
+        itr->second.Connect(callback);
     }
 
     Py_RETURN_NONE;
@@ -89,8 +93,6 @@ static struct PyModuleDef setting_moddule = {
 };
 
 PyMODINIT_FUNC PyInit_setting_module(){
-    extension_enabled_callback_list = PyList_New(0);
-    extension_disabled_callback_list = PyList_New(0);
     setting::Listen(setting::SETTING_EXTENSION_ENABLED, (EventCallback)OnExtensionEnabled);
     setting::Listen(setting::SETTING_EXTENSION_DISABLED, (EventCallback)OnExtensionDisabled);
     PyObject *settingmodule = PyModule_Create(&setting_moddule);
