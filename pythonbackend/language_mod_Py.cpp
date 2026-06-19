@@ -73,7 +73,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
         lang->fileExtensions.emplace(ext);
     }
 
-    langmanager::NewLanguage(lang);
+    langmanager::AddToLanguageList(lang);
 
     Py_RETURN_NONE;
 }
@@ -95,7 +95,7 @@ static PyObject *language_module_listen_language_used(PyObject *self, PyObject* 
     if(callbacklist == nullptr){
         callbacklist = PyList_New(0);
         PyDict_SetItemString(lang_used_callbacks_dict, langname, callbacklist);
-        ListenNewEditAreaForLanguage(langname, language_module_invoke_new_editarea);
+        langmanager::ListenNewEditArea(langname, language_module_invoke_new_editarea);
     }
 
     AddToList(callbacklist, callback);
@@ -111,8 +111,8 @@ static PyObject *language_module_get_all_editareas(PyObject *self, PyObject *arg
         Py_RETURN_NAN;
     }
 
-    Language* lang = langmanager::FindLanguage(langname);
-    auto set = langmanager::GetEditAreasFromLanguage(lang);
+    Language* lang = langmanager::FindByName(langname);
+    auto set = langmanager::GetEditAreas(lang);
     for (const EditArea* ea : set){
         PyList_Append(editarealist, (PyObject*) find_editarea_py(ea));
     }
@@ -137,7 +137,7 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
     if(callbacklist == nullptr){
         callbacklist = PyList_New(0);
         PyDict_SetItemString(lang_to_callbacks_dict, langname, callbacklist);
-        ListenNewEditAreaForLanguage(langname, language_module_invoke_new_editarea);
+        langmanager::ListenNewEditArea(langname, language_module_invoke_new_editarea);
     }
 
     AddToList(callbacklist, callback);

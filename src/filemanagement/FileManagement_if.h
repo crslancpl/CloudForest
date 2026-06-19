@@ -15,7 +15,7 @@
 typedef struct FileData FileData;
 
 
-namespace filemanagement{
+namespace filemanager{
 void Init();
 }
 

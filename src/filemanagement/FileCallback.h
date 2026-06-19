@@ -9,13 +9,12 @@
 // forward declare
 typedef struct Workspace Workspace;
 
-namespace filemanagement{
+namespace filemanager{
 
 enum Signal : char{
     FILE_EVENT_FILE_CHOOSEN,
     FILE_EVENT_FOLDER_CHOOSEN,
-    FILE_EVENT_FILE_SAVED,
-    FILE_EVENT_NEW_WORKSPACE
+    FILE_EVENT_FILE_SAVED
 };
 
 void Listen(Signal event, EventCallback callback);

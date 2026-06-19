@@ -21,9 +21,9 @@ public:
     EditArea(FileData* file);
     ~EditArea();
 
-    enum EditAreaSignal{
-        EDITAREA_CLASS_LANG_CHANGED,
-        EDITAREA_CLASS_CLOSED
+    enum Signal{
+        LANG_CHANGED,
+        CLOSED
     };
 
     bool isSaved = true;
@@ -33,6 +33,8 @@ public:
 
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
+
+    const FileData* GetFileData() const;
     const char* GetFilePath() const;
     const unsigned int GetFileVersion() const;
     const Difference &GetPendingDiff() const;
@@ -67,11 +69,11 @@ public:
     void FileSaved(FileData *file);
     void RangeSelected(ZRange* range);
 
-    void Listen(EditAreaSignal signal, EventCallback callback);
-    void StopListen(EditAreaSignal signal, EventCallback callback);
+    void Listen(Signal signal, EventCallback callback);
+    void StopListen(Signal signal, EventCallback callback);
 
 private:
-    std::unordered_map<EditAreaSignal, SimpleEvent> m_eventMap;
+    std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
     DiagnosticPopover* m_diagnosticPopover;

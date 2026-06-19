@@ -2,7 +2,9 @@
 
 #include "FilePanelButtons.h"
 #include "datatypes/file.h"
-#include "src/filemanagement/FileManagement_if.h"
+#include "src/filemanagement/FileTree.h"
+#include "src/session/FileData.h"
+#include "src/session/SessionEvent.h"
 #include "Gui_if.h"
 
 #include <gio/gio.h>
@@ -17,14 +19,14 @@
 WorkspaceBox::WorkspaceBox(Workspace* ws): m_ws(ws){
     m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 1));
     gtk_widget_add_css_class(GTK_WIDGET(m_box), "ws-box");
-    m_label = GTK_LABEL(gtk_label_new(ws->name));
+    m_label = GTK_LABEL(gtk_label_new(ws->GetName()));
     gtk_box_append(m_box, GTK_WIDGET(m_label));
-    FPFolderButton* folderbtn = new FPFolderButton(ws->wsBranch, 0);
+    FPFolderButton* folderbtn = new FPFolderButton(ws, 0);
     gtk_box_append(m_box, folderbtn->GetBaseWidget());
 }
 
 void WorkspaceBox::SetName(const char* name){
-    m_ws->name = strdup(name);
+    m_ws->SetCustomName(name);
     gtk_label_set_text(m_label, name);
 }
 
@@ -46,7 +48,7 @@ unsigned short FilePanel::Offset = 20;
 FilePanel::FilePanel(){
     GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_workspaceArea = GTK_BOX(gtk_builder_get_object(builder, "ws-area"));
-    filemanagement::Listen(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
+    session::Listen(session::NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     SetDefaultSize(270, 20);
     SetHorizontalExpand(false);
     SetVerticalExpand(true);

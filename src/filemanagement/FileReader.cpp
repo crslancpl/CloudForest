@@ -1,6 +1,8 @@
 #include "FileReader.h"
 
+#include "FileTree.h"
 #include "datatypes/file.h"
+#include "toolset/tools/StringSorting.h"
 
 #include <gio/gio.h>
 
@@ -10,28 +12,19 @@
  * Use ExpandFileBranch() to read the child of a branch.
  */
 
-namespace filemanagement {
+namespace filemanager {
 
-FileBranch* CreateFileTree(FileData* rootfolderdata){
-    if(rootfolderdata->type != G_FILE_TYPE_DIRECTORY){
-        return nullptr;
-    }
-
-    FileBranch* fb = new FileBranch();
-    fb->name = rootfolderdata->fileName;
-    fb->fileData = rootfolderdata;
-    fb->parentBranch = nullptr;
-    return fb;
-}
-
-void ExpandFileBranch(FileBranch *branch){
-    if(!branch->childBranch.empty()){
+void ExpandFolderBranch(FolderBranch *branch){
+    if(branch->GetIsChildLoaded()){
         // already expanded
         return;
     }
+    if (branch->GetFileData()->isVirtual) {
+        branch->SetIsChildLoaded(true);
+        return;
+    }
 
-
-    GFileEnumerator *enumerator = g_file_enumerate_children(branch->fileData->file, "*", G_FILE_QUERY_INFO_NONE,
+    GFileEnumerator *enumerator = g_file_enumerate_children(branch->GetFileData()->file, "*", G_FILE_QUERY_INFO_NONE,
         nullptr, nullptr);
 
     GFileInfo* info;
@@ -41,11 +34,16 @@ void ExpandFileBranch(FileBranch *branch){
         FileData* data = LoadFileData(child, info);
         if (child == nullptr|| data->fileInfo == nullptr) continue;
 
-        FileBranch* childbranch = new FileBranch();
-        childbranch->fileData = data;
-        childbranch->parentBranch = branch;
-        branch->childBranch.emplace(childbranch);
+        if (data->type == G_FILE_TYPE_REGULAR){
+            FileBranch* b = new FileBranch(data);
+            branch->AddChildFile(b);
+        } else if (data->type == G_FILE_TYPE_DIRECTORY){
+            FolderBranch* b = new FolderBranch(data);
+            branch->AddChildFolder(b);
+        }
+
     }
+    branch->SetIsChildLoaded(true);
 }
 
 
@@ -56,6 +54,7 @@ FileData* LoadFileData(GFile *file, GFileInfo* info){
     newfile->fileInfo = info;
     newfile->absoPath = g_file_get_path(file);
     newfile->fileName = g_file_get_basename(file);
+    newfile->sortingCode1 = CalculateSortingCode(newfile->fileName);
     newfile->icon = g_file_query_info(file,
         "standard::icon",
         G_FILE_QUERY_INFO_NONE,
@@ -75,4 +74,4 @@ void ReadFileText(FileData *file, char **output){
     g_file_load_contents(file->file, nullptr, output, nullptr, nullptr, nullptr);
 }
 
-}// namespace filemanagment
+}// namespace filemanager

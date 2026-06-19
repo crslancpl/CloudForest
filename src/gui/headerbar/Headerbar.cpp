@@ -6,18 +6,18 @@
 #include <gtk/gtkshortcut.h>
 
 #include "src/filemanagement/FileManagement_if.h"
-#include "editarea/EditArea_if.h"
+#include "src/session/EditAreaData.h"
 #include "Gui_if.h"
 #include "settingpanel/SettingPanel.h"
 
 
 
 static void LoadFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app){
-    filemanagement::ChooseFile();
+    filemanager::ChooseFile();
 }
 
 static void LoadFolderClicked(GSimpleAction *action, GVariant *parameter, gpointer app){
-    filemanagement::ChooseFolder();
+    filemanager::ChooseFolder();
 }
 
 static void IdeButtonClicked(GtkButton *self, void* userdata){
@@ -25,7 +25,7 @@ static void IdeButtonClicked(GtkButton *self, void* userdata){
 }
 
 static void NewFileClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {
-    editarea::EditNewFile();
+    session::EditNewFile();
 }
 
 static void SearchClicked(GSimpleAction *action, GVariant *parameter, gpointer app) {

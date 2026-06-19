@@ -5,7 +5,9 @@
 #include "pythonbackend/python_tool.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/gui/editarea/EditArea.h"
-#include "src/gui/editarea/EditArea_if.h"
+#include "src/session/EditAreaData.h"
+#include "src/session/FileData.h"
+#include "src/session/SessionEvent.h"
 #include "datatypes/file.h"
 #include "toolset/event/Event.h"
 
@@ -14,7 +16,6 @@
 #include <longobject.h>
 #include <methodobject.h>
 #include <object.h>
-#include <string>
 #include <unicodeobject.h>
 #include <unordered_map>
 
@@ -149,7 +150,7 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
         Py_RETURN_NAN;
     }
 
-    EditArea* ea = editarea::FindEditArea(filepath);
+    EditArea* ea = session::FindEditAreaByPath(filepath);
     if(!ea){
         Py_RETURN_NONE;
     }
@@ -163,9 +164,9 @@ static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* a
         Py_RETURN_NAN;
     }
 
-    Workspace* ws = filemanagement::FindWorkspaceFromPath(ea->editarea->GetFilePath());
+    Workspace* ws = session::FindWorkspaceByPath(ea->editarea->GetFilePath());
     if(ws){
-        return PyUnicode_FromString(ws->rootFolderData->absoPath);
+        return PyUnicode_FromString(ws->GetFileData()->absoPath);
     }else{
         Py_RETURN_NONE;
     }
@@ -218,6 +219,6 @@ PyMODINIT_FUNC PyInit_editarea_module(){
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());
-    editarea::Listen(editarea::EDITAREA_CREATED, (EventCallback)editarea_py_register);
+    session::Listen(session::EDITAREA_CREATED, (EventCallback)editarea_py_register);
     return eamodule;
 }

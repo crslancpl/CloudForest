@@ -5,12 +5,13 @@ class EditArea;
 
 typedef struct Language Language;
 
+namespace langmanager{
 
-void LanguageListenerStart();
+void StartListener();
 
-void LanguageNewEditArea(EditArea* ea, Language* lang);
-void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const char*, EditArea*));
+void AddEditArea(EditArea* ea, Language* lang);
+void ListenNewEditArea(const char* langname, void (*callback)(const char*, EditArea*));
 
-
+}// namespace langmanager
 
 #endif

@@ -4,36 +4,30 @@
 #include "datatypes/common.h"
 #include "pythonbackend/language_mod_Py.h"
 #include "src/gui/editarea/EditArea.h"
-#include "src/gui/editarea/EditArea_if.h"
+#include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
 
+namespace langmanager{
 
-#include <cstdio>
-#include <unordered_map>
-#include <unordered_set>
+typedef void (*AddEditAreaCallback)(const char*, const EditArea*);
 
-class LangCallback{
+class AddEditAreaEvemt : public SimpleEvent{
 public:
-    LangCallback(Language* lang){
+    AddEditAreaEvemt(const Language* lang){
         m_lang = lang;
     }
 
-    void InsertCallback(void(*callback)(const char*, EditArea*) ){
-        m_callbacks.insert(callback);
-    }
-
     void Run(EditArea* ea){
-        for(auto cb : m_callbacks){
-            cb(m_lang->name, ea);
+        for(EventCallback callback : m_callbackSet){
+            ((AddEditAreaCallback)callback)(m_lang->name, ea);
         }
     }
 
 private:
-    Language *m_lang;
-    std::unordered_set<void(*)(const char*, EditArea*)> m_callbacks = {};
+    const Language *m_lang;
 };
 
-static std::unordered_map<Language*, LangCallback*> lang_and_callbacks_map;
+static std::unordered_map<Language*, AddEditAreaEvemt> lang_and_callbacks_map;
 
 
 static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
@@ -43,41 +37,42 @@ static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
 
 static void OnEditAreaCreated(EditArea* ea){
     // pass to editarea::AddNewEditAreaCallback()
-    ea->Listen(EditArea::EDITAREA_CLASS_LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
+    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
     language_module_invoke_new_editarea(ea->GetLanguage()->name, ea);
 }
 
-void LanguageNewEditArea(EditArea* ea, Language* lang){
-    auto l = lang_and_callbacks_map.find(lang);
-    LangCallback* langcallback;
-    if(l == lang_and_callbacks_map.end()){
-        langcallback = new LangCallback(lang);
-        lang_and_callbacks_map.emplace(lang, langcallback);
-    }else{
-        langcallback = l->second;
-    }
+void AddEditArea(EditArea* ea, Language* lang){
+    auto itr = lang_and_callbacks_map.find(lang);
 
-   langcallback->Run(ea);
+    if(itr != lang_and_callbacks_map.end()){
+        AddEditAreaEvemt &event = itr->second;
+        event.Run(ea);
+    }else{
+        auto pair = lang_and_callbacks_map.emplace(lang, AddEditAreaEvemt(lang));
+        AddEditAreaEvemt &event = pair.first->second;
+        event.Run(ea);
+    }
 }
 
-void ListenNewEditAreaForLanguage(const char* langname, void (*callback)(const char*, EditArea*)){
-    const auto lang = langmanager::FindLanguage(langname);
+void ListenNewEditArea(const char* langname, void (*callback)(const char*, EditArea*)){
+    const auto lang = langmanager::FindByName(langname);
     if(!lang){
         return;
     }
 
-    auto l = lang_and_callbacks_map.find(lang);
-    LangCallback* langcallback;
-    if(l == lang_and_callbacks_map.end()){
-        langcallback = new LangCallback(lang);
-        lang_and_callbacks_map.emplace(lang, langcallback);
+    auto itr = lang_and_callbacks_map.find(lang);
+    if(itr != lang_and_callbacks_map.end()){
+        AddEditAreaEvemt &event = itr->second;
+        event.Connect((EventCallback)callback);
     }else{
-        langcallback = l->second;
+        auto pair = lang_and_callbacks_map.emplace(lang, AddEditAreaEvemt(lang));
+        AddEditAreaEvemt &event = pair.first->second;
+        event.Connect((EventCallback)callback);
     }
-
-    langcallback->InsertCallback(callback);
 }
 
-void LanguageListenerStart(){
-    editarea::Listen(editarea::EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
+void StartListener(){
+    session::Listen(session::EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
 }
+
+} //namepsace langmanager

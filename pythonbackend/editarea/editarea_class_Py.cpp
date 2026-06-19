@@ -45,7 +45,7 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
         Py_RETURN_NAN;
     }
 
-    self->editarea->SetLanguage(langmanager::FindLanguage(lang));
+    self->editarea->SetLanguage(langmanager::FindByName(lang));
 
     Py_RETURN_NONE;
 }

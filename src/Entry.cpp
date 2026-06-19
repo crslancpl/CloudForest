@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 int main (int argc,char *argv[]){
-    filemanagement::Init();// does not depend on other parts of the app
+    filemanager::Init();// does not depend on other parts of the app
     syntaxprovider::Init();// does not depend on other parts of the app
     langmanager::Init();// connects only static events
 

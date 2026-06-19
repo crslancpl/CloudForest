@@ -8,7 +8,7 @@
 
 
 #include "toolset/tools/Tool.h"
-#include "src/gui/editarea/EditArea_if.h"
+#include "src/session/EditAreaData.h"
 #include "src/gui/editarea/EditArea.h"
 #include "CFEmbed.h"
 
@@ -24,12 +24,12 @@ static void RequestFile(cf_FileRequest_msg *freq){
         fresp.Content = strcat(strdup(std::string("data/").c_str()) , freq->FilePath);
         cf_Send_Message(FILERESP, &fresp);
     }else{
-        auto targetEditArea = editarea::FindEditArea(freq->FilePath);
+        auto targetEditArea = session::FindEditAreaByPath(freq->FilePath);
+
         if(!targetEditArea){
             return;
         }
         auto text = targetEditArea->GetContent();
-
         fresp.Content = text;
         fresp.IsPath = false;
         cf_Send_Message(FILERESP, &fresp);
@@ -44,7 +44,7 @@ static void Draw(cf_Highlight_msg* highlight){
         {CF_NEWLINE, "invisible"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
-    auto targetEditArea = editarea::FindEditArea(highlight->file);
+    auto targetEditArea = session::FindEditAreaByPath(highlight->file);
     auto tagname = tagnames.find(highlight->type)->second;
 
     targetEditArea->ApplyTagByLinePos(
@@ -57,10 +57,10 @@ static void CfMessageReceiver(cf_MessageType type, void* data){
      * Receiving messages form CloudyForest
      */
     if(type == CONNECT){
-        g_print("CloudyForest Connected\n");
+        //g_print("CloudyForest Connected\n");
     }else if(type == FILEREQ){
         RequestFile((cf_FileRequest_msg*)data);
-    }else if(type == DRAW){;
+    }else if(type == DRAW){
         cf_Highlight_msg *highlight =(cf_Highlight_msg*)data;
         Draw(highlight);
     }

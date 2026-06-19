@@ -5,10 +5,11 @@ set(FILEMANAGEMENT
 )
 
 add_library( ${PROJECT_NAME}
+    FileCallback.cpp
     FileManagement_if.cpp
     FileOperation.cpp
-    FileCallback.cpp
     FileReader.cpp
+    FileTree.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

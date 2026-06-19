@@ -8,7 +8,7 @@ typedef std::unordered_set<EventCallback> EventCallbacksSet ;
 
 class SimpleEvent{
 public:
-    virtual void Connect(void (*callback)());
+    virtual void Connect(void (*callback)());// connect function
     virtual void Disconnect(void (*callback)());
 
     const EventCallbacksSet &GetCallbackSet() const;

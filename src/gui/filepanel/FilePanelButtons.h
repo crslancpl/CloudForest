@@ -1,6 +1,7 @@
 #ifndef FILEPANELBUTTONS_H_
 #define FILEPANELBUTTONS_H_
 
+#include "src/filemanagement/FileTree.h"
 #include "datatypes/file.h"
 #include "components/CfComponent.h"
 
@@ -17,7 +18,7 @@ typedef struct FileData FileData;
 /* File panel folder button */
 class FPFolderButton : public CfComponent {
 public:
-    FPFolderButton(FileBranch *folderbranch, int level);
+    FPFolderButton(FolderBranch *folderbranch, int level);
     ~FPFolderButton();
 
 
@@ -30,7 +31,7 @@ public:
     GtkWidget* GetBaseWidget() override;
 
 private:
-    FileBranch* m_folderBranch;
+    FolderBranch* m_folderBranch;
     GtkBuilder *builder;// unref by UnrefBuilder();
     GtkBox *m_baseBox;// Containing FolderToggleBut and Content
     GtkButton *m_folderToggleBut;
@@ -51,7 +52,7 @@ public:
     FPFileButton(FileBranch *filebranch, int level);// the level of Root folder is 0
     ~FPFileButton();
 
-    void Open();
+    void Clicked();
     GtkWidget* GetBaseWidget() override;
 
 private:

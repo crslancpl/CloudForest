@@ -1,0 +1,3 @@
+# Session Data
+
+## EditArea data

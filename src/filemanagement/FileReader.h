@@ -4,19 +4,17 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
-//forward declare
+class FolderBranch;
 
 typedef struct FileData FileData;
-typedef struct FileBranch FileBranch;
 
-namespace filemanagement{
+namespace filemanager{
 
-FileBranch* CreateFileTree(FileData* rootfolderdata);
-void ExpandFileBranch(FileBranch* branch);
+void ExpandFolderBranch(FolderBranch* branch);
 
 FileData* LoadFileData(GFile* filedata, GFileInfo* info);
 void ReadFileText(FileData* filedata, char** output);
 
-}// namespace filemanagement
+}// namespace filemanager
 
 #endif

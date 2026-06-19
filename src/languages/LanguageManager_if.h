@@ -12,17 +12,16 @@ typedef struct Language Language;
 namespace langmanager{
 void Init();
 
-void Clear();
-
 //called by python srcipt `pythonscripts/language/lang_loader.py"
-void NewLanguage(Language* lang);
+void AddToLanguageList(Language* lang);
+void ClearLanguageList();
 
 void UpdateEditAreaLanguage(const EditArea* ea, Language* lang);
 
-Language* FindLanguage(const char* langname);
-Language* FindFileLanguage(const char* filename);
+Language* FindByName(const char* langname);
+Language* FindByFileExtension(const char* filename);
 
-const std::unordered_set<const EditArea*>& GetEditAreasFromLanguage(const Language* lang);
+const std::unordered_set<const EditArea*>& GetEditAreas(const Language* lang);
 const std::unordered_map<std::string, Language*>& GetLanguageList();
 
 enum Signal{
@@ -32,6 +31,6 @@ enum Signal{
 void Listen(Signal signal, EventCallback callback);
 void StopListen(Signal signal, EventCallback callback);
 
-}
+}// namespace langmanager
 
 #endif

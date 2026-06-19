@@ -1,10 +1,10 @@
 #include "Gui_if.h"
 
-#include "editarea/EditArea_if.h"
 #include "filepanel/FilePanel.h"
 #include "windows/MainWindow.h"
 #include "settingpanel/SettingPanel.h"
 #include "style/Style.h"
+#include "src/session/EditAreaData.h"
 #include "layouts/tab/CfTab_if.h"
 #include "layouts/tab/CfTabLayout.h"
 
@@ -23,10 +23,10 @@ static void AppActivated (GtkApplication *app, gpointer user_data){
     current_setting_panel = new SettingPanel(current_main_window);// freed on app closed
 
     current_main_window->Insert(current_file_panel);
-    CfTabLayout* tab = tablayout::NewTabLayout();// freed on app closed
+    CfTabLayout* tab = new CfTabLayout();// freed on app closed
     current_main_window->Insert(tab);
 
-    editarea::EditNewFile();
+    session::EditNewFile();
     current_main_window->Show();
 }
 

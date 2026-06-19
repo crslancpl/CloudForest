@@ -2,6 +2,7 @@
 
 #include "CfTabSwitcher.h"
 #include "CfTab_if.h"
+#include "src/session/TabData.h"
 
 #include <gtk/gtk.h>
 
@@ -17,6 +18,7 @@ CfTabLayout::CfTabLayout(){
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_switcherScrolledWindow));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_stack));
     SetContentWidget(GTK_WIDGET(m_base));
+    session::SetFocusedTabLayout(this);
 }
 
 

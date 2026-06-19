@@ -57,6 +57,8 @@ def read_as_publish_diagnostics(params: dict, version_dict: dict) -> None:
         return
     # print(f"diagnostics: {path} version {version}")
     ea = editarea.find_by_file_path(path)
+    if not ea:
+        return
     ea.clear_diagnostics()
 
     for diagnostic in diagnostics:

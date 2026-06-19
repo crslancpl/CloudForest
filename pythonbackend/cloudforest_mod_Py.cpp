@@ -6,7 +6,8 @@
 #include "editarea/editarea_mod_Py.h"
 #include "src/filemanagement/FileCallback.h"
 #include "src/filemanagement/FileOperation.h"
-#include "datatypes/file.h"
+#include "src/session/SessionEvent.h"
+#include "src/session/FileData.h"
 
 #include <cstdio>
 #include <abstract.h>
@@ -37,7 +38,7 @@ static std::unordered_map<std::string, PythonEvent> event_map= {
 
 static void OnNewWorkspace(Workspace* ws){
     RestoreThreadLock();
-    PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->name), PyUnicode_FromString(ws->rootFolderData->absoPath));
+    PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->GetName()), PyUnicode_FromString(ws->GetFileData()->absoPath));
     PythonEvent &event = event_map.at(EVENT_NEW_WORKSPACE);
     event.Invoke(args);
     Py_DECREF(args);
@@ -65,10 +66,10 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
      */
 
     PyObject* wslist = PyList_New(0);
-    for(Workspace* ws : filemanagement::GetWorkspaceList()){
+    for(Workspace* ws : session::GetWorkspaceList()){
         PyObject* wsproperty = PyDict_New();
-        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->name));
-        std::string uri = "file://" + std::string(ws->rootFolderData->absoPath);
+        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetName()));
+        std::string uri = "file://" + std::string(ws->GetFileData()->absoPath);
         PyDict_SetItemString(wsproperty, "uri", PyUnicode_FromString(uri.c_str()));
 
         PyList_Append(wslist, wsproperty);
@@ -122,7 +123,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     PyModule_AddObject(cfmodule, "setting", (PyObject*)PyInit_setting_module());
 
-    filemanagement::Listen(filemanagement::FILE_EVENT_NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
+    session::Listen(session::NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
     return cfmodule;
 }
 

@@ -1,6 +1,5 @@
 #include "EditArea.h"
 
-#include "EditArea_if.h"
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
 #include "DiagnosticPanel.h"
@@ -13,11 +12,13 @@
 #include "style/Style.h"
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
+#include "src/session/EditAreaData.h"
 #include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -87,10 +88,10 @@ static void OnFileSaved(FileData* file){
 }
 
 EditArea::EditArea(FileData* file){
-    editarea::InsertToEditAreaList(this);
     /* Load gui */
     this->LoadGui();
     this->LoadFile(file);
+
     m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);// freed on EditArea deleted
 
     /* Initialize variables */
@@ -104,7 +105,7 @@ EditArea::EditArea(FileData* file){
     this->ConnectSignals();
 
     if(m_language == nullptr){
-        SetLanguage(langmanager::FindLanguage("Unknown"));
+        SetLanguage(langmanager::FindByName("Unknown"));
     }
 }
 
@@ -119,8 +120,8 @@ void EditArea::LoadGui(){
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/EditArea.ui");
 
     m_eventMap = {
-        {EDITAREA_CLASS_CLOSED, SimpleEvent()},
-        {EDITAREA_CLASS_LANG_CHANGED, SimpleEvent()}
+        {EditArea::CLOSED, SimpleEvent()},
+        {EditArea::LANG_CHANGED, SimpleEvent()}
     };
 
     /* Binding */
@@ -168,7 +169,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
 
-    this->Listen(EDITAREA_CLASS_LANG_CHANGED,(EventCallback)OnLangChanged);
+    this->Listen(EditArea::LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
@@ -300,6 +301,10 @@ GdkRectangle* EditArea::GetCursorRectangle(){
     return &m_cursorRec;
 }
 
+const FileData* EditArea::GetFileData() const{
+    return m_editingFile;
+}
+
 const char* EditArea::GetFilePath() const{
     if(m_editingFile){
         return m_editingFile->absoPath;
@@ -319,39 +324,42 @@ void EditArea::SetLanguage(Language* lang){
     if (lang == m_language) {
         return;
     }
+
     langmanager::UpdateEditAreaLanguage(this, lang);
     m_language = lang;
     gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
+
     //call callbacks
-    const SimpleEvent &event =  m_eventMap.at(EDITAREA_CLASS_LANG_CHANGED);
+    const SimpleEvent &event =  m_eventMap.at(EditArea::LANG_CHANGED);
     for (auto callback : event.GetCallbackSet()) {
         ((LangChangedCallback)callback)(this, lang);
     }
 }
 
 void EditArea::LoadFile(FileData* newfile){
-    editarea::RemoveFromEditAreaList(this);
     m_editingFile = newfile;
+    m_editingFile->editArea = this;
+
     if(m_editingFile->isVirtual){
         m_originalContent = strdup("\0");
         m_originalLength = 0;
     }else{
-        filemanagement::ReadFileText(m_editingFile, &m_originalContent);
+        filemanager::ReadFileText(m_editingFile, &m_originalContent);
         m_originalLength = strlen(m_originalContent);
 
         gtk_text_buffer_set_text(m_textViewBuffer, m_originalContent, -1);
     }
 
-    editarea::InsertToEditAreaList(this);
-
     gtk_button_set_label(m_locationBut, m_editingFile->absoPath);
-
-    this->SetLanguage(langmanager::FindFileLanguage(m_editingFile->fileName));
+    auto lang = langmanager::FindByFileExtension(m_editingFile->fileName);
+    this->SetLanguage(lang);
     this->SetContentName(m_editingFile->fileName);
+
     if(m_parent){
         m_parent->ChildDataChanged(this);
     }
+
     if(m_child){
         m_child->ParentDataChanged(this);
     }
@@ -365,16 +373,16 @@ void EditArea::Save(){
     char* content = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 
     saving_editarea = this;
-    filemanagement::SaveFile(m_editingFile, content, OnFileSaved);
+    filemanager::SaveFile(m_editingFile, content, OnFileSaved);
 }
 
 void EditArea::Close(){
-    SimpleEvent &event = m_eventMap.at(EDITAREA_CLASS_CLOSED);
+    SimpleEvent &event = m_eventMap.at(EditArea::CLOSED);
     for (EventCallback callback : event.GetCallbackSet()){
         ((void (*)(EditArea*)) callback)(this);
     }
 
-    editarea::CloseFile(m_editingFile);
+    session::CloseFile(m_editingFile);
 }
 
 void EditArea::ShowSearchDialog() {
@@ -421,7 +429,7 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
             this->Save();
             return true;
         case GDK_KEY_o:
-            filemanagement::ChooseFile();
+            filemanager::ChooseFile();
             return true;
         default:
             break;
@@ -536,13 +544,13 @@ void EditArea::FileSaved(FileData *file){
 
 }
 
-void EditArea::Listen(EditAreaSignal signal, EventCallback callback){
+void EditArea::Listen(Signal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);
     if(itr != m_eventMap.end()){
         itr->second.Connect(callback);
     }
 }
-void EditArea::StopListen(EditAreaSignal signal, EventCallback callback){
+void EditArea::StopListen(Signal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);
     if(itr != m_eventMap.end()){
         itr->second.Disconnect(callback);

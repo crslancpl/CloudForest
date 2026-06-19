@@ -11,10 +11,9 @@ typedef void(*FileChoosenCallback)(FileData*);
 typedef void(*FolderChoosenCallback)(FileData*);
 typedef void(*NewWorkspaceCallback)(const Workspace*) ;
 
-namespace filemanagement{
+namespace filemanager{
 
 static std::unordered_map<Signal, SimpleEvent> event_map = {
-    {FILE_EVENT_NEW_WORKSPACE, SimpleEvent()},
     {FILE_EVENT_FILE_CHOOSEN, SimpleEvent()},
     {FILE_EVENT_FOLDER_CHOOSEN, SimpleEvent()}
 };
@@ -46,11 +45,5 @@ void InvokeFolderChoosen(FileData* file){
         ((FolderChoosenCallback)callback)(file);
     }
 }
-void InvokeNewWorkspace(const Workspace* ws){
-    const SimpleEvent &event = event_map.at(FILE_EVENT_NEW_WORKSPACE);
-    for (EventCallback callback: event.GetCallbackSet()){
-        ((NewWorkspaceCallback)callback)(ws);
-    }
-}
 
-}// namespace filemanagement
+}// namespace filemanager

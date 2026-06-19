@@ -1,26 +1,21 @@
 #include "FileOperation.h"
 
-#include "FileCallback.h"
-#include "FileOperation.h"
-#include "datatypes/common.h"
 #include "datatypes/file.h"
 #include "src/filemanagement/FileReader.h"
-#include "src/gui/Gui_if.h"
-#include "src/gui/editarea/EditArea.h"
-#include "src/gui/editarea/EditArea_if.h"
-#include "src/gui/windows/MainWindow.h"
+#include "src/session/EditAreaData.h"
+#include "src/session/FileData.h"
+#include "Gui_if.h"
+#include "editarea/EditArea.h"
+#include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>
-#include <unordered_map>
-#include <unordered_set>
 
 static GtkFileDialog *file_dialog;
 static char *file_content;
 static void (*file_saved_callback)(FileData*);
-static std::unordered_map<FileData*, EditArea*> file_editarea_map;
-static std::unordered_set<Workspace*> workspace_list;
+
 
 static void FileSelected(GObject *source, GAsyncResult *result, void *data){
     GFile *file;
@@ -32,8 +27,8 @@ static void FileSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* filedata = filemanagement::LoadFileData(file, info);
-    filemanagement::OpenFile(filedata);
+    FileData* filedata = filemanager::LoadFileData(file, info);
+    session::EditFile(filedata);
 }
 
 static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
@@ -46,8 +41,8 @@ static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* folderdata = filemanagement::LoadFileData(file, info);
-    filemanagement::NewWorkspace(folderdata);
+    FileData* folderdata = filemanager::LoadFileData(file, info);
+    session::NewWorkspace(folderdata);
 }
 
 static void FileSaved(GObject *source, GAsyncResult *result, void* content){
@@ -55,8 +50,8 @@ static void FileSaved(GObject *source, GAsyncResult *result, void* content){
 
     if(file != nullptr){
         GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
-        FileData* filedata = filemanagement::LoadFileData(file, info);
-        filemanagement::SaveFile(filedata, file_content, file_saved_callback);
+        FileData* filedata = filemanager::LoadFileData(file, info);
+        filemanager::SaveFile(filedata, file_content, file_saved_callback);
     }else{
         //Callback(nullptr, nullptr);
     }
@@ -67,18 +62,28 @@ void FileOperationInit(){
     file_dialog = gtk_file_dialog_new();
 }
 
-namespace filemanagement{
+namespace filemanager{
 
 FileData* CreateVirtualFile(){
     FileData* data = new FileData();
-    data->fileName = strdup("untitled");
-    data->absoPath = strdup(("virtual/" + tools::GenerateId()).c_str());
+    std::string name = "untitled" + tools::GenerateId();
+    data->fileName = strdup(name.c_str());
+    data->absoPath = strdup(("virtual/" + name).c_str());
     data->isVirtual = true;
     data->file = nullptr;
     data->type = G_FILE_TYPE_REGULAR;
     return data;
 }
 
+FileData* CreateVirtualFolder(){
+    FileData* data = new FileData();
+    data->fileName = strdup("virtual");
+    data->absoPath = strdup("virtual/");
+    data->isVirtual = true;
+    data->file = nullptr;
+    data->type = G_FILE_TYPE_DIRECTORY;
+    return data;
+}
 
 void SaveFile(FileData* filedata, char *content, void (*savedcallback)(FileData*)){
     if(filedata->isVirtual){
@@ -113,53 +118,6 @@ void ChooseFile(){
 void ChooseFolder(){
     gtk_file_dialog_set_title(file_dialog, "Choose a folder");
     gtk_file_dialog_select_folder(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, FolderSelected, nullptr);
-}
-
-void NewWorkspace(FileData* rootfolderdata){
-    if(rootfolderdata->type != G_FILE_TYPE_DIRECTORY) return;
-    Workspace* ws = new Workspace();
-    ws->name = rootfolderdata->fileName;
-    ws->rootFolderData = rootfolderdata;
-    ws->wsBranch = CreateFileTree(rootfolderdata);
-    workspace_list.emplace(ws);
-    InvokeNewWorkspace(ws);
-}
-
-const std::unordered_set<Workspace*> &GetWorkspaceList(){
-    return workspace_list;
-}
-
-Workspace* FindWorkspace(FileData *filedata){
-    for(Workspace* ws : workspace_list){
-        if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
-            return ws;
-        }
-    }
-
-    return nullptr;
-}
-
-Workspace* FindWorkspaceFromPath(const char* path){
-    for(Workspace* ws : workspace_list){
-        if(tools::StartWith(path, ws->rootFolderData->absoPath)){
-            return ws;
-        }
-    }
-
-    return nullptr;
-}
-
-void OpenFile(FileData *filedata){
-    for(Workspace* ws : workspace_list){
-        if(tools::StartWith(filedata->absoPath, ws->rootFolderData->absoPath)){
-            //
-        }
-    }
-    editarea::EditFile(filedata);
-}
-
-void CloseFile(FileData *filedata){
-    editarea::CloseFile(filedata);
 }
 
 }// namespace filemanager

@@ -37,14 +37,14 @@ std::unordered_map<Signal, SimpleEvent> event_map = {
 };
 
 void Init(){
-    LanguageListenerStart();
+    StartListener();
 }
 
-void Clear(){
+void ClearLanguageList(){
     language_list.clear();
 }
 
-void NewLanguage(Language* lang){
+void AddToLanguageList(Language* lang){
     language_list.emplace(lang->name, lang);
     for (const std::string& fileext: lang->fileExtensions) {
         file_extension_to_language_map.emplace(fileext, lang);
@@ -73,12 +73,12 @@ void UpdateEditAreaLanguage(const EditArea* ea, Language* lang){
     lang_to_editarea_map[lang].emplace(ea);
 }
 
-Language* FindLanguage(const char* langname){
+Language* FindByName(const char* langname){
     auto result = language_list.find(langname);
     return result != language_list.end() ? result->second : &unknow_lang;
 }
 
-Language* FindFileLanguage(const char* filename){
+Language* FindByFileExtension(const char* filename){
     auto file_ext_pair = tools::TrimText(filename, ".");//"/path/file.txt" -> "/path/file" and "txt"
     if(file_ext_pair.size() != 2){
         return &unknow_lang;
@@ -88,7 +88,7 @@ Language* FindFileLanguage(const char* filename){
     return result != language_list.end() ? result->second : &unknow_lang;
 }
 
-const std::unordered_set<const EditArea*>& GetEditAreasFromLanguage(const Language* lang){
+const std::unordered_set<const EditArea*>& GetEditAreas(const Language* lang){
     return lang_to_editarea_map[lang];
 }
 
