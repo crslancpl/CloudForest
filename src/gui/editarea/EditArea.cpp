@@ -13,6 +13,7 @@
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/session/EditAreaData.h"
+#include "src/session/FileData.h"
 #include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
@@ -25,6 +26,12 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <string>
+
+/*
+ * Yupedef
+ */
+
+typedef void (*EditAreaBasicEvent)(EditArea*);
 
 /*
  * EditArea class
@@ -76,12 +83,6 @@ static void OnDiagnButtonClicked(GtkButton *self, EditArea *parent){
     OpenDiagnosticPanelForEditArea(parent);
 }
 
-static void OnLangChanged(TextArea *parent, Language* lang){
-    EditArea *ea = (EditArea*)parent;
-    ea->LangChanged();
-    syntaxprovider::FastHighlight(ea);
-}
-
 static void OnFileSaved(FileData* file){
     saving_editarea->FileSaved(file);
     saving_editarea = nullptr;
@@ -110,8 +111,18 @@ EditArea::EditArea(FileData* file){
 }
 
 EditArea::~EditArea(){
+    /*
+     * remove data
+     */
+
+    const SimpleEvent &event =  m_eventMap.at(EditArea::CLOSED);
+    for (EventCallback callback : event.GetCallbackSet()) {
+        ((EditAreaBasicEvent)callback)(this);
+    }
+
     this->ClearDiagnostics();
-    delete m_diagnosticPopover;
+
+    m_editingFile->editArea = nullptr;
 }
 
 //private
@@ -121,7 +132,12 @@ void EditArea::LoadGui(){
 
     m_eventMap = {
         {EditArea::CLOSED, SimpleEvent()},
-        {EditArea::LANG_CHANGED, SimpleEvent()}
+        {EditArea::COMPLETION_REQUESTED, SimpleEvent()},
+        {EditArea::CURSOR_MOVED, SimpleEvent()},
+        {EditArea::FILE_DATA_CHANGED, SimpleEvent()},
+        {EditArea::FILE_SAVED, SimpleEvent()},
+        {EditArea::LANG_CHANGED, SimpleEvent()},
+        {EditArea::TEXT_CHANGED, SimpleEvent()}
     };
 
     /* Binding */
@@ -168,8 +184,6 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
-
-    this->Listen(EditArea::LANG_CHANGED,(EventCallback)OnLangChanged);
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
@@ -220,7 +234,6 @@ void EditArea::ProcessDiagnostics(int version){
 
 void EditArea::ClearDiagnostics(){
     m_mutex.lock();
-    CloseDiagnosticPanel();
 
     for (Diagnostic* diagnostic : m_diagnosticsList){
         delete [] diagnostic->message;
@@ -240,7 +253,6 @@ void EditArea::ClearDiagnostics(){
     }
 
     m_mutex.unlock();// ProcessDiagnostics() will lock the mutex
-    this->ProcessDiagnostics(-1);
 }
 
 const std::unordered_set<Diagnostic*>& EditArea::GetDiagnosticsList(){
@@ -332,7 +344,7 @@ void EditArea::SetLanguage(Language* lang){
 
     //call callbacks
     const SimpleEvent &event =  m_eventMap.at(EditArea::LANG_CHANGED);
-    for (auto callback : event.GetCallbackSet()) {
+    for (EventCallback callback : event.GetCallbackSet()) {
         ((LangChangedCallback)callback)(this, lang);
     }
 }
@@ -364,7 +376,10 @@ void EditArea::LoadFile(FileData* newfile){
         m_child->ParentDataChanged(this);
     }
 
-    editarea_py_invoke_filedata_changed(this);
+    SimpleEvent &event = m_eventMap.at(EditArea::FILE_DATA_CHANGED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
 }
 
 void EditArea::Save(){
@@ -374,12 +389,16 @@ void EditArea::Save(){
 
     saving_editarea = this;
     filemanager::SaveFile(m_editingFile, content, OnFileSaved);
+    SimpleEvent &event = m_eventMap.at(EditArea::FILE_SAVED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
 }
 
 void EditArea::Close(){
     SimpleEvent &event = m_eventMap.at(EditArea::CLOSED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((void (*)(EditArea*)) callback)(this);
+        ((EditAreaBasicEvent)callback)(this);
     }
 
     session::CloseFile(m_editingFile);
@@ -502,16 +521,27 @@ void EditArea::TextChanged(){
     m_isTextChanged = true;
 
     syntaxprovider::FastHighlight(this);
-    editarea_py_invoke_text_changed(this);
+    SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
 }
 
 void EditArea::LangChanged(){
-    editarea_py_invoke_lang_changed(this);
+    SimpleEvent &event = m_eventMap.at(EditArea::LANG_CHANGED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
 }
 
 void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
-    editarea_py_invoke_cursor_moved(this, m_cursorZPos);
+
+    SimpleEvent &event = m_eventMap.at(EditArea::CURSOR_MOVED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
+
     if(m_isCurMovedByKey == true){
         gtk_text_view_scroll_to_iter(m_textView, &m_cursorItr, 0.4 ,false, 0.4, 0.4);
         m_isCurMovedByKey = false;
@@ -540,8 +570,10 @@ void EditArea::FileSaved(FileData *file){
     isSaved = true;
     gtk_button_set_label(m_saveBut, "Saved");
 
-    editarea_py_invoke_file_saved(this);
-
+    SimpleEvent &event = m_eventMap.at(EditArea::FILE_SAVED);
+    for (EventCallback callback : event.GetCallbackSet()){
+        ((EditAreaBasicEvent)callback)(this);
+    }
 }
 
 void EditArea::Listen(Signal signal, EventCallback callback){

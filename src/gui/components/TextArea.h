@@ -64,9 +64,4 @@ protected:
     ZPosition m_cursorZPos;
 };
 
-namespace text_editor {
-void NewEmptyEditor();
-void NewEditor(GFile *file);
-}
-
 #endif

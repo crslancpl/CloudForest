@@ -16,6 +16,7 @@ typedef void(*NameChangedCallback)(const std::string&, CfContent*);
 class CfContent : public CfComponent{
 public:
     CfContent();
+    virtual ~CfContent();
 
     GtkWidget *GetBaseWidget() override;
     void SetHorizontalExpand(bool expand);

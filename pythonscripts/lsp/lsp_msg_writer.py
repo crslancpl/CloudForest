@@ -4,6 +4,7 @@
 import json
 
 import cloudforest
+from cloudforest import editarea
 
 BaseMessage = {"jsonrpc": "2.0"}
 
@@ -51,6 +52,19 @@ DidChangeParams = {
     "contentChanges": [],
 }
 
+DidSaveMessage = {
+    **BaseMessage,
+    "method": "textDocument/didSave",
+    "params": None,
+}
+
+DidSaveParams = {
+    "textDocument": None,
+    "text": "",
+}
+
+# DidCloseMessage =
+
 ContentChange = {
     "text": "",
 }
@@ -96,16 +110,16 @@ def exit_notification() -> str:
     return message
 
 
-def did_open_message(path: str, content: str, version: int, langid: str) -> str:
+def did_open_message(ea: editarea.EditArea, langid: str) -> str:
     did_open = {
         "jsonrpc": "2.0",
         "method": "textDocument/didOpen",
         "params": {
             "textDocument": {
-                "uri": "file://" + path,
+                "uri": "file://" + ea.get_file_path(),
                 "languageId": langid,
-                "version": version,
-                "text": content,
+                "version": ea.get_file_version(),
+                "text": ea.get_content(),
             },
         },
     }
@@ -113,13 +127,27 @@ def did_open_message(path: str, content: str, version: int, langid: str) -> str:
     return json.dumps(did_open)
 
 
-def did_close_notification(path: str):
+def did_save_notification(ea: editarea.EditArea):
+    did_save = {
+        "jsonrpc": "2.0",
+        "method": "textDocument/didSave",
+        "params": {
+            "textDocument": {
+                "uri": f"file://{ea.get_file_path()}",
+            },
+            "text": ea.get_content(),
+        },
+    }
+    return json.dumps(did_save)
+
+
+def did_close_notification(ea: editarea.EditArea):
     did_close = {
         "jsonrpc": "2.0",
         "method": "textDocument/didClose",
         "params": {
             "textDocument": {
-                "uri": f"file://{path}",
+                "uri": f"file://{ea.get_file_path()}",
             },
         },
     }

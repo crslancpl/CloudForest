@@ -49,82 +49,6 @@ py_EditArea* find_editarea_py(const EditArea *ea){
     return nullptr;
 }
 
-void editarea_py_invoke_text_changed(EditArea *ea){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) {
-        printf("cannot find ea\n");
-        return;
-    }
-    Py_INCREF(py_ea);
-    const Difference &dif = ea->GetPendingDiff();
-    PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_TEXT_CHANGED);
-    event.Invoke(args);
-    Py_DECREF(args);
-    ReleaseThreadLock();
-}
-
-void editarea_py_invoke_lang_changed(EditArea *ea){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
-    Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_LANG_CHANGED);
-    event.Invoke(args);
-    Py_DECREF(args);
-    ReleaseThreadLock();
-}
-
-void editarea_py_invoke_cursor_moved(EditArea *ea, const ZPosition &pos){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
-    Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CURSOR_MOVED);
-    event.Invoke(args);
-    Py_DECREF((PyObject*) args);
-    ReleaseThreadLock();
-}
-
-void editarea_py_invoke_completion_requested(EditArea *ea){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
-    Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
-    event.Invoke(args);
-    Py_DECREF((PyObject*) args);
-    ReleaseThreadLock();
-}
-
-void editarea_py_invoke_file_saved(EditArea *ea){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
-    Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_SAVED);
-    event.Invoke(args);
-    Py_DECREF((PyObject*) args);
-    ReleaseThreadLock();
-}
-
-void editarea_py_invoke_filedata_changed(EditArea *ea){
-    RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
-    if(py_ea == nullptr) return;
-    Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
-    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_DATA_CHANGED);
-    event.Invoke(args);
-    Py_DECREF((PyObject*) args);
-    ReleaseThreadLock();
-}
-
 static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
     char* event;
     PyObject* callback;
@@ -199,6 +123,7 @@ void editarea_py_register(EditArea *ea){
     newEa->editarea = ea;
     newEa->filePath = strdup(ea->GetFilePath());
 
+    py_EditArea_connect_events(newEa);
     // we are trying to make filepath a variable
     PyObject *filepath = PyUnicode_FromString(ea->GetFilePath());
     PyObject *args = PyTuple_Pack(1, newEa);

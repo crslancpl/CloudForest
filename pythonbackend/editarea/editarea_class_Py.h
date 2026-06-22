@@ -24,6 +24,7 @@ typedef struct py_EditArea{
     PythonEventMap *eventMap;
 }py_EditArea;
 
+void py_EditArea_connect_events(py_EditArea* py_ea);
 
 py_EditArea* py_EditArea_create_object();
 PyTypeObject* PyInit_py_EditArea_class();

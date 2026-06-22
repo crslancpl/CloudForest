@@ -2,6 +2,7 @@
 
 #include "CfTabLayout.h"
 #include "components/CfContent.h"
+#include <cstdio>
 
 
 
@@ -34,6 +35,10 @@ CfTabSwitcher::CfTabSwitcher(CfContent *content,CfTabLayout *parent){
     g_signal_connect(m_closeButton, "clicked", G_CALLBACK(CloseButtonClicked), this);
 }
 
+CfTabSwitcher::~CfTabSwitcher(){
+    //
+}
+
 GtkWidget* CfTabSwitcher::GetBaseWidget(){
     return GTK_WIDGET(m_baseBox);
 }
@@ -47,7 +52,7 @@ void CfTabSwitcher::Switch(){
 }
 
 void CfTabSwitcher::Close(){
-    m_parentTabLayout->Remove(m_content);
+    m_parentTabLayout->Remove(m_content, this);
     m_content->Destroy();
     delete this;
 }

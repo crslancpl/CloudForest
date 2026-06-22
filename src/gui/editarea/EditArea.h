@@ -16,14 +16,19 @@ class SearchReplaceDialog;
 typedef struct Diagnostic Diagnostic;
 typedef struct FileData FileData;
 
-class EditArea:public TextArea{
+class EditArea : public TextArea{
 public:
     EditArea(FileData* file);
     ~EditArea();
 
     enum Signal{
+        CLOSED,
+        COMPLETION_REQUESTED,
+        CURSOR_MOVED,
+        FILE_DATA_CHANGED,
+        FILE_SAVED,
         LANG_CHANGED,
-        CLOSED
+        TEXT_CHANGED
     };
 
     bool isSaved = true;

@@ -4,6 +4,7 @@
 #include "style/Style.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -167,8 +168,6 @@ void TextArea::CountLines(){
         }
     }
 }
-
-
 
 void TextArea::Listen(TextAreaSignal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);

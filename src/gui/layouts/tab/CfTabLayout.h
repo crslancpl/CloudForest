@@ -14,7 +14,7 @@ public:
 
     void ChangeLayout(TabSwitcherTypes layouttype);
     void Show(CfContent *content);
-    void Remove(CfContent *content);
+    void Remove(CfContent *content, CfTabSwitcher *switcher);
 
     void ChildDataChanged(CfContent* child) override;
 

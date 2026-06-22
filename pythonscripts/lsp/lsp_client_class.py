@@ -105,14 +105,14 @@ class LspClient:
     def listen_editarea(self, ea: editarea.EditArea):
         path = ea.get_file_path()
         version = ea.get_file_version()
-        message = lsp_msg_writer.did_open_message(
-            path, ea.get_content(), version, self.language_id
-        )
+        message = lsp_msg_writer.did_open_message(ea, self.language_id)
         self.file_version_dict[path] = version
         # print(f"listening editarea {ea.get_file_path()}")
         self.send(message)
         ea.add_callback("text-changed", self.__editarea_text_changed)
         ea.add_callback("lang-changed", self.__editarea_lang_changed)
+        ea.add_callback("file-saved", self.__editarea_file_saved)
+        ea.add_callback("closed", self.__editarea_closed)
 
     # callbacks
     def editarea_completion_requested(
@@ -133,6 +133,11 @@ class LspClient:
         for ea in language.get_all_editareas(self.language):
             self.listen_editarea(ea)
 
+    def __editarea_closed(self, ea: editarea.EditArea):
+        message = lsp_msg_writer.did_close_notification(ea)
+        self.send(message)
+        print("edit area closed")
+
     def __editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:
             return
@@ -140,6 +145,8 @@ class LspClient:
         self.send(lsp_msg_writer.did_close_notification(ea.get_file_path()))
         ea.rm_callback("text-changed", self.__editarea_text_changed)
         ea.rm_callback("lang-changed", self.__editarea_lang_changed)
+        ea.rm_callback("file-saved", self.__editarea_file_saved)
+        ea.rm_callback("closed", self.__editarea_closed)
 
     def __editarea_text_changed(
         self, ea: editarea.EditArea, range, changed_text, version
@@ -156,6 +163,10 @@ class LspClient:
 
         self.send(message)
 
+    def __editarea_file_saved(self, ea: editarea.EditArea):
+        message = lsp_msg_writer.did_save_notification(ea)
+        self.send(message)
+
     def __find_method_processor(self, method: str, params: dict):
         match method:
             case "window/showMessage":
@@ -166,7 +177,7 @@ class LspClient:
                 read_as_completion(params)
 
     """
-    IO
+    IO event
     """
 
     def send(self, message: str):

@@ -37,9 +37,13 @@ void CfTabLayout::Show(CfContent *content){
     gtk_stack_set_visible_child(m_stack, content->GetBaseWidget());
 }
 
-void CfTabLayout::Remove(CfContent *content){
+void CfTabLayout::Remove(CfContent *content, CfTabSwitcher* switcher){
     gtk_stack_remove(m_stack, content->GetBaseWidget());
-    gtk_box_remove(m_switcherArea, m_switcherMap.find(content)->second->GetBaseWidget());
+    auto itr = m_switcherMap.find(content);
+    if (itr == m_switcherMap.end()) {
+        return;
+    }
+    gtk_box_remove(m_switcherArea, switcher->GetBaseWidget());
 }
 
 void CfTabLayout::ChildDataChanged(CfContent* child){

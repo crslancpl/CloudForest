@@ -19,6 +19,8 @@ enum class TabSwitcherTypes:char{
 class CfTabSwitcher:public CfComponent{
 public:
     CfTabSwitcher(CfContent *content, CfTabLayout *parent);
+    ~CfTabSwitcher();
+
     GtkWidget * GetBaseWidget() override;
     void SetText(const char *text);
     void Switch();

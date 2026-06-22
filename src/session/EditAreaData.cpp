@@ -41,7 +41,11 @@ static EditArea* focused_editarea = nullptr;
  * Callbacks
  */
 void OnEditAreaClosed(EditArea* ea){
-    lang_to_editareas_map.at(ea->GetLanguage()).erase(ea);
+    auto itr = lang_to_editareas_map.find(ea->GetLanguage());
+    if (itr != lang_to_editareas_map.end()) {
+        itr->second.erase(ea);
+    }
+
     editarea_set.erase(ea);
 }
 

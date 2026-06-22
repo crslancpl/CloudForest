@@ -1,7 +1,16 @@
 #include "editarea_class_Py.h"
 
+#include "editarea_mod_Py.h"
+#include "pythonbackend/python_tool.h"
+#include "src/gui/editarea/EditArea.h"
+#include "src/languages/LanguageManager_if.h"
+#include "datatypes/lsp.h"
+#include "datatypes/common.h"
+#include "toolset/event/Event.h"
+
 #include <Python.h>
 #include <cpython/classobject.h>
+#include <cstdio>
 #include <cstring>
 #include <floatobject.h>
 #include <listobject.h>
@@ -10,13 +19,100 @@
 #include <object.h>
 #include <pytypedefs.h>
 
+/*
+ * Callbacks
+ */
 
-#include "pythonbackend/python_tool.h"
-#include "src/gui/editarea/EditArea.h"
-#include "src/languages/LanguageManager_if.h"
-#include "datatypes/lsp.h"
-#include "datatypes/common.h"
+static void OnEditAreaClosed(EditArea *ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    const Difference &dif = ea->GetPendingDiff();
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CLOSED);
+    event.Invoke(args);
+    Py_DECREF(args);
+    ReleaseThreadLock();
+}
 
+static void OnEditAreaCompletionRequested(EditArea *ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
+    event.Invoke(args);
+    Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
+}
+
+static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CURSOR_MOVED);
+    event.Invoke(args);
+    Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
+}
+
+static void OnEditAreaFileDataChanged(EditArea *ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_DATA_CHANGED);
+    event.Invoke(args);
+    Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
+}
+
+static void OnEditAreaFileSaved(EditArea *ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_SAVED);
+    event.Invoke(args);
+    Py_DECREF((PyObject*) args);
+    ReleaseThreadLock();
+}
+
+static void OnEditAreaLangChanged(EditArea *ea, Language* lang){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    PyObject* args = PyTuple_Pack(1, py_ea);
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_LANG_CHANGED);
+    event.Invoke(args);
+    Py_DECREF(args);
+    ReleaseThreadLock();
+}
+
+static void OnEditAreaTextChanged(EditArea *ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = find_editarea_py(ea);
+    if(py_ea == nullptr) return;
+    Py_INCREF(py_ea);
+    const Difference &dif = ea->GetPendingDiff();
+    PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
+    PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_TEXT_CHANGED);
+    event.Invoke(args);
+    Py_DECREF(args);
+    ReleaseThreadLock();
+}
+
+
+/*
+ * Functions
+ */
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){
     PyObject* path = PyUnicode_FromString(self->filePath);
@@ -189,6 +285,7 @@ static PyObject* py_EditArea_process_diagnostics(py_EditArea* self, PyObject *ar
 
 static PyObject* py_EditArea_clear_diagnostics(py_EditArea* self, PyObject *args){
     self->editarea->ClearDiagnostics();
+    self->editarea->ProcessDiagnostics(-1);
     Py_RETURN_NONE;
 }
 
@@ -235,6 +332,18 @@ PyTypeObject py_EditArea_class = {
     .tp_methods = py_EditArea_class_method,
     .tp_new = py_EditArea_new,
 };
+
+void py_EditArea_connect_events(py_EditArea* py_ea){
+    //
+    EditArea* ea = py_ea->editarea;
+    ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
+    ea->Listen(EditArea::COMPLETION_REQUESTED, (EventCallback)OnEditAreaCompletionRequested);
+    ea->Listen(EditArea::CURSOR_MOVED, (EventCallback)OnEditAreaCursorMoved);
+    ea->Listen(EditArea::FILE_DATA_CHANGED, (EventCallback)OnEditAreaFileDataChanged);
+    ea->Listen(EditArea::FILE_SAVED, (EventCallback)OnEditAreaFileSaved);
+    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)OnEditAreaLangChanged);
+    ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)OnEditAreaTextChanged);
+}
 
 py_EditArea* py_EditArea_create_object(){
     return (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);

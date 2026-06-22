@@ -1,6 +1,7 @@
 #include "CfContent.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <string>
@@ -15,6 +16,10 @@ CfContent::CfContent(){
     m_eventMap = {
         {CFCONTENT_CLASS_NAME_CHANGED, SimpleEvent()}
     };
+}
+
+CfContent::~CfContent(){
+    //
 }
 
 GtkWidget *CfContent::GetBaseWidget(){
@@ -87,8 +92,8 @@ void CfContent::StopListen(Signal signal, EventCallback callback){
 
 
 //virtual
+
 void CfContent::Destroy(){
-    //call event callbacks
     delete this;
 }
 
