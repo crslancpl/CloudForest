@@ -12,6 +12,7 @@ void FileOperationInit();
 namespace filemanager{
 
 FileData* CreateFile(char* name, FileData* parentdata);//create file in file panel
+FileData* CreateNewFile();
 FileData* CreateVirtualFile();
 FileData* CreateVirtualFolder();
 

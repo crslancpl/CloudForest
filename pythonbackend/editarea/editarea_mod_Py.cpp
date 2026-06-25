@@ -5,6 +5,7 @@
 #include "pythonbackend/python_tool.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/gui/editarea/EditArea.h"
+#include "src/languages/LanguageManager_if.h"
 #include "src/session/EditAreaData.h"
 #include "src/session/FileData.h"
 #include "src/session/SessionEvent.h"
@@ -16,8 +17,10 @@
 #include <longobject.h>
 #include <methodobject.h>
 #include <object.h>
+#include <pytypedefs.h>
 #include <unicodeobject.h>
 #include <unordered_map>
+#include <unordered_set>
 
 
 #define EVENT_NEW_EDITAREA "new-editarea"
@@ -82,6 +85,26 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
     return  ea_py;
 }
 
+static PyObject *editarea_module_get_by_language(PyObject *self, PyObject *args){
+    char* langname;
+
+    if(!PyArg_ParseTuple(args, "s", &langname)){
+        Py_RETURN_NAN;
+    }
+
+    const Language *lang = langmanager::FindByName(langname);
+    const std::unordered_set<EditArea*>& set = session::GetEditAreasByLanguage(lang);
+    PyObject* editarealist = PyList_New(0);
+    for (const EditArea* ea : set){
+        py_EditArea* py_ea = find_editarea_py(ea);
+        if(py_ea){
+            PyList_Append(editarealist, (PyObject*)py_ea);
+        }
+    }
+
+    return  editarealist;
+}
+
 static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* args){
     py_EditArea* ea;
     if(!PyArg_ParseTuple(args, "O", &ea)){
@@ -99,6 +122,7 @@ static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* a
 static PyMethodDef editarea_module_methods[]={
     {"add_callback", editarea_module_add_callback, METH_VARARGS, "add callback for event"},
     {"find_by_file_path", editarea_module_find_by_file_path, METH_VARARGS, "find EditArea object with file path"},
+    {"get_by_language", editarea_module_get_by_language, METH_VARARGS, "get a list of EditArea by language"},
     {"find_workspace_path", editarea_module_find_workspace_path, METH_VARARGS, "find the path of the editarea's workspace"},
     {nullptr, nullptr, 0, nullptr}
 };

@@ -13,6 +13,9 @@ const std::unordered_set<Workspace*> &GetWorkspaceList();
 Workspace* FindWorkspaceByFileData(FileData* filedata);
 Workspace* FindWorkspaceByPath(const char* path);
 
+void AddSingleFile(FileData* filedata);
+FileData* FindSingleFileByPath(const char* path);
+
 } // namespace session
 
 #endif

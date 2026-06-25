@@ -7,13 +7,14 @@
 #include "toolset/event/Event.h"
 #include "toolset/tools//Tool.h"
 
-
+#include <unordered_map>
 /*
  * Typedef
  */
 typedef void (*NewWorkspaceCallback)(Workspace*);
 
 static std::unordered_set<Workspace*> workspace_list;
+static std::unordered_map<std::string, FileData*> single_file_data_map;
 
 namespace session {
 
@@ -50,6 +51,19 @@ Workspace* FindWorkspaceByPath(const char* path){
         }
     }
 
+    return nullptr;
+}
+
+
+void AddSingleFile(FileData* filedata){
+    single_file_data_map.emplace(filedata->absoPath, filedata);
+}
+
+FileData* FindSingleFileByPath(const char* path){
+    auto itr = single_file_data_map.find(path);
+    if (itr != single_file_data_map.end()) {
+        return itr->second;
+    }
     return nullptr;
 }
 

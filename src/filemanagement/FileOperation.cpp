@@ -9,6 +9,7 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
+#include <filesystem>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
@@ -27,7 +28,8 @@ static void FileSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* filedata = filemanager::LoadFileData(file, info);
+    FileData* filedata = filemanager::LoadFileData(file, info, true);
+    session::AddSingleFile(filedata);
     session::EditFile(filedata);
 }
 
@@ -41,7 +43,7 @@ static void FolderSelected(GObject *source, GAsyncResult *result, void *data){
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* folderdata = filemanager::LoadFileData(file, info);
+    FileData* folderdata = filemanager::LoadFileData(file, info, false);
     session::NewWorkspace(folderdata);
 }
 
@@ -50,7 +52,7 @@ static void FileSaved(GObject *source, GAsyncResult *result, void* content){
 
     if(file != nullptr){
         GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
-        FileData* filedata = filemanager::LoadFileData(file, info);
+        FileData* filedata = filemanager::LoadFileData(file, info, true);
         filemanager::SaveFile(filedata, file_content, file_saved_callback);
     }else{
         //Callback(nullptr, nullptr);
@@ -63,6 +65,17 @@ void FileOperationInit(){
 }
 
 namespace filemanager{
+
+FileData* CreateNewFile(){
+    FileData* data = new FileData();
+    std::string name = "untitled" + tools::GenerateId();
+    data->fileName = strdup(name.c_str());
+    data->absoPath = strdup(("_/" + name).c_str());
+    data->isVirtual = true;
+    data->file = nullptr;
+    data->type = G_FILE_TYPE_REGULAR;
+    return data;
+}
 
 FileData* CreateVirtualFile(){
     FileData* data = new FileData();

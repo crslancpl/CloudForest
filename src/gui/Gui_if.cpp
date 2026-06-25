@@ -17,7 +17,7 @@ static SettingPanel* current_setting_panel;
 
 static void AppActivated (GtkApplication *app, gpointer user_data){
     style::LoadCssFolder("data/styles/DefaultDarkTheme");
-
+    session::InitEditAreaData();
     current_main_window = new MainWindow(app);// freed on app closed
     current_file_panel = new FilePanel();// freed on app closed
     current_setting_panel = new SettingPanel(current_main_window);// freed on app closed

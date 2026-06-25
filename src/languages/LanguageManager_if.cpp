@@ -1,20 +1,15 @@
 #include "LanguageManager_if.h"
 
 #include "datatypes/common.h"
-#include "pythonbackend/language_mod_Py.h"
-#include "src/gui/editarea/EditArea.h"
 #include "toolset/event/Event.h"
 #include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
 #include <unordered_map>
 #include <string>
-#include <unordered_set>
 
 typedef void (*NewLanguageCallback)(Language*);
 
-static std::unordered_map<const Language*, std::unordered_set<const EditArea*>> lang_to_editarea_map = {};
-static std::unordered_map<const EditArea*, const Language*> editarea_to_lang_map = {};
 static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
 
 Language unknow_lang = {
@@ -37,7 +32,7 @@ std::unordered_map<Signal, SimpleEvent> event_map = {
 };
 
 void Init(){
-    StartListener();
+    //StartListener();
 }
 
 void ClearLanguageList(){
@@ -56,23 +51,6 @@ void AddToLanguageList(Language* lang){
     }
 }
 
-void UpdateEditAreaLanguage(const EditArea* ea, Language* lang){
-    auto itr = editarea_to_lang_map.find(ea);
-
-    if(itr != editarea_to_lang_map.end()){
-        const Language* oldlang = itr->second;
-        lang_to_editarea_map[oldlang].erase(ea);
-    }
-
-    if(!lang->used){
-        language_module_invoke_language_used(lang->name);
-        lang->used = true;
-    }
-
-    editarea_to_lang_map.emplace(ea, lang);
-    lang_to_editarea_map[lang].emplace(ea);
-}
-
 Language* FindByName(const char* langname){
     auto result = language_list.find(langname);
     return result != language_list.end() ? result->second : &unknow_lang;
@@ -86,10 +64,6 @@ Language* FindByFileExtension(const char* filename){
 
     auto result = file_extension_to_language_map.find(file_ext_pair[1]);
     return result != language_list.end() ? result->second : &unknow_lang;
-}
-
-const std::unordered_set<const EditArea*>& GetEditAreas(const Language* lang){
-    return lang_to_editarea_map[lang];
 }
 
 const std::unordered_map<std::string, Language*>& GetLanguageList(){

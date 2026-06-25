@@ -84,7 +84,7 @@ static void OnEditAreaFileSaved(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaLangChanged(EditArea *ea, Language* lang){
+static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* newlang){
     RestoreThreadLock();
     py_EditArea* py_ea = find_editarea_py(ea);
     if(py_ea == nullptr) return;

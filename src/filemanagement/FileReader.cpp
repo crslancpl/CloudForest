@@ -31,7 +31,7 @@ void ExpandFolderBranch(FolderBranch *branch){
 
     while ((info = g_file_enumerator_next_file(enumerator, nullptr, nullptr)) != nullptr) {
         GFile *child = g_file_enumerator_get_child(enumerator, info);
-        FileData* data = LoadFileData(child, info);
+        FileData* data = LoadFileData(child, info, false);
         if (child == nullptr|| data->fileInfo == nullptr) continue;
 
         if (data->type == G_FILE_TYPE_REGULAR){
@@ -41,13 +41,12 @@ void ExpandFolderBranch(FolderBranch *branch){
             FolderBranch* b = new FolderBranch(data);
             branch->AddChildFolder(b);
         }
-
     }
     branch->SetIsChildLoaded(true);
 }
 
 
-FileData* LoadFileData(GFile *file, GFileInfo* info){
+FileData* LoadFileData(GFile *file, GFileInfo* info, bool issinglefile){
     FileData *newfile = new FileData();
     newfile->isVirtual = false;
     newfile->file = file;

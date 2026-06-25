@@ -14,12 +14,12 @@
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/session/EditAreaData.h"
 #include "src/session/FileData.h"
+#include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
-#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -32,6 +32,7 @@
  */
 
 typedef void (*EditAreaBasicEvent)(EditArea*);
+typedef void (*EditAreaLangChangedEvent)(EditArea*,Language*,Language*);
 
 /*
  * EditArea class
@@ -107,6 +108,11 @@ EditArea::EditArea(FileData* file){
 
     if(m_language == nullptr){
         SetLanguage(langmanager::FindByName("Unknown"));
+    }
+
+    const SimpleEvent &event = GetEvent(session::EDITAREA_CREATED);
+    for(EventCallback callback : event.GetCallbackSet()){
+        ((void (*)(EditArea*))callback)(this);
     }
 }
 
@@ -332,20 +338,19 @@ const Difference &EditArea::GetPendingDiff() const{
     return m_pendingDif;
 }
 
-void EditArea::SetLanguage(Language* lang){
-    if (lang == m_language) {
+void EditArea::SetLanguage(Language* newlang){
+    if (newlang == m_language) {
         return;
     }
-
-    langmanager::UpdateEditAreaLanguage(this, lang);
-    m_language = lang;
+    Language* oldlang = m_language;
+    m_language = newlang;
     gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
 
     //call callbacks
     const SimpleEvent &event =  m_eventMap.at(EditArea::LANG_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()) {
-        ((LangChangedCallback)callback)(this, lang);
+        ((LangChangedCallback)callback)(this, oldlang, newlang);
     }
 }
 
@@ -522,13 +527,6 @@ void EditArea::TextChanged(){
 
     syntaxprovider::FastHighlight(this);
     SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
-    }
-}
-
-void EditArea::LangChanged(){
-    SimpleEvent &event = m_eventMap.at(EditArea::LANG_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()){
         ((EditAreaBasicEvent)callback)(this);
     }

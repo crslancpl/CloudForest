@@ -12,7 +12,7 @@
 class TextArea;
 typedef struct ZRange ZRange;
 typedef struct Language Language;
-typedef void(*LangChangedCallback)(TextArea*, Language*);
+typedef void(*LangChangedCallback)(TextArea*, Language*, Language*);
 
 
 
@@ -26,7 +26,7 @@ public:
     void SetEditable(bool editable);
     void SetFirstLineNumber(int number);
     const Language* GetLanguage() const;
-    virtual void SetLanguage(Language *lang);
+    virtual void SetLanguage(Language *newlang);
 
     void ClearHighlight();
     void ApplyTagByRange(ZRange *range, const char *tagname);

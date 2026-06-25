@@ -7,10 +7,7 @@ typedef struct Language Language;
 
 namespace langmanager{
 
-void StartListener();
-
-void AddEditArea(EditArea* ea, Language* lang);
-void ListenNewEditArea(const char* langname, void (*callback)(const char*, EditArea*));
+//void StartListener();
 
 }// namespace langmanager
 

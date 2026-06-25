@@ -2,16 +2,18 @@
 
 #include "datatypes/common.h"
 #include "src/gui/editarea/EditArea.h"
+#include "src/languages/LanguageGroup.h"
 #include "src/languages/LanguageListener.h"
 #include "src/languages/LanguageManager_if.h"
+#include "src/session/EditAreaData.h"
 #include "python_tool.h"
 #include "editarea/editarea_mod_Py.h"
+#include "src/session/SessionEvent.h"
+#include "toolset/event/Event.h"
 #include "toolset/tools/Tool.h"
 
 #include <abstract.h>
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
@@ -24,28 +26,30 @@
 #include <tupleobject.h>
 #include <unicodeobject.h>
 
-static PyObject *lang_to_callbacks_dict;
-static PyObject *lang_used_callbacks_dict;
+static PythonEventPtrMap lang_new_ea_event_map;
+static PythonEventPtrMap lang_used_callbacks_dict;
 
-void language_module_invoke_language_used(const char* langname){
+void OnLanguageUsed(const Language* lang){
     RestoreThreadLock();
-    PyObject* callbacklist = PyDict_GetItemString(lang_used_callbacks_dict, langname);
-    if(callbacklist == NULL){
+    auto itr = lang_used_callbacks_dict.find(lang->name);
+    if(itr == lang_used_callbacks_dict.end()){
         return;
     }
-    PyObject* arg = PyTuple_Pack(1, PyUnicode_FromString(langname));
-    RunCallback(callbacklist, arg);
+    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(lang->name));
+    itr->second->Invoke(args);
+    Py_DECREF(args);
     ReleaseThreadLock();
 }
 
-void language_module_invoke_new_editarea(const char* langname, EditArea* ea){
+void OnNewEditArea(EditArea* ea){
     RestoreThreadLock();
-    PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
-    if(callbacklist == NULL){
+    auto itr = lang_new_ea_event_map.find(ea->GetLanguage()->name);
+
+    if(itr == lang_new_ea_event_map.end()){
         return;
     }
-    PyObject* arg = PyTuple_Pack(1, find_editarea_py(ea));
-    RunCallback(callbacklist, arg);
+    PyObject* args = PyTuple_Pack(1, find_editarea_py(ea));
+    itr->second->Invoke(args);
     ReleaseThreadLock();
 }
 
@@ -90,38 +94,21 @@ static PyObject *language_module_listen_language_used(PyObject *self, PyObject* 
         Py_RETURN_NAN;
     }
 
-    PyObject* callbacklist = PyDict_GetItemString(lang_used_callbacks_dict, langname);
-
-    if(callbacklist == nullptr){
-        callbacklist = PyList_New(0);
-        PyDict_SetItemString(lang_used_callbacks_dict, langname, callbacklist);
-        langmanager::ListenNewEditArea(langname, language_module_invoke_new_editarea);
+    auto itr = lang_used_callbacks_dict.find(langname);
+    if (itr != lang_used_callbacks_dict.end()) {
+        itr->second->Connect(callback);
+    } else {
+        PythonEvent* event = new PythonEvent();
+        lang_used_callbacks_dict.emplace(langname, event);
+        event->Connect(callback);
     }
-
-    AddToList(callbacklist, callback);
 
     Py_RETURN_NONE;
 }
 
-static PyObject *language_module_get_all_editareas(PyObject *self, PyObject *args){
-    PyObject* editarealist = PyList_New(0);
-    char* langname;
-
-    if(!PyArg_ParseTuple(args, "s", &langname)){
-        Py_RETURN_NAN;
-    }
-
-    Language* lang = langmanager::FindByName(langname);
-    auto set = langmanager::GetEditAreas(lang);
-    for (const EditArea* ea : set){
-        PyList_Append(editarealist, (PyObject*) find_editarea_py(ea));
-    }
-
-    return editarealist;
-}
-
 
 static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *args){
+    printf("language listen for ea 1\n");
     char* langname;
     PyObject* callback;
 
@@ -132,15 +119,12 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
         Py_RETURN_NAN;
     }
     Py_RETURN_NONE;
-    PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
+    Language* lang = langmanager::FindByName(langname);
+    LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
-    if(callbacklist == nullptr){
-        callbacklist = PyList_New(0);
-        PyDict_SetItemString(lang_to_callbacks_dict, langname, callbacklist);
-        langmanager::ListenNewEditArea(langname, language_module_invoke_new_editarea);
+    if(langgroup != nullptr){
+        langgroup->Listen(LanguageGroup::ADDED, (EventCallback)OnNewEditArea);
     }
-
-    AddToList(callbacklist, callback);
 
     Py_RETURN_NONE;
 }
@@ -156,12 +140,12 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
         Py_RETURN_NAN;
     }
 
-    PyObject* callbacklist = PyDict_GetItemString(lang_to_callbacks_dict, langname);
-    if(callbacklist == Py_None){
-        Py_RETURN_NAN;
-    }
+    Language* lang = langmanager::FindByName(langname);
+    LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
-    RemoveFromList(callbacklist, callback);
+    if(langgroup != nullptr){
+        langgroup->StopListen(LanguageGroup::ADDED, (EventCallback)OnNewEditArea);
+    }
 
     Py_RETURN_NONE;
 }
@@ -171,7 +155,6 @@ static PyMethodDef language_module_method[] = {
     {"clear_data",  language_module_clear_data, METH_VARARGS,"clear language datas. call this before reloading the language panel"},
     {"add_language",  language_module_add_language, METH_VARARGS,"add a language to the language list."},
     {"listen_language_used", language_module_listen_language_used, METH_VARARGS, "the language used for the first time"},
-    {"get_all_editareas", language_module_get_all_editareas, METH_VARARGS, "get a list of EditAreas from language name "},
     {"listen_for_editarea", language_module_listen_for_editarea, METH_VARARGS, "listen for new editarea with specific language"},
     {"stop_listen_for_editarea", language_module_stop_listen_for_editarea, METH_VARARGS, "stop listen for new editarea with specific language"},
     {nullptr, nullptr, 0, nullptr}
@@ -186,8 +169,7 @@ static struct PyModuleDef language_module = {
 };
 
 PyMODINIT_FUNC PyInit_language_module(){
-    lang_to_callbacks_dict = PyDict_New();
-    lang_used_callbacks_dict = PyDict_New();
     PyObject *langmodule = PyModule_Create(&language_module);
+    session::Listen(session::LANGUAGE_USED, (EventCallback) OnLanguageUsed);
     return langmodule;
 }

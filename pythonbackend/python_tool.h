@@ -12,6 +12,7 @@
 class PythonEvent;
 
 typedef std::unordered_map<std::string, PythonEvent> PythonEventMap;
+typedef std::unordered_map<std::string, PythonEvent*> PythonEventPtrMap;
 
 class PythonEvent{
 public:

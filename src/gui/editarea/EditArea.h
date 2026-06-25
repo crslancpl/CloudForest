@@ -34,7 +34,7 @@ public:
     bool isSaved = true;
 
     //override
-    void SetLanguage(Language*) override;
+    void SetLanguage(Language* newlang) override;
 
     GtkTextBuffer* GetTextBuffer();
     GdkRectangle* GetCursorRectangle();
@@ -67,7 +67,6 @@ public:
     void TextInserted(GtkTextIter* itr, char* text, long int length);
     void TextDeleted(GtkTextIter* start, GtkTextIter* end);
     void TextChanged();
-    void LangChanged();
     void CursorPosChanged();
     void SaveButtonClicked();
     void LangButtonClicked();

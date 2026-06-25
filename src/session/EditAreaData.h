@@ -4,24 +4,13 @@
 #include "datatypes/common.h" // for Language
 #include "editarea/EditArea.h" // for EditArea
 #include "src/filemanagement/FileTree.h"
+#include "src/languages/LanguageGroup.h"
 
 #include <unordered_set>
 
 namespace session{
 
-class EditAreaSet{
-    /*
-     * automatically erase the EditArea from the set
-     * when the EditArea is closed.
-     */
-public:
-    const std::unordered_set<EditArea*> &GetEditAreaSet() const;
-    void Add(EditArea* ea);
-    void ManualRemove(EditArea* ea);
-
-private:
-    std::unordered_set<EditArea*> m_editareaSet;
-};
+void InitEditAreaData();
 
 Workspace* FindWorkspaceByPath();
 
@@ -30,13 +19,13 @@ const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang
 EditArea *FindEditAreaByFileData(const FileData* file);
 EditArea *FindEditAreaByPath(const char* absopath);
 
-
 void EditNewFile();
 void EditFile(FileData* file);
 void CloseFile(FileData* file);
 
 EditArea* GetFocusedEditArea();
 void SetFocusedEditArea(EditArea* editarea);
+LanguageGroup* FindLanguageGroup(const Language* lang);
 
 }// namespace session
 

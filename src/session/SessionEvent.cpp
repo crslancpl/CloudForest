@@ -11,6 +11,7 @@ static std::unordered_map<Signal, SimpleEvent> event_map = {
     {EDITAREA_CREATED, SimpleEvent()},
     {EDITAREA_FOCUSED_CHANGED, SimpleEvent()},
     {EDITAREA_LANG_CHANGED, SimpleEvent()},
+    {LANGUAGE_USED, SimpleEvent()},
     {NEW_WORKSPACE, SimpleEvent()}
 };
 

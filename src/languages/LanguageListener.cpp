@@ -29,18 +29,6 @@ private:
 
 static std::unordered_map<Language*, AddEditAreaEvemt> lang_and_callbacks_map;
 
-
-static void UpdateTextAreaLanguage(TextArea* ta, Language* lang){
-    // the callback for EditArea->SetLanguage
-    language_module_invoke_new_editarea(lang->name, (EditArea*)ta);
-}
-
-static void OnEditAreaCreated(EditArea* ea){
-    // pass to editarea::AddNewEditAreaCallback()
-    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)UpdateTextAreaLanguage);
-    language_module_invoke_new_editarea(ea->GetLanguage()->name, ea);
-}
-
 void AddEditArea(EditArea* ea, Language* lang){
     auto itr = lang_and_callbacks_map.find(lang);
 
@@ -69,10 +57,6 @@ void ListenNewEditArea(const char* langname, void (*callback)(const char*, EditA
         AddEditAreaEvemt &event = pair.first->second;
         event.Connect((EventCallback)callback);
     }
-}
-
-void StartListener(){
-    session::Listen(session::EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
 }
 
 } //namepsace langmanager

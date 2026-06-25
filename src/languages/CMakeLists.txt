@@ -1,6 +1,7 @@
 project(LANGMANAGLIB)
 
 add_library( ${PROJECT_NAME}
+    LanguageGroup.cpp
     LanguageManager_if.cpp
     LanguageListener.cpp
 )

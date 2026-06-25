@@ -3,9 +3,8 @@ import re
 import shutil
 import subprocess
 
-# from concurrent.futures import ThreadPoolExecutor
 import cloudforest
-from cloudforest import editarea, language
+from cloudforest import editarea
 
 from pythonscripts.event import IOEvent
 
@@ -97,6 +96,7 @@ class LspClient:
     def exit(self):
         self.send(lsp_msg_writer.shut_down_message())
         self.send(lsp_msg_writer.exit_notification())
+        print(f'lsp_client_class: Language server "{self.lsp_command[0]}" closed')
         self.LSP.terminate()
 
     def add_workspace(self, name: str, path: str):
@@ -130,13 +130,14 @@ class LspClient:
     def __on_server_initialized(self, result: dict):
         self.server_data.load_server_data(result)
         print(f"{self.server_data.name} running version {self.server_data.version}")
-        for ea in language.get_all_editareas(self.language):
+
+        ea_list: list[editarea.EditArea] = editarea.get_by_language(self.language)
+        for ea in ea_list:
             self.listen_editarea(ea)
 
     def __editarea_closed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_close_notification(ea)
         self.send(message)
-        print("edit area closed")
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:

@@ -7,7 +7,7 @@
 #include "src/filemanagement/FileCallback.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/filemanagement/FileOperation.h"
-#include "src/filemanagement/FileTree.h"
+#include "src/languages/LanguageGroup.h"
 #include "src/session/FileData.h"
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
@@ -24,42 +24,87 @@
 typedef void (*EditAreaCreatedCallback)(EditArea*);
 typedef void (*EditAreaFocusedChangedCallback)(EditArea*);
 typedef void (*EditAreaLangChangedCallback)(EditArea*, const char*);
+typedef void (*LanguageUsedCallback)(const Language*);
 
 /*
  * Return thes empty set if no editarea set found
  */
-static std::unordered_set<EditArea*> empty_editarea_set;
+static const std::unordered_set<EditArea*> empty_editarea_set;
 
-static std::unordered_set<EditArea*> editarea_set;
-static std::unordered_map<const Language*, std::unordered_set<EditArea*>> lang_to_editareas_map;
-
-static std::unordered_map<const FileData*, EditArea*> file_data_to_editareas_map;
+static std::unordered_set<EditArea*> all_editarea_set;
+//static std::unordered_map<const Language*, std::unordered_set<EditArea*>> lang_to_editareas_map;
+static std::unordered_map<const Language*, LanguageGroup*> language_groups_map;
 
 static EditArea* focused_editarea = nullptr;
 
 /*
  * Callbacks
  */
-void OnEditAreaClosed(EditArea* ea){
-    auto itr = lang_to_editareas_map.find(ea->GetLanguage());
-    if (itr != lang_to_editareas_map.end()) {
-        itr->second.erase(ea);
-    }
+static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const Language* newlang);
+static void OnEditAreaClosed(EditArea* ea);
 
-    editarea_set.erase(ea);
+static void OnEditAreaCreated(EditArea* ea){
+    //
+    ea->Listen(EditArea::LANG_CHANGED,(EventCallback)OnEditAreaLangChanged);
+    ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
+
+    const Language* lang = ea->GetLanguage();
+    auto itr = language_groups_map.find(lang);
+    if (itr != language_groups_map.end()) {
+        itr->second->Add(ea);
+    } else {
+        LanguageGroup* langgroup = new LanguageGroup(lang);
+        language_groups_map.emplace(lang, langgroup);
+        langgroup->Add(ea);
+        SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
+        for (EventCallback callback : event.GetCallbackSet()) {
+            ((LanguageUsedCallback)callback)(lang);
+        }
+    }
+}
+
+static void OnEditAreaClosed(EditArea* ea){
+    auto itr = language_groups_map.find(ea->GetLanguage());
+    if (itr != language_groups_map.end()) {
+        itr->second->Remove(ea);
+    }
+    all_editarea_set.erase(ea);
+}
+
+static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const Language* newlang){
+    auto itr = language_groups_map.find(oldlang);
+    if (itr != language_groups_map.end()) {
+        itr->second->Remove(ea);
+    }
+    itr = language_groups_map.find(newlang);
+    if (itr != language_groups_map.end()) {
+        itr->second->Add(ea);
+    } else {
+        LanguageGroup* langgroup = new LanguageGroup(newlang);
+        language_groups_map.emplace(newlang, langgroup);
+        langgroup->Add(ea);
+        SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
+        for (EventCallback callback : event.GetCallbackSet()) {
+            ((LanguageUsedCallback)callback)(newlang);
+        }
+    }
 }
 
 
 namespace session {
 
+void InitEditAreaData(){
+    session::Listen(EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
+}
+
 const std::unordered_set<EditArea*> &GetAllEditAreas(){
-    return editarea_set;
+    return all_editarea_set;
 }
 
 const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang){
-    auto itr = lang_to_editareas_map.find(lang);
-    if (itr != lang_to_editareas_map.end()) {
-        return itr->second;
+    auto itr = language_groups_map.find(lang);
+    if (itr != language_groups_map.end()) {
+        return itr->second->GetEditAreaSet();
     } else {
         return empty_editarea_set;
     }
@@ -67,8 +112,12 @@ const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang
 
 EditArea *FindEditAreaByFileData(const FileData* file){
     Workspace* ws = FindWorkspaceByPath(file->absoPath);
+    FileData* fd;
     if (ws) {
-        FileData* fd = ws->FindChildByPath(file->absoPath);
+        fd = ws->FindChildByPath(file->absoPath);
+        return fd->editArea;
+    } else {
+        fd = FindSingleFileByPath(file->absoPath);
         return fd->editArea;
     }
     return nullptr;
@@ -76,17 +125,19 @@ EditArea *FindEditAreaByFileData(const FileData* file){
 
 EditArea* FindEditAreaByPath(const char* absopath){
     Workspace* ws = FindWorkspaceByPath(absopath);
+    FileData* fd;
     if (ws) {
-        FileData* fd = ws->FindChildByPath(absopath);
+        fd = ws->FindChildByPath(absopath);
         if (fd) {
             return fd->editArea;
         }
         return nullptr;
+    } else {
+        fd = FindSingleFileByPath(absopath);
+        return fd->editArea;
     }
     return nullptr;
 }
-
-//callbacks
 
 void SetFocusedEditArea(EditArea* editarea){
     focused_editarea = editarea;
@@ -96,31 +147,29 @@ void SetFocusedEditArea(EditArea* editarea){
     }
 }
 
+LanguageGroup* FindLanguageGroup(const Language* lang){
+    auto itr = language_groups_map.find(lang);
+    if (itr != language_groups_map.end()) {
+        return itr->second;
+    }
+    return nullptr;
+}
+
 
 /*
  * File editing
  */
 
 void EditNewFile(){
-    FileData* vfile = filemanager::CreateVirtualFile();
-    FileBranch* branch = new FileBranch(vfile);
-    Workspace* vws = FindWorkspaceByPath(vfile->absoPath);
-    if (!vws){
-        vws = NewWorkspace(filemanager::CreateVirtualFolder());
-    }
-    vws->AddChildFile(branch);
-    EditArea* ea = new EditArea(vfile);//freed on EditArea closed(Editarea.Destroy())
-    SetFocusedEditArea(ea);
+    FileData* filedata = filemanager::CreateNewFile();
+    session::AddSingleFile(filedata);
 
-    const SimpleEvent &event = GetEvent(EDITAREA_CREATED);
-    for(EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaCreatedCallback)callback)(ea);
-    }
+    EditArea* ea = new EditArea(filedata);//freed on EditArea closed(Editarea.Destroy())
 
-    ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
         tablayout->Show(ea);
+        session::SetFocusedEditArea(ea);
     }
 }
 
@@ -135,38 +184,18 @@ void EditFile(FileData *file){
     }
 
     ea = new EditArea(file);//freed on EditArea closed(Editarea.Destroy())
-    SetFocusedEditArea(ea);
-    file_data_to_editareas_map.emplace(file, ea);
-
-    const SimpleEvent &event = GetEvent(EDITAREA_CREATED);
-    for(EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaCreatedCallback)callback)(ea);
-    }
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
         tablayout->Show(ea);
+        session::SetFocusedEditArea(ea);
     }
 }
 
 void CloseFile(FileData *file){
-    auto itr = file_data_to_editareas_map.find(file);
-    if (itr != file_data_to_editareas_map.end()) {
-        const Language* lang = itr->second->GetLanguage();
-        lang_to_editareas_map.at(lang).erase(itr->second);
-        editarea_set.erase(itr->second);
-        file_data_to_editareas_map.erase(file);
-    }
+    // not yet implemented
 }
 
-void InsertToEditAreaList(EditArea *ea){
-    //editarea_set.emplace(ea->GetFilePath(), ea);
-    printf("ins called\n");
-}
 
-void RemoveFromEditAreaList(EditArea* ea){
-    //editarea_set.erase(ea->GetFilePath());
-    printf("rem called\n");
-}
 
 }// namespace session

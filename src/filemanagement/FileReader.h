@@ -12,7 +12,7 @@ namespace filemanager{
 
 void ExpandFolderBranch(FolderBranch* branch);
 
-FileData* LoadFileData(GFile* filedata, GFileInfo* info);
+FileData* LoadFileData(GFile* filedata, GFileInfo* info, bool issinglefile);
 void ReadFileText(FileData* filedata, char** output);
 
 }// namespace filemanager
