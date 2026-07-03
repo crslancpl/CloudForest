@@ -2,7 +2,6 @@
 #define FILECALLBACK_H_
 
 #include "toolset/event/Event.h"
-#include "src/filemanagement/FileOperation.h"
 
 #include <gio/gio.h>
 
@@ -20,9 +19,7 @@ enum Signal : char{
 void Listen(Signal event, EventCallback callback);
 void StopListen(Signal event, EventCallback callback);
 
-void InvokeFileChoosen(FileData* file);
-void InvokeFolderChoosen(FileData* file);
-void InvokeNewWorkspace(const Workspace* ws);
+const SimpleEvent& GetEvent(Signal signal);
 
 }
 

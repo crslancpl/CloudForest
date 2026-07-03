@@ -21,18 +21,14 @@
  */
 
 
-typedef void (*EditAreaCreatedCallback)(EditArea*);
 typedef void (*EditAreaFocusedChangedCallback)(EditArea*);
-typedef void (*EditAreaLangChangedCallback)(EditArea*, const char*);
 typedef void (*LanguageUsedCallback)(const Language*);
 
 /*
  * Return thes empty set if no editarea set found
  */
 static const std::unordered_set<EditArea*> empty_editarea_set;
-
 static std::unordered_set<EditArea*> all_editarea_set;
-//static std::unordered_map<const Language*, std::unordered_set<EditArea*>> lang_to_editareas_map;
 static std::unordered_map<const Language*, LanguageGroup*> language_groups_map;
 
 static EditArea* focused_editarea = nullptr;
@@ -80,7 +76,7 @@ static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const L
     if (itr != language_groups_map.end()) {
         itr->second->Add(ea);
     } else {
-        LanguageGroup* langgroup = new LanguageGroup(newlang);
+        LanguageGroup* langgroup = new LanguageGroup(newlang);// free on app closed
         language_groups_map.emplace(newlang, langgroup);
         langgroup->Add(ea);
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
@@ -131,10 +127,11 @@ EditArea* FindEditAreaByPath(const char* absopath){
         if (fd) {
             return fd->editArea;
         }
-        return nullptr;
     } else {
         fd = FindSingleFileByPath(absopath);
-        return fd->editArea;
+        if (fd) {
+            return fd->editArea;
+        }
     }
     return nullptr;
 }

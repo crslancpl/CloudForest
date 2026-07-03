@@ -11,12 +11,12 @@ void FileOperationInit();
 
 namespace filemanager{
 
-FileData* CreateFile(char* name, FileData* parentdata);//create file in file panel
+FileData CreateFile(const char* name, FileData* parentdata);//create file in file panel
 FileData* CreateNewFile();
 FileData* CreateVirtualFile();
 FileData* CreateVirtualFolder();
 
-void SaveFile(FileData* filedata, char* content, void (*savedcallback)(FileData*));
+void SaveFile(FileData* filedata, const char* content, void (*savedcallback)(FileData*));
 
 void ChooseFile();
 void ChooseFolder();

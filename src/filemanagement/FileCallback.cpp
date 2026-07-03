@@ -15,6 +15,7 @@ namespace filemanager{
 
 static std::unordered_map<Signal, SimpleEvent> event_map = {
     {FILE_EVENT_FILE_CHOOSEN, SimpleEvent()},
+    {FILE_EVENT_FILE_SAVED, SimpleEvent()},
     {FILE_EVENT_FOLDER_CHOOSEN, SimpleEvent()}
 };
 
@@ -32,18 +33,8 @@ void StopListen(Signal signal, EventCallback callback){
     }
 }
 
-void InvokeFileChoosen(FileData* file){
-    const SimpleEvent &event = event_map.at(FILE_EVENT_FILE_CHOOSEN);
-    for(EventCallback callback : event.GetCallbackSet()){
-        ((FileChoosenCallback)callback)(file);
-    }
-}
-
-void InvokeFolderChoosen(FileData* file){
-    const SimpleEvent &event = event_map.at(FILE_EVENT_FOLDER_CHOOSEN);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((FolderChoosenCallback)callback)(file);
-    }
+const SimpleEvent& GetEvent(Signal signal){
+    return event_map.at(signal);
 }
 
 }// namespace filemanager

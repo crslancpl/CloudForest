@@ -51,7 +51,7 @@ public:
     const std::unordered_set<Diagnostic*>& GetDiagnosticsList();
     Diagnostic* FindDiagnostic(GtkTextIter* itr);
     void LoadCursorPos();
-    void LoadFile(FileData *file);
+    void LoadFile(FileData *filedata);
     void Save();
     void Close();
     void ShowSearchDialog();

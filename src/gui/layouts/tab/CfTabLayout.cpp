@@ -31,7 +31,6 @@ void CfTabLayout::Show(CfContent *content){
         gtk_box_append(m_switcherArea, GTK_WIDGET(switcher->GetBaseWidget()));
         gtk_stack_add_child(m_stack, content->GetBaseWidget());
         content->SetParent(this);
-        tablayout::AddContentSwitcherPair(content, switcher);
     }
 
     gtk_stack_set_visible_child(m_stack, content->GetBaseWidget());
@@ -47,9 +46,9 @@ void CfTabLayout::Remove(CfContent *content, CfTabSwitcher* switcher){
 }
 
 void CfTabLayout::ChildDataChanged(CfContent* child){
-    auto switcher = tablayout::GetSwitcher(child);
+    auto itr = m_switcherMap.find(child);
 
-    if(switcher){
-        switcher->SetText(child->GetContentName().c_str());
+    if(itr != m_switcherMap.end()){
+        itr->second->SetText(child->GetContentName().c_str());
     }
 }

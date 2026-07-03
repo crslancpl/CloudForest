@@ -13,13 +13,13 @@
 #include "src/languages/LanguageManager_if.h"
 #include "src/filemanagement/FileManagement_if.h"
 #include "src/session/EditAreaData.h"
-#include "src/session/FileData.h"
 #include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -91,6 +91,16 @@ static void OnFileSaved(FileData* file){
 
 EditArea::EditArea(FileData* file){
     /* Load gui */
+    m_eventMap = {
+        {EditArea::CLOSED, SimpleEvent()},
+        {EditArea::COMPLETION_REQUESTED, SimpleEvent()},
+        {EditArea::CURSOR_MOVED, SimpleEvent()},
+        {EditArea::FILE_DATA_CHANGED, SimpleEvent()},
+        {EditArea::FILE_SAVED, SimpleEvent()},
+        {EditArea::LANG_CHANGED, SimpleEvent()},
+        {EditArea::TEXT_CHANGED, SimpleEvent()}
+    };
+
     this->LoadGui();
     this->LoadFile(file);
 
@@ -135,16 +145,6 @@ EditArea::~EditArea(){
 void EditArea::LoadGui(){
     /* Loading EditArea from UI/EditArea.ui */
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/EditArea.ui");
-
-    m_eventMap = {
-        {EditArea::CLOSED, SimpleEvent()},
-        {EditArea::COMPLETION_REQUESTED, SimpleEvent()},
-        {EditArea::CURSOR_MOVED, SimpleEvent()},
-        {EditArea::FILE_DATA_CHANGED, SimpleEvent()},
-        {EditArea::FILE_SAVED, SimpleEvent()},
-        {EditArea::LANG_CHANGED, SimpleEvent()},
-        {EditArea::TEXT_CHANGED, SimpleEvent()}
-    };
 
     /* Binding */
     m_baseGrid = GTK_GRID(gtk_builder_get_object(builder, "base-grid"));
@@ -258,7 +258,7 @@ void EditArea::ClearDiagnostics(){
         gtk_text_buffer_remove_tag_by_name(m_textViewBuffer, tag, &m_startItr, &m_endItr);
     }
 
-    m_mutex.unlock();// ProcessDiagnostics() will lock the mutex
+    m_mutex.unlock();
 }
 
 const std::unordered_set<Diagnostic*>& EditArea::GetDiagnosticsList(){
@@ -272,7 +272,7 @@ Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){
     // printf("line %i index %i\n", line, index);
     if(tools::IsZPosInRange(pos, &m_currentDiagnosticRange)) return nullptr;
 
-    // There may be more than 1 diagnostic for a iteer
+    // There may be more than 1 diagnostic for a iter
     for (Diagnostic* diagnostic : m_diagnosticsList) {
         if(tools::IsZPosInRange(pos, &diagnostic->range)){
             m_currentDiagnosticRange = diagnostic->range;
@@ -342,6 +342,7 @@ void EditArea::SetLanguage(Language* newlang){
     if (newlang == m_language) {
         return;
     }
+
     Language* oldlang = m_language;
     m_language = newlang;
     gtk_button_set_label(m_langBut, m_language->name);
@@ -364,8 +365,7 @@ void EditArea::LoadFile(FileData* newfile){
     }else{
         filemanager::ReadFileText(m_editingFile, &m_originalContent);
         m_originalLength = strlen(m_originalContent);
-
-        gtk_text_buffer_set_text(m_textViewBuffer, m_originalContent, -1);
+        gtk_text_buffer_set_text(m_textViewBuffer, m_originalContent, m_originalLength);
     }
 
     gtk_button_set_label(m_locationBut, m_editingFile->absoPath);
@@ -390,14 +390,10 @@ void EditArea::LoadFile(FileData* newfile){
 void EditArea::Save(){
     gtk_text_buffer_get_start_iter(m_textViewBuffer, &m_startItr);
     gtk_text_buffer_get_end_iter(m_textViewBuffer, &m_endItr);
-    char* content = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
+    const char* content = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 
     saving_editarea = this;
     filemanager::SaveFile(m_editingFile, content, OnFileSaved);
-    SimpleEvent &event = m_eventMap.at(EditArea::FILE_SAVED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
-    }
 }
 
 void EditArea::Close(){
@@ -553,17 +549,17 @@ void EditArea::CursorPosChanged(){
     }
 };
 
-void EditArea::FileSaved(FileData *file){
-    if(file == nullptr){
+void EditArea::FileSaved(FileData *filedata){
+    if(filedata == nullptr){
         //saving cancelled
         return;
     }
-    if(file != m_editingFile){
-        this->LoadFile(file);
-    }else{
-        gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
-        m_originalContent = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
+    if(filedata != m_editingFile){
+        this->LoadFile(filedata);
     }
+
+    gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
+    m_originalContent = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 
     isSaved = true;
     gtk_button_set_label(m_saveBut, "Saved");
@@ -580,6 +576,7 @@ void EditArea::Listen(Signal signal, EventCallback callback){
         itr->second.Connect(callback);
     }
 }
+
 void EditArea::StopListen(Signal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);
     if(itr != m_eventMap.end()){
