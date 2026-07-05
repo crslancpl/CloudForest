@@ -3,6 +3,7 @@
 #include "datatypes/file.h"
 #include "FileCallback.h"
 #include "FileReader.h"
+#include "src/App.h"
 #include "src/session/EditAreaData.h"
 #include "src/session/FileData.h"
 #include "Gui_if.h"
@@ -11,10 +12,13 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
+#include <cstdio>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 
 static GtkFileDialog *file_dialog;
+static App* current_app = nullptr;
 
 typedef void (*LocationChoosenCallback)(FileData*);
 
@@ -95,7 +99,8 @@ static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
     delete userdata;
 }
 
-void FileOperationInit(){
+void FileOperationInit(App& app){
+    current_app = &app;
     file_dialog = gtk_file_dialog_new();
 }
 
@@ -139,7 +144,8 @@ void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(Fil
         userdata->fileSavedCallback = savedcallback;
         userdata->content = content;
         gtk_file_dialog_set_title(file_dialog, "Save file");
-        gtk_file_dialog_save(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, OnFileSaved, userdata);
+        GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
+        gtk_file_dialog_save(file_dialog, parentGtkWindow, nullptr, OnFileSaved, userdata);
     } else {
         WriteFile(filedata, content);
     }
@@ -149,12 +155,17 @@ void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(Fil
 
 void ChooseFile(){
     gtk_file_dialog_set_title(file_dialog, "choose a file");
-    gtk_file_dialog_open(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, OnFileDialogFileSelected, nullptr);
+    if (current_app == nullptr){
+        return;
+    }
+    GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
+    gtk_file_dialog_open(file_dialog, parentGtkWindow, nullptr, OnFileDialogFileSelected, nullptr);
 }
 
 void ChooseFolder(){
     gtk_file_dialog_set_title(file_dialog, "Choose a folder");
-    gtk_file_dialog_select_folder(file_dialog, gui::GetMainWindow()->GetGtkWindow(), nullptr, OnFileDialogFolderSelected, nullptr);
+    GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
+    gtk_file_dialog_select_folder(file_dialog, parentGtkWindow, nullptr, OnFileDialogFolderSelected, nullptr);
 }
 
 }// namespace filemanager

@@ -15,6 +15,7 @@ class DiagnosticPopover;
 class SearchReplaceDialog;
 typedef struct Diagnostic Diagnostic;
 typedef struct FileData FileData;
+typedef struct AppUI AppUI;
 
 class EditArea : public TextArea{
 public:
@@ -72,6 +73,7 @@ public:
     void LangButtonClicked();
     void FileSaved(FileData *file);
     void RangeSelected(ZRange* range);
+    void DiagnosticButtonClicked();
 
     void Listen(Signal signal, EventCallback callback);
     void StopListen(Signal signal, EventCallback callback);

@@ -1,11 +1,11 @@
 #include "FilePanel.h"
 
-#include "FilePanelButtons.h"
-#include "datatypes/file.h"
-#include "src/filemanagement/FileTree.h"
-#include "src/session/FileData.h"
-#include "src/session/SessionEvent.h"
+#include "AppUI.h"
 #include "Gui_if.h"
+#include "FilePanelButtons.h"
+#include "src/session/SessionEvent.h"
+
+
 
 #include <gio/gio.h>
 #include <glib-object.h>
@@ -45,7 +45,8 @@ unsigned short FilePanel::Offset = 20;
 
 
 // public
-FilePanel::FilePanel(){
+FilePanel::FilePanel(AppUI& appui){
+    appui.filePanel = this;
     GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_workspaceArea = GTK_BOX(gtk_builder_get_object(builder, "ws-area"));
     session::Listen(session::NEW_WORKSPACE, (EventCallback)OnNewWorkspace);

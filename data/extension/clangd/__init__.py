@@ -5,7 +5,7 @@ from pythonscripts.lsp.lsp_client_class import LspClient
 
 def language_used(lang: str):
     command = ["clangd"]
-    client = LspClient(command, "C++", "cpp", True)
+    client = LspClient(command, "C++", "cpp", False)
     if not client.start():
         print("cannot find command")
 

@@ -2,6 +2,7 @@
 #define SETTINGPANEL_H_
 
 #include "SettingPage.h"
+#include "headerbar/Headerbar.h"
 #include "src/gui/windows/MainWindow.h"
 #include "src/gui/windows/Window.h"
 
@@ -11,10 +12,11 @@
 
 //forward declaration
 class CfLayout;
+typedef struct AppUI AppUI ;
 
 class SettingPanel : public Window{
 public:
-    SettingPanel(MainWindow* parentwindow);
+    SettingPanel(AppUI& appui);
 
     void Show() override;
     void SwitchPage(const char* name);
@@ -24,7 +26,7 @@ public:
 private:
     void BindUI(GtkBuilder* builder);
 
-    MainWindow *m_parentWindow;// the main window will only be freed on app closed
+    AppUI& m_appUI;
 
     CfLayout *m_baseLayout;// Saperates TabButtonBox and Stack
     GtkBox *m_tabButtonBox;// left-hand side

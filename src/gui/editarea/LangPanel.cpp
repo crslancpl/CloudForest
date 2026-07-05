@@ -2,33 +2,44 @@
 
 #include "datatypes/common.h"
 #include "EditArea.h"
+#include "AppUI.h"
 #include "Gui_if.h"
 #include "components/Flyout.h"
+#include "headerbar/Headerbar.h"
 #include "windows/MainWindow.h"
 #include "src/languages/LanguageManager_if.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-static LangPanel *lang_panel = nullptr;
+static AppUI* app_ui = nullptr;
+
+typedef struct {
+    LangPanel* parent;
+    Language* lang;
+} LangChoosenData;
 
 /*
  * Callbacks
  */
-static void OnLangChoosen(GtkButton* self, Language* lang){
-    lang_panel->LangChoosen(lang);
+static void OnLangChoosen(GtkButton* self, LangChoosenData* data){
+    data->parent->LangChoosen(data->lang);
 }
 
 static void OnFocusLost(GtkEventControllerFocus* self, void* data){
-    lang_panel->Hide();
+    if (app_ui) {
+        app_ui->langPanel->Hide();
+    }
 }
 
-
-LangPanel::LangPanel() : Flyout(gui::GetMainWindow()->GetGtkWindow()){
+LangPanel::LangPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow())
+    , m_appUI(appui)
+    {
     /*
      * Create the language choosing window and set it as
      * the flyout of g_mainwindow's GtkWindow.
      */
+    appui.langPanel = this;
     this->SetSize(200, 100);
     m_langBtnBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
 
@@ -48,7 +59,10 @@ void LangPanel::AddLanguage(Language* lang){
     m_langBtns.push_back(newlangbut);
     gtk_box_append(m_langBtnBox, GTK_WIDGET(newlangbut));
     gtk_widget_add_css_class(GTK_WIDGET(newlangbut), "normal-button");
-    g_signal_connect(newlangbut, "clicked", G_CALLBACK(OnLangChoosen), lang);
+    LangChoosenData *data = new LangChoosenData();
+    data->lang = lang;
+    data->parent = this;
+    g_signal_connect(newlangbut, "clicked", G_CALLBACK(OnLangChoosen), data);
 }
 
 void LangPanel::ChooseFor(EditArea* target){
@@ -61,8 +75,8 @@ void LangPanel::LangChoosen(Language* lang){
 }
 
 void OpenLangPanelForEditArea(EditArea *target){
-    if (!lang_panel) {
-        lang_panel = new LangPanel();//freed on app clised
+    if (!app_ui->langPanel) {
+        return;
     }
-    lang_panel->ChooseFor(target);
+    app_ui->langPanel->ChooseFor(target);
 }

@@ -6,8 +6,9 @@
 
 // forward declare
 typedef struct FileData FileData;
+typedef struct App App;
 
-void FileOperationInit();
+void FileOperationInit(App& app);
 
 namespace filemanager{
 

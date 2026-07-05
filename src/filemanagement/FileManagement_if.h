@@ -1,22 +1,14 @@
 #ifndef FILEMANAGEMENT_IF_H_
 #define FILEMANAGEMENT_IF_H_
 
-// include other headers
-#include "FileReader.h"
-#include "FileOperation.h"
-#include "FileCallback.h"
+#include "src/App.h"
 
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
-
-//forward definition
-typedef struct FileData FileData;
-
-
 namespace filemanager{
-void Init();
+void Init(App& app);
 }
 
 

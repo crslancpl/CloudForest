@@ -7,11 +7,11 @@
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
 #include "datatypes/file.h"
+#include "Gui_if.h"
 #include "src/filemanagement/FileOperation.h"
 #include "components/TextArea.h"
 #include "style/Style.h"
 #include "src/languages/LanguageManager_if.h"
-#include "src/filemanagement/FileManagement_if.h"
 #include "src/session/EditAreaData.h"
 #include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
@@ -19,7 +19,6 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
-#include <cstdio>
 #include <cstring>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
@@ -77,11 +76,11 @@ static void OnSaveButtonClicked(GtkButton *self, EditArea* parent){
 }
 
 static void OnLangButtonClicked(GtkButton *self, EditArea *parent){
-    OpenLangPanelForEditArea(parent);
+    parent->LangButtonClicked();
 }
 
-static void OnDiagnButtonClicked(GtkButton *self, EditArea *parent){
-    OpenDiagnosticPanelForEditArea(parent);
+static void OnDiagnosticButtonClicked(GtkButton *self, EditArea *parent){
+    parent->DiagnosticButtonClicked();
 }
 
 static void OnFileSaved(FileData* file){
@@ -189,7 +188,7 @@ void EditArea::ConnectSignals(){
     g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
-    g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnButtonClicked), this);
+    g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnosticButtonClicked), this);
 }
 
 void EditArea::AddDiagnostic(Diagnostic* diagnostic){
@@ -569,6 +568,15 @@ void EditArea::FileSaved(FileData *filedata){
         ((EditAreaBasicEvent)callback)(this);
     }
 }
+
+void EditArea::DiagnosticButtonClicked(){
+    gui::GetDiagnosticPanel()->ShowFor(this);
+}
+
+void EditArea::LangButtonClicked(){
+    gui::GetLangPanel()->ChooseFor(this);
+}
+
 
 void EditArea::Listen(Signal signal, EventCallback callback){
     auto itr = m_eventMap.find(signal);

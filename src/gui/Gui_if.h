@@ -4,14 +4,19 @@
 class MainWindow;
 class FilePanel;
 class SettingPanel;
+class DiagnosticPanel;
+class LangPanel;
+typedef struct App App;
 
 namespace gui{
 
-int RunApp(int argc, char* argv[]);// start the gtk application
+int RunApp(int argc, char* argv[], App& app);// start the gtk application
 
 MainWindow* GetMainWindow();
 FilePanel* GetFilePanel();
 SettingPanel* GetSettingPanel();
+DiagnosticPanel* GetDiagnosticPanel();
+LangPanel* GetLangPanel();
 
 }// namespace gui
 

@@ -9,6 +9,7 @@
 
 typedef struct FileData FileData;
 typedef struct Workspace Workspace;
+typedef struct AppUI AppUI;
 
 class FPFileButton;
 class FPFolderButton;
@@ -27,7 +28,7 @@ private:
 
 class FilePanel : public CfContent{
 public:
-    FilePanel();
+    FilePanel(AppUI& appui);
 
     static unsigned short Offset;
     // Space in front of the buttons in FilePanel. OffSet * level is the total space

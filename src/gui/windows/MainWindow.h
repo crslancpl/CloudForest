@@ -2,23 +2,23 @@
 #define MAINWINDOW_H_
 
 #include "Window.h"
+#include "headerbar/Headerbar.h"
 
 #include <gtk/gtk.h>
 
 class CfContent;
-class HeaderBar;
 class CfLayout;
+
+typedef struct AppUI AppUI;
 
 class MainWindow : public Window{
 public:
-    MainWindow(GtkApplication* app);
+    MainWindow(AppUI &appui);
     ~MainWindow();
 
     void Insert(CfContent *content);
 
 private:
-    HeaderBar *m_headderBar;
-
     CfLayout *m_layout;
 };
 

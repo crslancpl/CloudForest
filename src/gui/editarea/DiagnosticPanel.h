@@ -8,9 +8,11 @@
 // forward declare
 class EditArea;
 
+typedef struct AppUI AppUI ;
+
 class DiagnosticPanel : public Flyout{
 public:
-    DiagnosticPanel();
+    DiagnosticPanel(AppUI& appui);
 
     void ShowFor(EditArea* target);
 
@@ -19,8 +21,5 @@ private:
     std::unordered_set<GtkButton*> m_diagnBtnList;
     GtkBox* m_diagnBtnBox;
 };
-
-void OpenDiagnosticPanelForEditArea(EditArea* target);
-void CloseDiagnosticPanel();
 
 #endif

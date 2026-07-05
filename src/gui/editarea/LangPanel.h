@@ -3,6 +3,7 @@
 
 #include "components/Flyout.h"
 #include "datatypes/common.h"
+#include "headerbar/Headerbar.h"
 
 #include <vector>
 #include <gtk/gtk.h>
@@ -17,13 +18,14 @@ class EditArea;
 
 class LangPanel : public Flyout{
 public:
-    LangPanel();
+    LangPanel(AppUI& appui);
 
     void AddLanguage(Language* lang);
     void ChooseFor(EditArea* target);
 
     void LangChoosen(Language* lang);
 private:
+    AppUI& m_appUI;
     EditArea *m_target;
     std::vector<GtkButton*> m_langBtns;
     GtkBox* m_langBtnBox;

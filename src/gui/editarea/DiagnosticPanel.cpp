@@ -1,5 +1,6 @@
 #include "DiagnosticPanel.h"
 
+#include "AppUI.h"
 #include "datatypes/lsp.h"
 #include "components/Flyout.h"
 #include "editarea/EditArea.h"
@@ -10,9 +11,7 @@
 #include <gtk/gtk.h>
 #include <unordered_set>
 
-static DiagnosticPanel* diag_panel = nullptr;
-
-DiagnosticPanel::DiagnosticPanel() : Flyout(gui::GetMainWindow()->GetGtkWindow()){
+DiagnosticPanel::DiagnosticPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow()){
     this->SetSize(200, 100);
     m_diagnBtnBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
     this->SetChild(GTK_WIDGET(m_diagnBtnBox));
@@ -37,17 +36,4 @@ void DiagnosticPanel::ShowFor(EditArea* target){
     }
 
     this->Show();
-}
-
-void OpenDiagnosticPanelForEditArea(EditArea* target){
-    if (!diag_panel) {
-        diag_panel = new DiagnosticPanel();
-    }
-
-    diag_panel->ShowFor(target);
-}
-
-void CloseDiagnosticPanel(){
-    if(!diag_panel) return;
-    diag_panel->Hide();
 }

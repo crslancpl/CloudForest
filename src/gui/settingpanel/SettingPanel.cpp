@@ -1,5 +1,7 @@
 #include "SettingPanel.h"
 
+#include "AppUI.h"
+#include "headerbar/Headerbar.h"
 #include "layouts/layout/CfLayout.h"
 #include "components/CfContent.h"
 #include "settingpanel/ExtensionPage.h"
@@ -19,8 +21,8 @@ static void OnSwitcherClicked(GtkButton *self, SettingPanel* parent){
     parent->SwitchPage(gtk_button_get_label(self));
 }
 
-SettingPanel::SettingPanel(MainWindow* parentwindow): Window(false)
-    ,m_parentWindow(parentwindow)
+SettingPanel::SettingPanel(AppUI& appui): Window(false)
+    ,m_appUI(appui)
     {
     /*
      * The ui is constructed from UI/SettingPanel.ui
@@ -33,6 +35,8 @@ SettingPanel::SettingPanel(MainWindow* parentwindow): Window(false)
      * Stack is the place you can adjust the settings. All setting pages were currently a GtkBox as we expect
      * the setting to look like a list.
      */
+
+    m_appUI.settingPanel = this;
 
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
     this->BindUI(builder);
@@ -61,7 +65,7 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    GtkWidget *mainwindow = GTK_WIDGET(m_parentWindow->GetGtkWindow());
+    GtkWidget *mainwindow = GTK_WIDGET(m_appUI.mainWindow->GetGtkWindow());
     int w = gtk_widget_get_width(mainwindow)/1.5;
     int h = gtk_widget_get_height(mainwindow)/1.5;
 
@@ -101,7 +105,7 @@ void SettingPanel::BindUI(GtkBuilder* builder){
 
 
     gtk_window_set_decorated(m_window, false);
-    gtk_window_set_transient_for(m_window, m_parentWindow->GetGtkWindow());
+    gtk_window_set_transient_for(m_window, m_appUI.mainWindow->GetGtkWindow());
     gtk_widget_set_hexpand(GTK_WIDGET(m_tabButtonBox), false);
     gtk_widget_set_hexpand(GTK_WIDGET(m_stack), true);
 

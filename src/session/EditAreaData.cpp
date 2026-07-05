@@ -24,14 +24,20 @@
 typedef void (*EditAreaFocusedChangedCallback)(EditArea*);
 typedef void (*LanguageUsedCallback)(const Language*);
 
-/*
- * Return thes empty set if no editarea set found
- */
-static const std::unordered_set<EditArea*> empty_editarea_set;
-static std::unordered_set<EditArea*> all_editarea_set;
-static std::unordered_map<const Language*, LanguageGroup*> language_groups_map;
 
-static EditArea* focused_editarea = nullptr;
+
+typedef struct {
+    /*
+     * Return thes empty set if no editarea set found
+     */
+    const std::unordered_set<EditArea*> EMPTY_EDITAREA_SET;
+
+    std::unordered_set<EditArea*> allEditAreaSet;
+    std::unordered_map<const Language*, LanguageGroup*> languageGroupsMap;
+    EditArea* focusedEditArea;
+} EditAreaData;
+
+EditAreaData session_editarea_data;
 
 /*
  * Callbacks
@@ -45,12 +51,12 @@ static void OnEditAreaCreated(EditArea* ea){
     ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
 
     const Language* lang = ea->GetLanguage();
-    auto itr = language_groups_map.find(lang);
-    if (itr != language_groups_map.end()) {
+    auto itr = session_editarea_data.languageGroupsMap.find(lang);
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
         LanguageGroup* langgroup = new LanguageGroup(lang);
-        language_groups_map.emplace(lang, langgroup);
+        session_editarea_data.languageGroupsMap.emplace(lang, langgroup);
         langgroup->Add(ea);
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
@@ -60,24 +66,24 @@ static void OnEditAreaCreated(EditArea* ea){
 }
 
 static void OnEditAreaClosed(EditArea* ea){
-    auto itr = language_groups_map.find(ea->GetLanguage());
-    if (itr != language_groups_map.end()) {
+    auto itr = session_editarea_data.languageGroupsMap.find(ea->GetLanguage());
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Remove(ea);
     }
-    all_editarea_set.erase(ea);
+    session_editarea_data.allEditAreaSet.erase(ea);
 }
 
 static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const Language* newlang){
-    auto itr = language_groups_map.find(oldlang);
-    if (itr != language_groups_map.end()) {
+    auto itr = session_editarea_data.languageGroupsMap.find(oldlang);
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Remove(ea);
     }
-    itr = language_groups_map.find(newlang);
-    if (itr != language_groups_map.end()) {
+    itr = session_editarea_data.languageGroupsMap.find(newlang);
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
         LanguageGroup* langgroup = new LanguageGroup(newlang);// free on app closed
-        language_groups_map.emplace(newlang, langgroup);
+        session_editarea_data.languageGroupsMap.emplace(newlang, langgroup);
         langgroup->Add(ea);
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
@@ -94,15 +100,15 @@ void InitEditAreaData(){
 }
 
 const std::unordered_set<EditArea*> &GetAllEditAreas(){
-    return all_editarea_set;
+    return session_editarea_data.allEditAreaSet;
 }
 
 const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang){
-    auto itr = language_groups_map.find(lang);
-    if (itr != language_groups_map.end()) {
+    auto itr = session_editarea_data.languageGroupsMap.find(lang);
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         return itr->second->GetEditAreaSet();
     } else {
-        return empty_editarea_set;
+        return session_editarea_data.EMPTY_EDITAREA_SET;
     }
 }
 
@@ -137,16 +143,16 @@ EditArea* FindEditAreaByPath(const char* absopath){
 }
 
 void SetFocusedEditArea(EditArea* editarea){
-    focused_editarea = editarea;
+    session_editarea_data.focusedEditArea = editarea;
     const SimpleEvent &event = GetEvent(EDITAREA_FOCUSED_CHANGED);
     for(EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaFocusedChangedCallback)callback)(focused_editarea);
+        ((EditAreaFocusedChangedCallback)callback)(session_editarea_data.focusedEditArea);
     }
 }
 
 LanguageGroup* FindLanguageGroup(const Language* lang){
-    auto itr = language_groups_map.find(lang);
-    if (itr != language_groups_map.end()) {
+    auto itr = session_editarea_data.languageGroupsMap.find(lang);
+    if (itr != session_editarea_data.languageGroupsMap.end()) {
         return itr->second;
     }
     return nullptr;
@@ -192,7 +198,5 @@ void EditFile(FileData *file){
 void CloseFile(FileData *file){
     // not yet implemented
 }
-
-
 
 }// namespace session
