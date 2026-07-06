@@ -36,8 +36,6 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
      * the setting to look like a list.
      */
 
-    m_appUI.settingPanel = this;
-
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
     this->BindUI(builder);
 
@@ -49,8 +47,8 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     gtk_window_set_child(m_window, GTK_WIDGET(m_baseLayout->GetBaseWidget()));
 
     tabbutboxcontent->SetDefaultSize(200, 0);
-    m_baseLayout->InsertChild(tabbutboxcontent);
-    m_baseLayout->InsertChild(stack);
+    m_baseLayout->InsertChild(*tabbutboxcontent);
+    m_baseLayout->InsertChild(*stack);
     stack->SetHorizontalExpand(true);
     stack->SetVerticalExpand(true);
 

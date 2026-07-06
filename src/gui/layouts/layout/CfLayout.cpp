@@ -77,14 +77,14 @@ LayoutNeighbor CfLayout::GetNeighbors(GtkWidget* widget){
     return neighbor;
 }
 
-void CfLayout::InsertChild(CfContent *child){
+void CfLayout::InsertChild(CfContent& child){
     if(!m_childWidgets.empty()){
         GtkSeparator* sep = NewSeparator();
         gtk_box_append(m_baseBox, GTK_WIDGET(sep));
     }
-    gtk_widget_set_overflow(GTK_WIDGET(child->GetBaseWidget()), GTK_OVERFLOW_HIDDEN);
-    m_childWidgets.push_back(child->GetBaseWidget());
-    gtk_box_append(m_baseBox, child->GetBaseWidget());
+    gtk_widget_set_overflow(GTK_WIDGET(child.GetBaseWidget()), GTK_OVERFLOW_HIDDEN);
+    m_childWidgets.push_back(child.GetBaseWidget());
+    gtk_box_append(m_baseBox, child.GetBaseWidget());
 }
 
 

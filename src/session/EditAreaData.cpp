@@ -5,14 +5,12 @@
 #include "editarea/EditArea.h" // for EditArea
 #include "layouts/tab/CfTabLayout.h"
 #include "src/filemanagement/FileCallback.h"
-#include "src/filemanagement/FileManagement_if.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/languages/LanguageGroup.h"
 #include "src/session/FileData.h"
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -35,9 +33,9 @@ typedef struct {
     std::unordered_set<EditArea*> allEditAreaSet;
     std::unordered_map<const Language*, LanguageGroup*> languageGroupsMap;
     EditArea* focusedEditArea;
-} EditAreaData;
+} SessionEditAreaData;
 
-EditAreaData session_editarea_data;
+SessionEditAreaData session_editarea_data;
 
 /*
  * Callbacks
@@ -171,7 +169,7 @@ void EditNewFile(){
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
-        tablayout->Show(ea);
+        tablayout->Show(*ea);
         session::SetFocusedEditArea(ea);
     }
 }
@@ -181,7 +179,7 @@ void EditFile(FileData *file){
     if(ea){
         CfTabLayout* tablayout = session::GetFocusedTabLayout();
         if(tablayout){
-            tablayout->Show(ea);
+            tablayout->Show(*ea);
         }
         return;
     }
@@ -190,7 +188,7 @@ void EditFile(FileData *file){
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
-        tablayout->Show(ea);
+        tablayout->Show(*ea);
         session::SetFocusedEditArea(ea);
     }
 }

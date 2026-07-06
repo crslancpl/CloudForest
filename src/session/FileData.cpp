@@ -13,8 +13,13 @@
  */
 typedef void (*NewWorkspaceCallback)(Workspace*);
 
-static std::unordered_set<Workspace*> workspace_list;
-static std::unordered_map<std::string, FileData*> single_file_data_map;
+typedef struct {
+    std::unordered_set<Workspace*> workspaceList;
+    std::unordered_map<std::string, FileData*> singleFileDataMap;
+}SessionFileData;
+
+SessionFileData session_file_data;
+
 
 namespace session {
 
@@ -22,7 +27,7 @@ Workspace* NewWorkspace(FileData* rootfolderdata){
     if(rootfolderdata->type != G_FILE_TYPE_DIRECTORY) return nullptr;
     Workspace* ws = new Workspace(rootfolderdata);
     //ws->wsBranch = filemanager::CreateFileTree(rootfolderdata);
-    workspace_list.emplace(ws);
+    session_file_data.workspaceList.emplace(ws);
     SimpleEvent &event = GetEvent(NEW_WORKSPACE);
     for (EventCallback callback : event.GetCallbackSet()) {
         ((NewWorkspaceCallback)callback)(ws);
@@ -31,11 +36,11 @@ Workspace* NewWorkspace(FileData* rootfolderdata){
 }
 
 const std::unordered_set<Workspace*> &GetWorkspaceList(){
-    return workspace_list;
+    return session_file_data.workspaceList;
 }
 
 Workspace* FindWorkspaceByFileData(FileData *filedata){
-    for(Workspace* ws : workspace_list){
+    for(Workspace* ws : session_file_data.workspaceList){
         if(tools::StartWith(filedata->absoPath, ws->GetFileData()->absoPath)){
             return ws;
         }
@@ -45,7 +50,7 @@ Workspace* FindWorkspaceByFileData(FileData *filedata){
 }
 
 Workspace* FindWorkspaceByPath(const char* path){
-    for(Workspace* ws : workspace_list){
+    for(Workspace* ws : session_file_data.workspaceList){
         if(tools::StartWith(path, ws->GetFileData()->absoPath)){
             return ws;
         }
@@ -56,12 +61,16 @@ Workspace* FindWorkspaceByPath(const char* path){
 
 
 void AddSingleFile(FileData* filedata){
-    single_file_data_map.emplace(filedata->absoPath, filedata);
+    session_file_data.singleFileDataMap.emplace(filedata->absoPath, filedata);
+}
+
+void RemoveSingleFile(FileData *filedata){
+    session_file_data.singleFileDataMap.erase(filedata->absoPath);
 }
 
 FileData* FindSingleFileByPath(const char* path){
-    auto itr = single_file_data_map.find(path);
-    if (itr != single_file_data_map.end()) {
+    auto itr = session_file_data.singleFileDataMap.find(path);
+    if (itr != session_file_data.singleFileDataMap.end()) {
         return itr->second;
     }
     return nullptr;

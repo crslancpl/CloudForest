@@ -46,7 +46,6 @@ unsigned short FilePanel::Offset = 20;
 
 // public
 FilePanel::FilePanel(AppUI& appui){
-    appui.filePanel = this;
     GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_workspaceArea = GTK_BOX(gtk_builder_get_object(builder, "ws-area"));
     session::Listen(session::NEW_WORKSPACE, (EventCallback)OnNewWorkspace);

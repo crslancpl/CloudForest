@@ -2,7 +2,6 @@
 
 #include "CfTabLayout.h"
 #include "components/CfContent.h"
-#include <cstdio>
 
 
 
@@ -13,9 +12,9 @@ static void CloseButtonClicked(GtkButton *self, CfTabSwitcher *switchbutton){
     switchbutton->Close();
 }
 
-CfTabSwitcher::CfTabSwitcher(CfContent *content,CfTabLayout *parent){
-    m_content = content;
-
+CfTabSwitcher::CfTabSwitcher(CfContent& content, CfTabLayout& parent):
+    m_content(content), m_parentTabLayout(parent)
+    {
     m_closeButton = GTK_BUTTON(gtk_button_new());
     m_switchButton = GTK_BUTTON(gtk_button_new());
     m_baseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -48,11 +47,11 @@ void CfTabSwitcher::SetText(const char *text){
 }
 
 void CfTabSwitcher::Switch(){
-    m_parentTabLayout->Show(m_content);
+    m_parentTabLayout.Show(m_content);
 }
 
 void CfTabSwitcher::Close(){
-    m_parentTabLayout->Remove(m_content, this);
-    m_content->Destroy();
+    m_parentTabLayout.Remove(m_content, *this);
+    m_content.Destroy();
     delete this;
 }

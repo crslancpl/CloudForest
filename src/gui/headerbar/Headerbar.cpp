@@ -1,5 +1,6 @@
 #include "Headerbar.h"
 
+#include <cstdio>
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
 #include <gtk/gtk.h>
@@ -56,13 +57,10 @@ static GActionEntry app_entries[] =
 HeaderBar::HeaderBar(AppUI& appui) :
     m_appUI(appui)
     {
-    appui.headerBar = this;
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/HeaderBar.ui");
-
     m_headerBarWidget = GTK_HEADER_BAR(gtk_builder_get_object(builder, "headerbar"));
     m_fileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "file-btn"));
     m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "app-btn"));
-
     g_signal_connect(m_ideBut, "clicked",G_CALLBACK(OnIdeButtonClicked), this);
     g_action_map_add_action_entries (G_ACTION_MAP (appui.gtkApp), app_entries, G_N_ELEMENTS (app_entries), appui.gtkApp);
 }

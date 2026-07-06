@@ -18,7 +18,7 @@ enum class TabSwitcherTypes:char{
 
 class CfTabSwitcher:public CfComponent{
 public:
-    CfTabSwitcher(CfContent *content, CfTabLayout *parent);
+    CfTabSwitcher(CfContent& content, CfTabLayout& parent);
     ~CfTabSwitcher();
 
     GtkWidget * GetBaseWidget() override;
@@ -30,8 +30,8 @@ private:
     GtkButton *m_switchButton;
     GtkButton *m_closeButton;
     GtkWidget *m_page;
-    CfTabLayout *m_parentTabLayout;
-    CfContent *m_content;
+    CfTabLayout& m_parentTabLayout;
+    CfContent& m_content;
 };
 
 #endif

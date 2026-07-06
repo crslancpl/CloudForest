@@ -39,7 +39,6 @@ LangPanel::LangPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow())
      * Create the language choosing window and set it as
      * the flyout of g_mainwindow's GtkWindow.
      */
-    appui.langPanel = this;
     this->SetSize(200, 100);
     m_langBtnBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 2));
 

@@ -22,27 +22,27 @@ CfTabLayout::CfTabLayout(){
 }
 
 
-void CfTabLayout::Show(CfContent *content){
-    GtkStackPage* page = gtk_stack_get_page(m_stack, content->GetBaseWidget());
+void CfTabLayout::Show(CfContent& content){
+    GtkStackPage* page = gtk_stack_get_page(m_stack, content.GetBaseWidget());
     if(page == nullptr){
-        auto switcher = new CfTabSwitcher(content,this);
-        m_switcherMap.insert({content, switcher});
-        switcher->SetText(content->GetContentName().c_str());
+        auto switcher = new CfTabSwitcher(content, *this);
+        m_switcherMap.insert({&content, switcher});
+        switcher->SetText(content.GetContentName().c_str());
         gtk_box_append(m_switcherArea, GTK_WIDGET(switcher->GetBaseWidget()));
-        gtk_stack_add_child(m_stack, content->GetBaseWidget());
-        content->SetParent(this);
+        gtk_stack_add_child(m_stack, content.GetBaseWidget());
+        content.SetParent(this);
     }
 
-    gtk_stack_set_visible_child(m_stack, content->GetBaseWidget());
+    gtk_stack_set_visible_child(m_stack, content.GetBaseWidget());
 }
 
-void CfTabLayout::Remove(CfContent *content, CfTabSwitcher* switcher){
-    gtk_stack_remove(m_stack, content->GetBaseWidget());
-    auto itr = m_switcherMap.find(content);
+void CfTabLayout::Remove(CfContent& content, CfTabSwitcher& switcher){
+    gtk_stack_remove(m_stack, content.GetBaseWidget());
+    auto itr = m_switcherMap.find(&content);
     if (itr == m_switcherMap.end()) {
         return;
     }
-    gtk_box_remove(m_switcherArea, switcher->GetBaseWidget());
+    gtk_box_remove(m_switcherArea, switcher.GetBaseWidget());
 }
 
 void CfTabLayout::ChildDataChanged(CfContent* child){

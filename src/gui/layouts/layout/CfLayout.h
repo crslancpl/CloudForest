@@ -25,7 +25,7 @@ class CfLayout : public CfContent{
 public:
     GtkOrientation m_orientation;
     CfLayout(GtkOrientation orientation);
-    void InsertChild(CfContent *child);
+    void InsertChild(CfContent& child);
     void RemoveChild(GtkWidget *child);
     LayoutNeighbor GetNeighbors(GtkWidget *widget);
 private:

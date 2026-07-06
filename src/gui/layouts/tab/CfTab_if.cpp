@@ -9,7 +9,7 @@
 static std::unordered_map<CfContent*, CfTabSwitcher*> content_switcher_map;
 
 
-CfTabSwitcher* tablayout::GetSwitcher(CfContent *content){
-    auto result = content_switcher_map.find(content);
+CfTabSwitcher* tablayout::GetSwitcher(CfContent& content){
+    auto result = content_switcher_map.find(&content);
     return result!=content_switcher_map.end() ? result->second : nullptr;
 }

@@ -9,9 +9,9 @@ class CfTabLayout;
 class CfTabSwitcher;
 
 namespace tablayout {
-void SwitchTo(CfContent *content);
-void MovePage(CfContent *content, CfTabLayout *newtab);
-CfTabSwitcher* GetSwitcher(CfContent *content);
+void SwitchTo(CfContent& content);
+void MovePage(CfContent& content, CfTabLayout& newtab);
+CfTabSwitcher* GetSwitcher(CfContent& content);
 }
 
 #endif

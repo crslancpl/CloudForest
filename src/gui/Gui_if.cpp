@@ -17,34 +17,37 @@
 
 static App* current_app;
 
-static void AppActivated (GtkApplication *app, gpointer user_data){
+static void AppActivated (GtkApplication *gtkapp, App* app){
     style::LoadCssFolder("data/styles/DefaultDarkTheme");
     session::InitEditAreaData();
 
     AppUI& appui = current_app->appUI;
 
-    appui.gtkApp = app;
-    /*
-     * The custructor will set itself as a member of appui
-     */
-    HeaderBar* headerbar = new HeaderBar(appui);
-    MainWindow* mainwindow = new MainWindow(appui);
-    FilePanel* filepanel = new FilePanel(appui);
-    SettingPanel* settingpanel = new SettingPanel(appui);
-    LangPanel* langPanel = new LangPanel(appui);
-    DiagnosticPanel* diagnosticPanel = new DiagnosticPanel(appui);
+    appui.headerBar = new HeaderBar(appui);
+    appui.mainWindow = new MainWindow(appui);
+    appui.filePanel = new FilePanel(appui);
+    appui.settingPanel = new SettingPanel(appui);
+    appui.langPanel = new LangPanel(appui);
+    appui.diagnosticPanel = new DiagnosticPanel(appui);
 
-
-    mainwindow->Insert(filepanel);
-
+    appui.mainWindow->SetHeaderBar(*appui.headerBar);
+    appui.mainWindow->Insert(*appui.filePanel);
     CfTabLayout* tab = new CfTabLayout();// freed on app closed
-    mainwindow->Insert(tab);
+    appui.mainWindow->Insert(*tab);
 
     session::EditNewFile();
-    mainwindow->Show();
+    app->appUI.mainWindow->Show();
 }
 
-static void AppClosed (GtkApplication *app, gpointer user_data){
+static void AppClosed (GtkApplication *gtkapp, App* app){
+    AppUI& appui = current_app->appUI;
+
+    delete appui.headerBar;
+    delete appui.mainWindow;
+    delete appui.filePanel;
+    delete appui.settingPanel;
+    delete appui.langPanel;
+    delete appui.diagnosticPanel;
     printf("\nGtk application closed\n");
 }
 
@@ -55,12 +58,16 @@ int RunApp(int argc, char* argv[], App& app){
     g_chdir (GTK_SRCDIR);
 #endif
     current_app = &app;
-    auto gtkapp =gtk_application_new ("ide.cf", G_APPLICATION_NON_UNIQUE);
-    g_signal_connect (gtkapp, "activate", G_CALLBACK (AppActivated), nullptr);
-    g_signal_connect(gtkapp, "shutdown", G_CALLBACK(AppClosed), nullptr);
+    AppUI& appui = current_app->appUI;
 
-    int status = g_application_run (G_APPLICATION (gtkapp), argc, argv);
-    g_object_unref (gtkapp);
+    appui.gtkApp = gtk_application_new ("ide.cf", G_APPLICATION_NON_UNIQUE);
+
+    g_signal_connect(appui.gtkApp, "activate", G_CALLBACK (AppActivated), &app);
+    g_signal_connect(appui.gtkApp, "shutdown", G_CALLBACK(AppClosed), &app);
+
+    int status = g_application_run (G_APPLICATION (appui.gtkApp), argc, argv);// loop
+    g_object_unref (appui.gtkApp);
+
     return status;
 }
 

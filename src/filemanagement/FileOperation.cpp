@@ -12,20 +12,24 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
-#include <cstdio>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 
-static GtkFileDialog *file_dialog;
-static App* current_app = nullptr;
 
+// typedef
 typedef void (*LocationChoosenCallback)(FileData*);
 
 typedef struct {
+    FileData* oldFileData;
     const char* content;
     void (*fileSavedCallback)(FileData*);
 }SaveFileUserData;
+
+
+// static variable
+static App* current_app = nullptr;
+
 
 
 static void WriteFile(FileData* filedata, const char* content){
@@ -87,6 +91,9 @@ static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
     GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
 
     if(file != nullptr){
+        session::RemoveSingleFile(userdata->oldFileData);
+        delete userdata->oldFileData;
+
         GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
         FileData* filedata = filemanager::LoadFileData(file, info, true);
         WriteFile(filedata, userdata->content);
@@ -101,7 +108,7 @@ static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
 
 void FileOperationInit(App& app){
     current_app = &app;
-    file_dialog = gtk_file_dialog_new();
+    current_app->appUI.fileDialog = gtk_file_dialog_new();
 }
 
 namespace filemanager{
@@ -140,12 +147,15 @@ FileData* CreateVirtualFolder(){
 
 void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(FileData*)){
     if(filedata->isVirtual){
-        SaveFileUserData* userdata = new SaveFileUserData();// free by OnFileSaved()
-        userdata->fileSavedCallback = savedcallback;
-        userdata->content = content;
-        gtk_file_dialog_set_title(file_dialog, "Save file");
+        SaveFileUserData* userdata = new SaveFileUserData{
+            filedata,
+            content,
+            savedcallback
+        };// free by OnFileSaved()
+
+        gtk_file_dialog_set_title(current_app->appUI.fileDialog, "Save file");
         GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-        gtk_file_dialog_save(file_dialog, parentGtkWindow, nullptr, OnFileSaved, userdata);
+        gtk_file_dialog_save(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileSaved, userdata);
     } else {
         WriteFile(filedata, content);
     }
@@ -154,18 +164,18 @@ void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(Fil
 
 
 void ChooseFile(){
-    gtk_file_dialog_set_title(file_dialog, "choose a file");
+    gtk_file_dialog_set_title(current_app->appUI.fileDialog, "choose a file");
     if (current_app == nullptr){
         return;
     }
     GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-    gtk_file_dialog_open(file_dialog, parentGtkWindow, nullptr, OnFileDialogFileSelected, nullptr);
+    gtk_file_dialog_open(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileDialogFileSelected, nullptr);
 }
 
 void ChooseFolder(){
-    gtk_file_dialog_set_title(file_dialog, "Choose a folder");
+    gtk_file_dialog_set_title(current_app->appUI.fileDialog, "Choose a folder");
     GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-    gtk_file_dialog_select_folder(file_dialog, parentGtkWindow, nullptr, OnFileDialogFolderSelected, nullptr);
+    gtk_file_dialog_select_folder(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileDialogFolderSelected, nullptr);
 }
 
 }// namespace filemanager

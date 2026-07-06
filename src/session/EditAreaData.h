@@ -3,7 +3,6 @@
 
 #include "datatypes/common.h" // for Language
 #include "editarea/EditArea.h" // for EditArea
-#include "src/filemanagement/FileTree.h"
 #include "src/languages/LanguageGroup.h"
 
 #include <unordered_set>
@@ -11,8 +10,6 @@
 namespace session{
 
 void InitEditAreaData();
-
-Workspace* FindWorkspaceByPath();
 
 const std::unordered_set<EditArea*> &GetAllEditAreas();
 const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang);

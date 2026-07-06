@@ -9,6 +9,7 @@
 #include "datatypes/file.h"
 #include "Gui_if.h"
 #include "src/filemanagement/FileOperation.h"
+#include "src/filemanagement/FileReader.h"
 #include "components/TextArea.h"
 #include "style/Style.h"
 #include "src/languages/LanguageManager_if.h"

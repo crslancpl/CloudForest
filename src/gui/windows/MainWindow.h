@@ -16,7 +16,8 @@ public:
     MainWindow(AppUI &appui);
     ~MainWindow();
 
-    void Insert(CfContent *content);
+    void SetHeaderBar(HeaderBar& headerbar);
+    void Insert(CfContent& content);
 
 private:
     CfLayout *m_layout;

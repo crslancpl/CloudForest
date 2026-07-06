@@ -15,9 +15,7 @@
 
 
 MainWindow::MainWindow(AppUI& appui) : Window(true){
-    appui.mainWindow = this;
     gtk_widget_add_css_class(GTK_WIDGET(m_window), "main-window");
-    gtk_window_set_titlebar(m_window, appui.headerBar->GetBaseWidget());
 
     m_layout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);// freed on MainWindow deleted(app closed)
     gtk_window_set_child(m_window, GTK_WIDGET(m_layout->GetBaseWidget()));
@@ -32,6 +30,10 @@ MainWindow::~MainWindow(){
     delete m_layout;
 }
 
-void MainWindow::Insert(CfContent *content){
+void MainWindow::SetHeaderBar(HeaderBar& headerbar){
+    gtk_window_set_titlebar(m_window, headerbar.GetBaseWidget());
+}
+
+void MainWindow::Insert(CfContent& content){
     m_layout->InsertChild(content);
 }

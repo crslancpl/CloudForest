@@ -12,6 +12,7 @@ class DiagnosticPanel;
 
 typedef struct AppUI{
     GtkApplication *gtkApp;
+    GtkFileDialog *fileDialog;// for filemanager;
     MainWindow *mainWindow;
     HeaderBar *headerBar;
     SettingPanel *settingPanel;
