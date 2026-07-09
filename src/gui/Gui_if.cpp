@@ -13,6 +13,7 @@
 #include "layouts/tab/CfTab_if.h"
 #include "layouts/tab/CfTabLayout.h"
 
+#include <cstdio>
 #include <gtk/gtk.h>
 
 static App* current_app;

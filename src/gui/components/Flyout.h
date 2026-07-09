@@ -13,7 +13,8 @@ public:
 
     void Show();
     void Hide();
-private:
+
+protected:
     GtkWindow* m_flyoutWindow;
     GtkEventController* m_focusEventCtrl;
 };

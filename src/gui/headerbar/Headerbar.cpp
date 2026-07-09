@@ -1,6 +1,5 @@
 #include "Headerbar.h"
 
-#include <cstdio>
 #include <gio/gmenu.h>
 #include <gio/gmenumodel.h>
 #include <gtk/gtk.h>

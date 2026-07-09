@@ -1,0 +1,28 @@
+.diagnostic-panel {
+    background-color: rgb(25, 25, 25);
+}
+
+.diagnostic-panel button {
+    border-radius: 10px;
+    border: 1px solid;
+}
+
+.diagnostic-panel button.error {
+    border-color: rgba(255, 0, 0, 0.7);
+    background-color: rgba(255, 0, 0, 0.15);
+}
+
+.diagnostic-panel button.warning {
+    border-color: rgba(255, 120, 0, 0.7);
+    background-color: rgba(255, 120, 0, 0.15);
+}
+
+.diagnostic-panel button.info {
+    border-color: rgba(0, 255, 0, 0.7);
+    background-color: rgba(0, 255, 0, 0.15);
+}
+
+.diagnostic-panel button.hint {
+    border-color: rgba(0, 0, 255, 0.7);
+    background-color: rgba(0, 0, 255, 0.15);
+}

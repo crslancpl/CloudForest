@@ -21,8 +21,13 @@ WorkspaceBox::WorkspaceBox(Workspace* ws): m_ws(ws){
     gtk_widget_add_css_class(GTK_WIDGET(m_box), "ws-box");
     m_label = GTK_LABEL(gtk_label_new(ws->GetName()));
     gtk_box_append(m_box, GTK_WIDGET(m_label));
-    FPFolderButton* folderbtn = new FPFolderButton(ws, 0);
-    gtk_box_append(m_box, folderbtn->GetBaseWidget());
+    m_folderBtn = new FPFolderButton(ws, 0);
+    gtk_box_append(m_box, m_folderBtn->GetBaseWidget());
+}
+
+WorkspaceBox::~WorkspaceBox(){
+    //
+    delete m_folderBtn;
 }
 
 void WorkspaceBox::SetName(const char* name){
@@ -58,6 +63,15 @@ FilePanel::FilePanel(AppUI& appui){
     gtk_widget_add_css_class(GTK_WIDGET(m_workspaceArea), "ws-area");
     SetContentWidget(GTK_WIDGET(m_workspaceArea));
     g_object_unref(builder);
+}
+
+FilePanel::~FilePanel(){
+    for (WorkspaceBox* wsbox : m_workspaceList) {
+        gtk_box_remove(m_workspaceArea, wsbox->GetBaseWidget());
+        delete wsbox;
+    }
+
+    m_workspaceList.clear();
 }
 
 void FilePanel::NewWorkspace(Workspace* ws){

@@ -17,11 +17,14 @@ class FPFolderButton;
 class WorkspaceBox: public CfComponent{
 public:
     WorkspaceBox(Workspace* ws);
+    ~WorkspaceBox();
+
     void SetName(const char* name);
 
     GtkWidget* GetBaseWidget() override;
 private:
     Workspace* m_ws;
+    FPFolderButton* m_folderBtn;
     GtkBox *m_box;
     GtkLabel *m_label;
 };
@@ -29,6 +32,7 @@ private:
 class FilePanel : public CfContent{
 public:
     FilePanel(AppUI& appui);
+    ~FilePanel();
 
     static unsigned short Offset;
     // Space in front of the buttons in FilePanel. OffSet * level is the total space

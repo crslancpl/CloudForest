@@ -1,0 +1,17 @@
+.diagnostic-panel {
+    border-radius: 10px;
+    padding: 5px;
+    background-image: none;
+}
+
+.diagnostic-panel button {
+    background-image: none;
+}
+
+.diagnostic-panel button .location-label {
+    font-size: 16px;
+}
+
+.diagnostic-panel button .message-label {
+    font-size: 12px;
+}

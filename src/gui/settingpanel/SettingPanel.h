@@ -17,6 +17,7 @@ typedef struct AppUI AppUI ;
 class SettingPanel : public Window{
 public:
     SettingPanel(AppUI& appui);
+    ~SettingPanel();
 
     void Show() override;
     void SwitchPage(const char* name);

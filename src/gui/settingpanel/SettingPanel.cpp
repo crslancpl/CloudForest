@@ -57,6 +57,10 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     g_object_unref(builder);
 }
 
+SettingPanel::~SettingPanel(){
+    //delete m_baseLayout;
+}
+
 void SettingPanel::Show(){
     /*
      * Everytime the setting window is opened, we will resize the setting window to 2/3 in
