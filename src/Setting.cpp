@@ -2,16 +2,14 @@
 #include "datatypes/extension.h"
 #include "toolset/event/Event.h"
 
+#include <memory>
 #include <unordered_map>
-#include <unordered_set>
+#include <vector>
 
 typedef void (*ExtensionEnabledCallback)(Extension*);
 typedef void (*ExtensionDisabledCallback)(Extension*);
 
-static std::unordered_set<Extension*> extension_list;
-
-//static std::unordered_set<ExtensionEnabledCallback> extension_enabled_callback_list;
-//static std::unordered_set<ExtensionDisabledCallback> extension_disabled_callback_list;
+static std::vector<std::unique_ptr<Extension>> extension_list;
 
 namespace setting{
 
@@ -34,17 +32,25 @@ void StopListen(Signal signal, EventCallback callback){
     }
 }
 
-std::unordered_set<Extension*> &GetAllExtensions(){
+const std::vector<std::unique_ptr<Extension>> &GetAllExtensions(){
     return extension_list;
 }
 
-void AddExtension(Extension* extension){
-    extension_list.insert(extension);
+void AddExtension(std::unique_ptr<Extension> extension){
+    extension_list.emplace_back(std::move(extension));
 }
 
 void RemoveExtension(Extension* extension){
     //Removing the extension(Delete the folder of extension)
-    extension_list.erase(extension);
+    int itr = 0;
+    for (const std::unique_ptr<Extension>& ext : extension_list) {
+        if (ext.get() == extension) {
+            extension_list.erase(extension_list.begin() + itr);
+            break;
+        }
+        itr ++;
+    }
+
     delete [] extension->name;
     delete [] extension->folder;
     delete [] extension->description;

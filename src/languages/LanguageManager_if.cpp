@@ -5,12 +5,12 @@
 #include "toolset/tools/Tool.h"
 #include "LanguageListener.h"
 
+#include <memory>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 typedef void (*NewLanguageCallback)(Language*);
-
-static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
 
 Language unknow_lang = {
     .name = "Unknown",
@@ -19,19 +19,23 @@ Language unknow_lang = {
     .syntaxTemplateFile = "unknown.txt"
 };
 
-static std::unordered_map<std::string, Language*> language_list = {
-    {"Unknown", &unknow_lang}
-};
+static std::vector<std::unique_ptr<Language>> language_list = {};// has ownership
+
+static std::unordered_map<std::string, Language*> file_extension_to_language_map = {};
+
+static std::unordered_map<std::string, Language*> lang_name_to_language_map = {};
 
 
 
 namespace langmanager{
 
-std::unordered_map<Signal, SimpleEvent> event_map = {
+static std::unordered_map<Signal, SimpleEvent> event_map = {
     {LANG_MANAGER_NEW_LANG, SimpleEvent()}
 };
 
 void Init(){
+    language_list.emplace_back(std::unique_ptr<Language>(&unknow_lang));
+    lang_name_to_language_map.emplace("Unknown", &unknow_lang);
     //StartListener();
 }
 
@@ -39,21 +43,25 @@ void ClearLanguageList(){
     language_list.clear();
 }
 
-void AddToLanguageList(Language* lang){
-    language_list.emplace(lang->name, lang);
-    for (const std::string& fileext: lang->fileExtensions) {
-        file_extension_to_language_map.emplace(fileext, lang);
+void AddToLanguageList(std::unique_ptr<Language> lang){
+    Language* langrawptr = lang.get();
+    language_list.emplace_back(std::move(lang));
+
+    lang_name_to_language_map.emplace(langrawptr->name, langrawptr);
+
+    for (const std::string& fileext: langrawptr->fileExtensions) {
+        file_extension_to_language_map.emplace(fileext, langrawptr);
     }
 
     const SimpleEvent &event = event_map.at(LANG_MANAGER_NEW_LANG);
     for(EventCallback callback : event.GetCallbackSet()){
-        ((NewLanguageCallback)callback)(lang);
+        ((NewLanguageCallback)callback)(langrawptr);
     }
 }
 
 Language* FindByName(const char* langname){
-    auto result = language_list.find(langname);
-    return result != language_list.end() ? result->second : &unknow_lang;
+    auto result = lang_name_to_language_map.find(langname);
+    return result != lang_name_to_language_map.end() ? result->second : &unknow_lang;
 }
 
 Language* FindByFileExtension(const char* filename){
@@ -63,11 +71,11 @@ Language* FindByFileExtension(const char* filename){
     }
 
     auto result = file_extension_to_language_map.find(file_ext_pair[1]);
-    return result != language_list.end() ? result->second : &unknow_lang;
+    return result != file_extension_to_language_map.end() ? result->second : &unknow_lang;
 }
 
-const std::unordered_map<std::string, Language*>& GetLanguageList(){
-    return language_list;
+const std::unordered_map<std::string, Language*>& GetLanguageMap(){
+    return lang_name_to_language_map;
 }
 
 void Listen(Signal signal, void (*callback)()){

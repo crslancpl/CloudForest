@@ -46,10 +46,10 @@ public:
     const Difference &GetPendingDiff() const;
 
 
-    void AddDiagnostic(Diagnostic* diagnostic); // add a diagnostic
+    void AddDiagnostic(std::unique_ptr<Diagnostic> diagnostic); // add a diagnostic
     void ProcessDiagnostics(int version); // read data from all diagnostics and show highlight
     void ClearDiagnostics(); // clear the diagnostics list
-    const std::unordered_set<Diagnostic*>& GetDiagnosticsList();
+    const std::unordered_set<std::unique_ptr<Diagnostic>>& GetDiagnosticsList();
     Diagnostic* FindDiagnostic(GtkTextIter* itr);
     void LoadCursorPos();
     void LoadFile(FileData *filedata);
@@ -109,7 +109,7 @@ private:
     Difference m_pendingDif;
     ZRange m_currentDiagnosticRange;
 
-    std::unordered_set<Diagnostic*> m_diagnosticsList;
+    std::unordered_set<std::unique_ptr<Diagnostic>> m_diagnosticsList;
 
     // Search and replace
     std::unique_ptr<SearchReplaceDialog> searchDialog;

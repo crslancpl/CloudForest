@@ -5,6 +5,8 @@
 #include "src/Setting.h"
 
 #include <listobject.h>
+#include <memory.h>
+#include <memory>
 #include <object.h>
 #include <pytypedefs.h>
 #include <tupleobject.h>
@@ -46,14 +48,14 @@ static PyObject* setting_module_add_extension(PyObject* self, PyObject* args){
     if(!PyArg_ParseTuple(args, "sssp", &name, &folder, &description, &enable)){
         Py_RETURN_NAN;
     }
+    std::unique_ptr<Extension> extension = std::make_unique<Extension>();
 
-    Extension* extension = new Extension();// freed on "setting::RemoveExtension()" or app closed
     extension->name = strdup(name);
     extension->folder = strdup(folder);
     extension->description = strdup(description);
     extension->enabled = enable;
 
-    setting::AddExtension(extension);
+    setting::AddExtension(std::move(extension));
 
     Py_RETURN_NONE;
 }

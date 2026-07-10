@@ -15,6 +15,7 @@
 
 #include <cstdio>
 #include <gtk/gtk.h>
+#include <memory>
 
 static App* current_app;
 
@@ -24,12 +25,12 @@ static void AppActivated (GtkApplication *gtkapp, App* app){
 
     AppUI& appui = current_app->appUI;
 
-    appui.headerBar = new HeaderBar(appui);
-    appui.mainWindow = new MainWindow(appui);
-    appui.filePanel = new FilePanel(appui);
-    appui.settingPanel = new SettingPanel(appui);
-    appui.langPanel = new LangPanel(appui);
-    appui.diagnosticPanel = new DiagnosticPanel(appui);
+    appui.headerBar = std::make_unique<HeaderBar>(appui);
+    appui.mainWindow = std::make_unique<MainWindow>(appui);
+    appui.filePanel = std::make_unique<FilePanel>(appui);
+    appui.settingPanel = std::make_unique<SettingPanel>(appui);
+    appui.langPanel = std::make_unique<LangPanel>(appui);
+    appui.diagnosticPanel = std::make_unique<DiagnosticPanel>(appui);
 
     appui.mainWindow->SetHeaderBar(*appui.headerBar);
     appui.mainWindow->Insert(*appui.filePanel);
@@ -41,14 +42,6 @@ static void AppActivated (GtkApplication *gtkapp, App* app){
 }
 
 static void AppClosed (GtkApplication *gtkapp, App* app){
-    AppUI& appui = current_app->appUI;
-
-    delete appui.headerBar;
-    delete appui.mainWindow;
-    delete appui.filePanel;
-    delete appui.settingPanel;
-    delete appui.langPanel;
-    delete appui.diagnosticPanel;
     printf("\nGtk application closed\n");
 }
 
@@ -73,23 +66,23 @@ int RunApp(int argc, char* argv[], App& app){
 }
 
 MainWindow* GetMainWindow(){
-    return current_app->appUI.mainWindow;
+    return current_app->appUI.mainWindow.get();
 }
 
 FilePanel* GetFilePanel(){
-    return current_app->appUI.filePanel;
+    return current_app->appUI.filePanel.get();
 }
 
 SettingPanel* GetSettingPanel(){
-    return current_app->appUI.settingPanel;
+    return current_app->appUI.settingPanel.get();
 }
 
 DiagnosticPanel* GetDiagnosticPanel(){
-    return current_app->appUI.diagnosticPanel;
+    return current_app->appUI.diagnosticPanel.get();
 }
 
 LangPanel* GetLangPanel(){
-    return current_app->appUI.langPanel;
+    return current_app->appUI.langPanel.get();
 }
 
 }// namespace gui

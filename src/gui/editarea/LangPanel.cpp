@@ -11,6 +11,7 @@
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <vector>
 
 static AppUI* app_ui = nullptr;
 
@@ -44,10 +45,10 @@ LangPanel::LangPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow())
 
     this->SetChild(GTK_WIDGET(m_langBtnBox));
 
-    auto langlist = langmanager::GetLanguageList();
+    const std::unordered_map<std::string, Language*>& langmap = langmanager::GetLanguageMap();
 
-    for(auto itr : langlist){
-        this->AddLanguage(itr.second);
+    for(auto namelangpair : langmap){
+        this->AddLanguage(namelangpair.second);
     }
 }
 

@@ -4,7 +4,9 @@
 #include "datatypes/extension.h"
 #include "toolset/event/Event.h"
 
-#include <unordered_set>
+#include <memory.h>
+#include <memory>
+#include <vector>
 
 namespace setting{
 
@@ -16,8 +18,8 @@ enum Signal{
 void Listen(Signal signal, EventCallback callback);
 void StopListen(Signal signal, EventCallback callback);
 
-std::unordered_set<Extension*> &GetAllExtensions();
-void AddExtension(Extension* extension);
+const std::vector<std::unique_ptr<Extension>> &GetAllExtensions();
+void AddExtension(std::unique_ptr<Extension> extension);
 void RemoveExtension(Extension* extension);
 void EnableExtension(Extension* extension);
 void DisableExtension(Extension* extension);

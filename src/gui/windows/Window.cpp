@@ -6,6 +6,7 @@
 Window::Window(bool constructwindow){
     if (constructwindow) {
         m_window = GTK_WINDOW(gtk_window_new());
+        g_object_ref(m_window);
     }
 }
 

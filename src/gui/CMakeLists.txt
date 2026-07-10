@@ -12,7 +12,6 @@ set(EDITAREA
     editarea/DiagnosticPanel.cpp
     editarea/Popovers.cpp
     editarea/SearchReplaceDialog.cpp
-    #editarea/EditArea_if.cpp
     editarea/EditArea.cpp
 )
 

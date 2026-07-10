@@ -28,7 +28,7 @@ MainWindow::MainWindow(AppUI& appui) : Window(true){
 }
 
 MainWindow::~MainWindow(){
-    //delete m_layout;
+    delete m_layout;
 }
 
 void MainWindow::SetHeaderBar(HeaderBar& headerbar){

@@ -12,6 +12,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 static void OnCloseClicked(GtkButton *self, SettingPanel* parent){
     parent->Hide();
@@ -52,13 +53,16 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     stack->SetHorizontalExpand(true);
     stack->SetVerticalExpand(true);
 
-    this->AddPage("Extension", new ExtensionPage());//freed on app closed
+    m_extensionPage = std::make_unique<ExtensionPage>();
+    this->AddPage("Extension", m_extensionPage.get());
+
+    m_parentWindow = GTK_WINDOW(m_appUI.mainWindow->GetGtkWindow());
 
     g_object_unref(builder);
 }
 
 SettingPanel::~SettingPanel(){
-    //delete m_baseLayout;
+    delete m_baseLayout;
 }
 
 void SettingPanel::Show(){
@@ -67,9 +71,9 @@ void SettingPanel::Show(){
      * both width and height of the main window. And the Stack will take 70% of the area
      * of the setting panel.
      */
-    GtkWidget *mainwindow = GTK_WIDGET(m_appUI.mainWindow->GetGtkWindow());
-    int w = gtk_widget_get_width(mainwindow)/1.5;
-    int h = gtk_widget_get_height(mainwindow)/1.5;
+
+    int w = gtk_widget_get_width(GTK_WIDGET(m_parentWindow))/1.5;
+    int h = gtk_widget_get_height(GTK_WIDGET(m_parentWindow))/1.5;
 
     if (w* 0.3 > 200) {
         gtk_widget_set_size_request(GTK_WIDGET(m_tabButtonBox), 200, 0);

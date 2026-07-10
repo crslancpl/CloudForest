@@ -3,12 +3,14 @@
 
 #include "SettingPage.h"
 #include "headerbar/Headerbar.h"
+#include "settingpanel/ExtensionPage.h"
 #include "src/gui/windows/MainWindow.h"
 #include "src/gui/windows/Window.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkdropdown.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 //forward declaration
 class CfLayout;
@@ -28,12 +30,15 @@ private:
     void BindUI(GtkBuilder* builder);
 
     AppUI& m_appUI;
+    GtkWindow *m_parentWindow;
 
     CfLayout *m_baseLayout;// Saperates TabButtonBox and Stack
     GtkBox *m_tabButtonBox;// left-hand side
     GtkGrid *m_tabButtonBoxSeparator;
     GtkButton *m_closeButton;
     GtkStack *m_stack;// right-hand side
+
+    std::unique_ptr<ExtensionPage> m_extensionPage;
 };
 
 #endif

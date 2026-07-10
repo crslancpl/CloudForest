@@ -13,11 +13,11 @@
 #include "toolset/tools/Tool.h"
 
 #include <abstract.h>
-#include <cstdio>
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
 
+#include <memory>
 #include <methodobject.h>
 #include <modsupport.h>
 #include <object.h>
@@ -67,7 +67,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
         Py_RETURN_NAN;
     }
 
-    Language* lang = new Language();// Free by lang manager
+    std::unique_ptr<Language> lang = std::make_unique<Language>();// Free by lang manager
     lang->name = strdup(langname);
     lang->id = strdup(id);
     lang->syntaxTemplateFile = syntaxfile;
@@ -77,7 +77,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
         lang->fileExtensions.emplace(ext);
     }
 
-    langmanager::AddToLanguageList(lang);
+    langmanager::AddToLanguageList(std::move(lang));
 
     Py_RETURN_NONE;
 }
@@ -108,7 +108,6 @@ static PyObject *language_module_listen_language_used(PyObject *self, PyObject* 
 
 
 static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *args){
-    printf("language listen for ea 1\n");
     char* langname;
     PyObject* callback;
 

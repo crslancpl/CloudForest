@@ -9,8 +9,10 @@
 #include <Python.h>
 #include <ceval.h>
 #include <import.h>
+#include <memory>
 #include <pystate.h>
 #include <string>
+#include <vector>
 
 
 #define PY_SSIZE_T_CLEAN
@@ -58,9 +60,9 @@ void End(){
 
 void RunEnabledExtensions(){
     RestoreThreadLock();
-    auto extensions = setting::GetAllExtensions();
+    const std::vector<std::unique_ptr<Extension>>& extensions = setting::GetAllExtensions();
 
-    for(Extension* ext : extensions){
+    for(const std::unique_ptr<Extension>& ext : extensions){
         if(ext->enabled){
             ext->module = PyImport_ImportModule(ext->folder);
         }

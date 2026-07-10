@@ -11,6 +11,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 #include <string>
 #include <unordered_set>
 
@@ -76,13 +77,13 @@ void DiagnosticPanel::ShowFor(EditArea* target){
     m_target = target;
     this->Clear();
 
-    const std::unordered_set<Diagnostic*>& diagns = target->GetDiagnosticsList();
+    const std::unordered_set<std::unique_ptr<Diagnostic>>& diagns = target->GetDiagnosticsList();
 
     if(diagns.empty()){
         return;
     }
 
-    for (Diagnostic* diagn : diagns){
+    for (const std::unique_ptr<Diagnostic>& diagn : diagns){
         DiagnosticPanelItem* item = new DiagnosticPanelItem(*diagn);// delete on Clear()
         gtk_box_prepend(m_diagnItemBox, GTK_WIDGET(item->GetBaseWidget()));
         m_itemSet.insert(item);

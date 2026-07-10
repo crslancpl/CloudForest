@@ -9,12 +9,14 @@
 #include "toolset/event/Event.h"
 
 #include <Python.h>
+#include <algorithm>
 #include <cpython/classobject.h>
 #include <cstdio>
 #include <cstring>
 #include <floatobject.h>
 #include <listobject.h>
 #include <longobject.h>
+#include <memory>
 #include <methodobject.h>
 #include <object.h>
 #include <pytypedefs.h>
@@ -251,7 +253,7 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
      * The message cannot be paseds directly to diagnostic as Python will free the char*
      */
 
-    Diagnostic* diagnostic = new Diagnostic();// freed on "EditArea::ClearDiagnostics()"
+    std::unique_ptr<Diagnostic> diagnostic = std::make_unique<Diagnostic>();
     char* message;
     char* code;
     if(!PyArg_ParseTuple(
@@ -264,13 +266,12 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
         &diagnostic->range.end.column,
         &diagnostic->severity)
     ){
-        delete diagnostic;
         Py_RETURN_NAN;
     }
 
     diagnostic->message = strdup(message);
     diagnostic->code = strdup(code);
-    self->editarea->AddDiagnostic(diagnostic);
+    self->editarea->AddDiagnostic(std::move(diagnostic));
     Py_RETURN_NONE;
 }
 

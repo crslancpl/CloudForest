@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
-#include <unordered_set>
+#include <memory>
 
 ExtensionBlock::ExtensionBlock(Extension* extension): ToggleBlock(extension->name, extension->description, extension->enabled)
     , m_extension(extension)
@@ -14,6 +14,9 @@ ExtensionBlock::ExtensionBlock(Extension* extension): ToggleBlock(extension->nam
     //
 }
 
+ExtensionBlock::~ExtensionBlock(){
+    //
+}
 
 void ExtensionBlock::SetState(bool state){
     gtk_switch_set_active(m_switchBtn, state);
@@ -28,6 +31,10 @@ void ExtensionBlock::SetState(bool state){
     }
 }
 
+
+
+
+
 ExtensionPage::ExtensionPage(){
     this->AddHeader1("Extension");
     this->AddParagraph("Restart the app to take effect");
@@ -40,14 +47,19 @@ ExtensionPage::ExtensionPage(){
     this->ShowExtensions();
 }
 
+ExtensionPage::~ExtensionPage(){
+    //
+}
+
 void ExtensionPage::ShowExtensions(){
-    std::unordered_set<Extension*> &allExtensions = setting::GetAllExtensions();
-    for(auto extension : allExtensions){
-        ExtensionBlock* block = new ExtensionBlock(extension);
+    const std::vector<std::unique_ptr<Extension>>& allExtensions = setting::GetAllExtensions();
+    for( const std::unique_ptr<Extension>& extension : allExtensions){
+        std::unique_ptr<ExtensionBlock> block = std::make_unique<ExtensionBlock>(extension.get());
         if(extension->enabled){
             gtk_box_append(m_enabledExtensonBox, block->GetBaseWidget());
         }else{
             gtk_box_append(m_disabledExtensonBox, block->GetBaseWidget());
         }
+        m_extensionBlocks.emplace_back(std::move(block));
     }
 }

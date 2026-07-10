@@ -25,6 +25,7 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <memory>
 #include <string>
 
 /*
@@ -192,9 +193,9 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnosticButtonClicked), this);
 }
 
-void EditArea::AddDiagnostic(Diagnostic* diagnostic){
+void EditArea::AddDiagnostic(std::unique_ptr<Diagnostic> diagnostic){
     m_mutex.lock();
-    m_diagnosticsList.emplace(diagnostic);
+    m_diagnosticsList.emplace(std::move(diagnostic));
     m_mutex.unlock();
 }
 
@@ -219,7 +220,7 @@ void EditArea::ProcessDiagnostics(int version){
         "hint"
     };
 
-    for (Diagnostic* diagnostic: m_diagnosticsList) {
+    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList) {
         this->ApplyTagByRange(&diagnostic->range, tags[diagnostic->severity]);
         severityList[diagnostic->severity] ++;
     }
@@ -241,11 +242,12 @@ void EditArea::ProcessDiagnostics(int version){
 void EditArea::ClearDiagnostics(){
     m_mutex.lock();
 
-    for (Diagnostic* diagnostic : m_diagnosticsList){
+    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList){
         delete [] diagnostic->message;
         delete [] diagnostic->code;
-        delete diagnostic;
     }
+
+    m_diagnosticsList.clear();
 
     m_currentDiagnosticRange.start.line = 0;
     m_currentDiagnosticRange.start.column = 0;
@@ -261,7 +263,7 @@ void EditArea::ClearDiagnostics(){
     m_mutex.unlock();
 }
 
-const std::unordered_set<Diagnostic*>& EditArea::GetDiagnosticsList(){
+const std::unordered_set<std::unique_ptr<Diagnostic>>& EditArea::GetDiagnosticsList(){
     return m_diagnosticsList;
 }
 
@@ -273,12 +275,13 @@ Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){
     if(tools::IsZPosInRange(pos, &m_currentDiagnosticRange)) return nullptr;
 
     // There may be more than 1 diagnostic for a iter
-    for (Diagnostic* diagnostic : m_diagnosticsList) {
+    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList) {
         if(tools::IsZPosInRange(pos, &diagnostic->range)){
             m_currentDiagnosticRange = diagnostic->range;
-            return diagnostic;
+            return diagnostic.get();
         }
     }
+
     m_currentDiagnosticRange.start.line = 0;
     m_currentDiagnosticRange.start.column = 0;
     m_currentDiagnosticRange.end.line = 0;
