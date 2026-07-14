@@ -4,7 +4,6 @@
 #include "style/Style.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -36,7 +35,10 @@ TextArea::TextArea(){
         {TEXTAREA_CLASS_LANG_CHANGED, SimpleEvent()}
     };
 
-    gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(m_lineNoArea), gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(m_textView)));
+    m_hAdjustment = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(m_textView));
+    m_vAdjustment = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(m_textView));
+
+    gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(m_lineNoArea), m_vAdjustment);
     gtk_text_view_set_bottom_margin (m_textView, 80);
     gtk_text_view_set_bottom_margin (m_lineNoArea, 80);
     gtk_text_view_set_pixels_below_lines(m_textView, 5);

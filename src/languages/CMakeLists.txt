@@ -11,4 +11,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${CLOUDFOREST_ROOT_DIR}/src/gui
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::GTK4 Python::Python)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  PkgConfig::GTK4
+  Python::Python
+)

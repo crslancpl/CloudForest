@@ -8,6 +8,8 @@
 #include "datatypes/lsp.h"
 #include "datatypes/file.h"
 #include "Gui_if.h"
+#include "editarea/CompletionTool.h"
+#include "editarea/DiagnosticTool.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/filemanagement/FileReader.h"
 #include "components/TextArea.h"
@@ -21,6 +23,7 @@
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
 #include <cstring>
+#include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
 #include <glib.h>
@@ -105,7 +108,41 @@ EditArea::EditArea(FileData* file){
     this->LoadGui();
     this->LoadFile(file);
 
-    m_diagnosticPopover = new DiagnosticPopover(m_textView, m_textViewBuffer);// freed on EditArea deleted
+    m_diagnosticPopover = new DiagnosticPopover(m_textView);// freed on EditArea deleted
+
+    m_completionTool = std::make_unique<CompletionTool>(*this);
+
+    m_diagnosticTool = std::make_unique<DiagnosticTool>(*this);
+    m_diagnosticTool->OnCleared([=](){
+        bool r = m_mutex.try_lock();
+        m_currentDiagnosticRange.start.line = 0;
+        m_currentDiagnosticRange.start.column = 0;
+        m_currentDiagnosticRange.end.line = 0;
+        m_currentDiagnosticRange.end.column = 0;
+
+        gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
+        for (const char* tag : style::GetTextTagNamesForDiagnostic()){
+            gtk_text_buffer_remove_tag_by_name(m_textViewBuffer, tag, &m_startItr, &m_endItr);
+        };
+        m_mutex.unlock();
+    });
+
+    m_diagnosticTool->OnUpdated([=](int error, int warning, int info, int hint){
+        bool r = m_mutex.try_lock();
+        std::string s =
+            "<span color=\"red\">e" +
+            std::to_string(error) +
+            "</span> <span color=\"yellow\">w" +
+            std::to_string(warning) +
+            "</span> <span color=\"greenyellow\">i" +
+            std::to_string(info) +
+            "</span> <span color=\"cyan\">h" +
+            std::to_string(hint) +
+            "</span>";
+
+        gtk_label_set_markup(m_diagnButLabel, s.c_str());
+        m_mutex.unlock();
+    });
 
     /* Initialize variables */
     m_cursorIndex = 0;
@@ -136,8 +173,6 @@ EditArea::~EditArea(){
     for (EventCallback callback : event.GetCallbackSet()) {
         ((EditAreaBasicEvent)callback)(this);
     }
-
-    this->ClearDiagnostics();
 
     m_editingFile->editArea = nullptr;
 }
@@ -193,103 +228,6 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnosticButtonClicked), this);
 }
 
-void EditArea::AddDiagnostic(std::unique_ptr<Diagnostic> diagnostic){
-    m_mutex.lock();
-    m_diagnosticsList.emplace(std::move(diagnostic));
-    m_mutex.unlock();
-}
-
-void EditArea::ProcessDiagnostics(int version){
-    m_mutex.lock();
-    if(version == -1){
-        //reset
-    }else if (version != m_fileVersion) {
-        // printf("> file version not the same\n");
-        m_mutex.unlock();
-        return;
-    }
-
-    char severityList[5] = {-1, 0, 0, 0, 0};
-    // [0      , 1    , 2      , 3          , 4   ]
-    // [Unknown, Error, Warning, Information, Hint]
-    static const char* tags[5] = {
-        "none",// severity must not be 0
-        "error",
-        "warning",
-        "info",
-        "hint"
-    };
-
-    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList) {
-        this->ApplyTagByRange(&diagnostic->range, tags[diagnostic->severity]);
-        severityList[diagnostic->severity] ++;
-    }
-
-    std::string s =
-        "<span color=\"red\">e" +
-        std::to_string(severityList[1]) +
-        "</span> <span color=\"yellow\">w" +
-        std::to_string(severityList[2]) +
-        "</span> <span color=\"greenyellow\">i" +
-        std::to_string(severityList[3]) +
-        "</span> <span color=\"cyan\">h" +
-        std::to_string(severityList[4]) +
-        "</span>";
-    gtk_label_set_markup(m_diagnButLabel, s.c_str());
-    m_mutex.unlock();
-}
-
-void EditArea::ClearDiagnostics(){
-    m_mutex.lock();
-
-    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList){
-        delete [] diagnostic->message;
-        delete [] diagnostic->code;
-    }
-
-    m_diagnosticsList.clear();
-
-    m_currentDiagnosticRange.start.line = 0;
-    m_currentDiagnosticRange.start.column = 0;
-    m_currentDiagnosticRange.end.line = 0;
-    m_currentDiagnosticRange.end.column = 0;
-    m_diagnosticsList.clear();
-
-    gtk_text_buffer_get_bounds(m_textViewBuffer, &m_startItr, &m_endItr);
-    for (const char* tag : style::GetTextTagNamesForDiagnostic()){
-        gtk_text_buffer_remove_tag_by_name(m_textViewBuffer, tag, &m_startItr, &m_endItr);
-    }
-
-    m_mutex.unlock();
-}
-
-const std::unordered_set<std::unique_ptr<Diagnostic>>& EditArea::GetDiagnosticsList(){
-    return m_diagnosticsList;
-}
-
-Diagnostic* EditArea::FindDiagnostic(GtkTextIter* itr){
-    ZPosition pos;
-    pos.line = gtk_text_iter_get_line(&m_startItr);
-    pos.column = gtk_text_iter_get_line_index(&m_startItr);
-    // printf("line %i index %i\n", line, index);
-    if(tools::IsZPosInRange(pos, &m_currentDiagnosticRange)) return nullptr;
-
-    // There may be more than 1 diagnostic for a iter
-    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList) {
-        if(tools::IsZPosInRange(pos, &diagnostic->range)){
-            m_currentDiagnosticRange = diagnostic->range;
-            return diagnostic.get();
-        }
-    }
-
-    m_currentDiagnosticRange.start.line = 0;
-    m_currentDiagnosticRange.start.column = 0;
-    m_currentDiagnosticRange.end.line = 0;
-    m_currentDiagnosticRange.end.column = 0;
-    m_diagnosticPopover->Hide();
-    return nullptr;
-}
-
 void EditArea::LoadCursorPos(){
     g_object_get(m_textViewBuffer, "cursor-position", &m_cursorIndex, nullptr);
 
@@ -339,6 +277,14 @@ const unsigned int EditArea::GetFileVersion() const{
 
 const Difference &EditArea::GetPendingDiff() const{
     return m_pendingDif;
+}
+
+CompletionTool &EditArea::GetCompletionTool(){
+    return *m_completionTool;
+}
+
+DiagnosticTool &EditArea::GetDiagnosticTool(){
+    return *m_diagnosticTool;
 }
 
 void EditArea::SetLanguage(Language* newlang){
@@ -480,16 +426,28 @@ void EditArea::Unfocused(){
 }
 
 void EditArea::MouseMoved(double x, double y){
-    int bufferx, buffery;
 
-    gtk_text_view_window_to_buffer_coords(m_textView, GTK_TEXT_WINDOW_WIDGET, x, y, &bufferx, &buffery);
-    gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, x, y);
-    int textviewline = gtk_text_iter_get_line(&m_startItr);
-    int textviewindex = gtk_text_iter_get_line_index(&m_startItr);
-    gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, bufferx, buffery);
-    Diagnostic* d = this->FindDiagnostic(&m_startItr);
+    double adjx = gtk_adjustment_get_value(m_hAdjustment);
+    double adjy = gtk_adjustment_get_value(m_vAdjustment);
+
+    gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, x + adjx, y + adjy);
+    ZPosition zpos{
+        .line = (unsigned int)gtk_text_iter_get_line(&m_startItr),
+        .column = (unsigned int)gtk_text_iter_get_line_index(&m_startItr)
+    };// should not be less than 0
+
+    Diagnostic* d = m_diagnosticTool->Find(zpos);
     if(d){
-        m_diagnosticPopover->ShowDiagnostic(d, textviewline, textviewindex);
+        if (d != m_diagnosticPopover->GetShowingDiagnostic()) {
+            GdkRectangle r;
+            GtkTextIter itr;
+            ZPosition& startpos = d->range.start;
+            gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, startpos.line, startpos.column);
+            gtk_text_view_get_iter_location(m_textView, &itr, &r);
+            m_diagnosticPopover->Show(*d, r.x - adjx, r.y - adjy);
+        }
+    }else {
+        m_diagnosticPopover->Hide();
     }
 }
 

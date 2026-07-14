@@ -2,12 +2,13 @@
 #define EDITAREA_H_
 
 #include "components/TextArea.h"
+#include "CompletionTool.h"
+#include "DiagnosticTool.h"
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 #include <mutex>
 
 // Forward declaration
@@ -45,12 +46,9 @@ public:
     const unsigned int GetFileVersion() const;
     const Difference &GetPendingDiff() const;
 
+    CompletionTool &GetCompletionTool();
+    DiagnosticTool &GetDiagnosticTool();
 
-    void AddDiagnostic(std::unique_ptr<Diagnostic> diagnostic); // add a diagnostic
-    void ProcessDiagnostics(int version); // read data from all diagnostics and show highlight
-    void ClearDiagnostics(); // clear the diagnostics list
-    const std::unordered_set<std::unique_ptr<Diagnostic>>& GetDiagnosticsList();
-    Diagnostic* FindDiagnostic(GtkTextIter* itr);
     void LoadCursorPos();
     void LoadFile(FileData *filedata);
     void Save();
@@ -82,6 +80,9 @@ private:
     std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
+    std::unique_ptr<DiagnosticTool> m_diagnosticTool;
+    std::unique_ptr<CompletionTool> m_completionTool;
+
     DiagnosticPopover* m_diagnosticPopover;
     std::mutex m_mutex;
 
@@ -108,8 +109,6 @@ private:
 
     Difference m_pendingDif;
     ZRange m_currentDiagnosticRange;
-
-    std::unordered_set<std::unique_ptr<Diagnostic>> m_diagnosticsList;
 
     // Search and replace
     std::unique_ptr<SearchReplaceDialog> searchDialog;

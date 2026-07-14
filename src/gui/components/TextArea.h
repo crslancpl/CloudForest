@@ -6,6 +6,7 @@
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 
 
 //forward declaration
@@ -55,6 +56,8 @@ protected:
     GtkTextView *m_lineNoArea;
     GtkTextBuffer *m_lineNoAreaBuffer;
     GtkBox *m_baseBox;
+    GtkAdjustment *m_hAdjustment;
+    GtkAdjustment *m_vAdjustment;
 
     /* These iter are shared by multiple functions. ex: draw, delete line */
     GtkTextIter m_startItr, m_endItr;

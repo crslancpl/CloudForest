@@ -7,13 +7,13 @@
 #include <unordered_set>
 
 
-typedef struct Suggestion{
+typedef struct Completion{
     std::string label;// text to be shown on suggestion
     std::string insertText;
     std::string type;
     std::string description;
     ZRange range;// where to insert the text
-}Suggestion;
+}Completion;
 
 
 typedef struct Diagnostic{

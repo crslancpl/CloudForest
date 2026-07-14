@@ -2,14 +2,14 @@
 
 #include "editarea_mod_Py.h"
 #include "pythonbackend/python_tool.h"
-#include "src/gui/editarea/EditArea.h"
+#include "editarea/DiagnosticTool.h"
+#include "editarea/EditArea.h"
 #include "src/languages/LanguageManager_if.h"
 #include "datatypes/lsp.h"
 #include "datatypes/common.h"
 #include "toolset/event/Event.h"
 
 #include <Python.h>
-#include <algorithm>
 #include <cpython/classobject.h>
 #include <cstdio>
 #include <cstring>
@@ -197,7 +197,7 @@ static PyObject *py_EditArea_rm_callback(py_EditArea *self, PyObject *args){
 
 
 static PyObject *py_EditArea_highlight(py_EditArea *self, PyObject *args){
-    char *absolutepath, *tagname;
+    char *tagname;
     int line, offset, length;
     if(!PyArg_ParseTuple(args, "siii",&tagname,&line,&offset,&length)){
         Py_RETURN_NAN;
@@ -208,42 +208,38 @@ static PyObject *py_EditArea_highlight(py_EditArea *self, PyObject *args){
 }
 
 
-static PyObject* py_EditArea_add_suggestion(py_EditArea *self, PyObject *args){
-    char *absolutepath, *suggestion, *label;
+static PyObject* py_EditArea_add_completion(py_EditArea *self, PyObject *args){
+    char *absolutepath, *text, *label;
     unsigned int startline, startpos, endline, endpos;
     if(!PyArg_ParseTuple(args, "ssiiii",
-        &suggestion,&label,&startline,&startpos, &endline, &endpos)){
+        &text, &label,&startline,&startpos, &endline, &endpos)){
             Py_RETURN_NAN;
     }
 
-    Suggestion* sug = new Suggestion();//freed on EditArea clear suggestion
-    sug->insertText = suggestion;
-    sug->label = label;
-    sug->range.start.line = startline;
-    sug->range.start.column = startpos;
-    sug->range.end.line = endline;
-    sug->range.end.column = endpos;
+    std::unique_ptr<Completion> comp = std::make_unique<Completion>();
+    comp->insertText = text;
+    comp->label = label;
+    comp->range.start.line = startline;
+    comp->range.start.column = startpos;
+    comp->range.end.line = endline;
+    comp->range.end.column = endpos;
 
-    //lsppopovers::suggestion::Add(sug);
-    /*
-     * [!NOTE]
-     * the suggestuon object will be moved to the suggestion popover,
-     */
+    self->editarea->GetCompletionTool().New(std::move(comp));
 
     Py_RETURN_NONE;
 }
 
-static PyObject* py_EditArea_clear_suggestion(py_EditArea *self, PyObject *args){
+static PyObject* py_EditArea_clear_completion(py_EditArea *self, PyObject *args){
     //lsppopovers::suggestion::Clear();
     Py_RETURN_NONE;
 }
 
-static PyObject* py_EditArea_show_suggestion(py_EditArea *self, PyObject *args){
+static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
     //lsppopovers::suggestion::Show();
     Py_RETURN_NONE;
 }
 
-static PyObject* py_EditArea_hide_suggestion(py_EditArea *self, PyObject *args){
+static PyObject* py_EditArea_hide_completion(py_EditArea *self, PyObject *args){
     //lsppopovers::suggestion::Hide();
     Py_RETURN_NONE;
 }
@@ -271,7 +267,7 @@ static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
 
     diagnostic->message = strdup(message);
     diagnostic->code = strdup(code);
-    self->editarea->AddDiagnostic(std::move(diagnostic));
+    self->editarea->GetDiagnosticTool().Add(std::move(diagnostic));
     Py_RETURN_NONE;
 }
 
@@ -280,13 +276,12 @@ static PyObject* py_EditArea_process_diagnostics(py_EditArea* self, PyObject *ar
     if(!PyArg_ParseTuple(args, "i", &version)){
         Py_RETURN_NAN;
     }
-    self->editarea->ProcessDiagnostics(version);
+    self->editarea->GetDiagnosticTool().Process(version);
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_clear_diagnostics(py_EditArea* self, PyObject *args){
-    self->editarea->ClearDiagnostics();
-    self->editarea->ProcessDiagnostics(-1);
+    self->editarea->GetDiagnosticTool().Clear();
     Py_RETURN_NONE;
 }
 
@@ -299,10 +294,10 @@ static PyMethodDef py_EditArea_class_method[]={
     {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 0) pos(>= 0) length(>= 0) with tagname"},
     {"set_language", (PyCFunction)py_EditArea_set_lang, METH_VARARGS, "set the language of edit area"},
     {"get_language", (PyCFunction)py_EditArea_get_lang, METH_VARARGS, "get the language of edit area"},
-    {"add_suggestion", (PyCFunction)py_EditArea_add_suggestion, METH_VARARGS, "add a suggestion to the autocomplete"},
-    {"clear_suggestion", (PyCFunction)py_EditArea_clear_suggestion, METH_VARARGS, "clear the suggestions of the edit area"},
-    {"hide_suggestion", (PyCFunction)py_EditArea_hide_suggestion, METH_VARARGS, "hide the suggestion popover"},
-    {"show_suggestion", (PyCFunction)py_EditArea_show_suggestion, METH_VARARGS, "show the suggestion popover"},
+    {"add_completion", (PyCFunction)py_EditArea_add_completion, METH_VARARGS, "add a suggestion to the autocomplete"},
+    {"clear_completion", (PyCFunction)py_EditArea_clear_completion, METH_VARARGS, "clear the suggestions of the edit area"},
+    {"hide_completion", (PyCFunction)py_EditArea_hide_completion, METH_VARARGS, "hide the suggestion popover"},
+    {"show_completion", (PyCFunction)py_EditArea_show_completion, METH_VARARGS, "show the suggestion popover"},
     {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
     {"process_diagnostics", (PyCFunction)py_EditArea_process_diagnostics, METH_VARARGS, "read diagnostics and apply tags in the EditArea"},
     {"clear_diagnostics", (PyCFunction)py_EditArea_clear_diagnostics, METH_VARARGS, "clear all diagnostics in the EditArea"},

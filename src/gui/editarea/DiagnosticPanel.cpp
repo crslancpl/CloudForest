@@ -77,7 +77,7 @@ void DiagnosticPanel::ShowFor(EditArea* target){
     m_target = target;
     this->Clear();
 
-    const std::unordered_set<std::unique_ptr<Diagnostic>>& diagns = target->GetDiagnosticsList();
+    const std::vector<std::unique_ptr<Diagnostic>>& diagns = target->GetDiagnosticTool().GetDiagnostics();
 
     if(diagns.empty()){
         return;
