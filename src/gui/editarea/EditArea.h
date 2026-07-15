@@ -4,6 +4,7 @@
 #include "components/TextArea.h"
 #include "CompletionTool.h"
 #include "DiagnosticTool.h"
+#include "pythonbackend/editarea/editarea_class_Py.h"
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
@@ -46,6 +47,7 @@ public:
     const unsigned int GetFileVersion() const;
     const Difference &GetPendingDiff() const;
 
+    py_EditArea *GetPyEditArea();
     CompletionTool &GetCompletionTool();
     DiagnosticTool &GetDiagnosticTool();
 
@@ -80,6 +82,7 @@ private:
     std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
+    std::unique_ptr<py_EditArea> m_py_EditArea;
     std::unique_ptr<DiagnosticTool> m_diagnosticTool;
     std::unique_ptr<CompletionTool> m_completionTool;
 

@@ -4,6 +4,7 @@
 #include "datatypes/common.h"
 
 #include <Python.h>
+#include <memory>
 #include <pytypedefs.h>
 #include <string>
 #include <unordered_map>
@@ -12,7 +13,7 @@
 class PythonEvent;
 
 typedef std::unordered_map<std::string, PythonEvent> PythonEventMap;
-typedef std::unordered_map<std::string, PythonEvent*> PythonEventPtrMap;
+typedef std::unordered_map<std::string, std::unique_ptr<PythonEvent>> PythonEventPtrMap;
 
 class PythonEvent{
 public:

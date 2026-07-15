@@ -71,7 +71,7 @@ ContentChange = {
 
 AutoCompleteMessage = {
     **BaseMessage,
-    "id": 2,
+    "id": None,
     "method": "textDocument/completion",
     "params": {"textDocument": None, "context": {"triggerKind": 1}},
 }
@@ -175,6 +175,7 @@ def did_change_message(
 
 def completion_message(path: str, line: int, char: int) -> str:
     copied = AutoCompleteMessage.copy()
+    copied["id"] = path
     copied["params"]["textDocument"] = {"uri": "file://" + path}
     copied["params"]["position"] = {"line": line, "character": char}
 

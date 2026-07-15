@@ -1,20 +1,15 @@
-import json
 import re
 import shutil
 import subprocess
 
 import cloudforest
-from cloudforest import editarea
+from cloudforest import editarea, language
 
 from pythonscripts.event import IOEvent
 
 from . import lsp_msg_writer
-from .lsp_msg_reader import (
-    read_as_completion,
-    read_as_error,
-    read_as_publish_diagnostics,
-    read_as_show_message,
-)
+from .lsp_msg_reader import LspReader
+from .lsp_request_method import LspRequestMethod
 
 
 class LspServerData:
@@ -50,16 +45,18 @@ class LspClient:
     def __init__(
         self,
         lsp_command: list[str],
-        language: str,
+        lang: str,
         language_id: str,
         enable_stderr: bool,
     ):
         self.file_version_dict: dict[str, int] = {}
         self.lsp_command = lsp_command
-        self.language = language
+        self.language = lang
         self.language_id: str = language_id
         self.server_data = LspServerData()
         self.enable_stderr = enable_stderr
+        self.lsp_reader = LspReader()
+        self.lsp_reader.on_initialize(self.__on_server_initialized)
 
     def start(self) -> bool:
         """
@@ -91,6 +88,7 @@ class LspClient:
         cloudforest.add_callback("app-closed", self.exit)
         self.send(lsp_msg_writer.initialize_message())
         self.send(lsp_msg_writer.initialized_notification())
+        language.listen_for_editarea(self.language, self.listen_editarea)
         return True
 
     def exit(self):
@@ -113,15 +111,9 @@ class LspClient:
         ea.add_callback("lang-changed", self.__editarea_lang_changed)
         ea.add_callback("file-saved", self.__editarea_file_saved)
         ea.add_callback("closed", self.__editarea_closed)
+        ea.add_callback("completion-requested", self.__editarea_completion_requested)
 
     # callbacks
-    def editarea_completion_requested(
-        self, ea: editarea.EditArea, line: int, column: int
-    ):
-        self.current_editarea = ea
-        self.send(
-            lsp_msg_writer.completion_message(ea.get_file_path(), line, column - 1)
-        )
 
     """
     private method
@@ -137,6 +129,15 @@ class LspClient:
 
     def __editarea_closed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_close_notification(ea)
+        self.send(message)
+
+    def __editarea_completion_requested(
+        self, ea: editarea.EditArea, line: int, column: int
+    ):
+        id = ea.get_file_path()
+        req_data = {"EditArea": ea}
+        self.lsp_reader.add_request(id, LspRequestMethod.COMPLETION, req_data)
+        message = lsp_msg_writer.completion_message(id, line, column)
         self.send(message)
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
@@ -168,15 +169,6 @@ class LspClient:
         message = lsp_msg_writer.did_save_notification(ea)
         self.send(message)
 
-    def __find_method_processor(self, method: str, params: dict):
-        match method:
-            case "window/showMessage":
-                read_as_show_message(params)
-            case "textDocument/publishDiagnostics":
-                read_as_publish_diagnostics(params, self.file_version_dict)
-            case "textDocument/completion":
-                read_as_completion(params)
-
     """
     IO event
     """
@@ -207,33 +199,10 @@ class LspClient:
             self.out_event.skip_line()  # this will be \r\n\r\n
             message = self.out_event.read_chars(int(contentlength[0]))
             # print(f"lsp_client_class stdout: {message}\n")
-            self.read_msg(message)
+            # self.read_msg(message)
+            self.lsp_reader.read(message)
         else:
             return
-
-    def read_msg(self, message: str):
-        # print(f"lsp_client_class stdout: {message}\n")
-        content = json.loads(message)
-        if content.get("id"):
-            # response
-            match content.get("id"):
-                case 1000:
-                    # response for initialize message
-                    result: dict = content.get("result")
-                    # print(f"result {result}\n")
-                    self.__on_server_initialized(result)
-                case _:
-                    return
-
-        elif content.get("method"):
-            self.__find_method_processor(content.get("method"), content.get("params"))
-        elif content.get("error"):
-            read_as_error(content.get("error"))
-        elif content.get("result"):
-            pass
-        else:
-            print(f"other message: {message}\n")
-        return content
 
     def read_err(self, text: str):
         print(f"lsp_client_class stderr: {text}", end="")

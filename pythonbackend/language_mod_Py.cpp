@@ -48,8 +48,12 @@ void OnNewEditArea(EditArea* ea){
     if(itr == lang_new_ea_event_map.end()){
         return;
     }
-    PyObject* args = PyTuple_Pack(1, find_editarea_py(ea));
-    itr->second->Invoke(args);
+
+    py_EditArea *py_ea = ea->GetPyEditArea();
+    if (py_ea) {
+        PyObject* args = PyTuple_Pack(1, py_ea);
+        itr->second->Invoke(args);
+    }
     ReleaseThreadLock();
 }
 
@@ -98,9 +102,9 @@ static PyObject *language_module_listen_language_used(PyObject *self, PyObject* 
     if (itr != lang_used_callbacks_dict.end()) {
         itr->second->Connect(callback);
     } else {
-        PythonEvent* event = new PythonEvent();
-        lang_used_callbacks_dict.emplace(langname, event);
+        std::unique_ptr<PythonEvent> event = std::make_unique<PythonEvent>();
         event->Connect(callback);
+        lang_used_callbacks_dict.emplace(langname, std::move(event));
     }
 
     Py_RETURN_NONE;
@@ -117,7 +121,20 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
     if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
-    Py_RETURN_NONE;
+
+    PythonEvent* event;
+
+    auto itr = lang_new_ea_event_map.find(langname);
+    if (itr == lang_new_ea_event_map.end()) {
+        std::unique_ptr<PythonEvent> newevent = std::make_unique<PythonEvent>();
+        event = newevent.get();
+        lang_new_ea_event_map.emplace(langname, std::move(newevent));
+    } else {
+        event = itr -> second.get();
+    }
+
+    event->Connect(callback);
+
     Language* lang = langmanager::FindByName(langname);
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 

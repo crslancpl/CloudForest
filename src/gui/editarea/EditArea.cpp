@@ -10,6 +10,7 @@
 #include "Gui_if.h"
 #include "editarea/CompletionTool.h"
 #include "editarea/DiagnosticTool.h"
+#include "pythonbackend/editarea/editarea_class_Py.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/filemanagement/FileReader.h"
 #include "components/TextArea.h"
@@ -22,6 +23,7 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -35,8 +37,9 @@
  * Yupedef
  */
 
-typedef void (*EditAreaBasicEvent)(EditArea*);
-typedef void (*EditAreaLangChangedEvent)(EditArea*,Language*,Language*);
+typedef void (*EditAreaBasicCallback)(EditArea*);
+typedef void (*EditAreaLangChangedCallback)(EditArea*,Language*,Language*);
+typedef void (*CompletionRequestedCallback)(EditArea*, const ZPosition&);
 
 /*
  * EditArea class
@@ -158,9 +161,11 @@ EditArea::EditArea(FileData* file){
         SetLanguage(langmanager::FindByName("Unknown"));
     }
 
+    m_py_EditArea = py_EditArea_create_object(this);
+
     const SimpleEvent &event = GetEvent(session::EDITAREA_CREATED);
     for(EventCallback callback : event.GetCallbackSet()){
-        ((void (*)(EditArea*))callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 }
 
@@ -171,7 +176,7 @@ EditArea::~EditArea(){
 
     const SimpleEvent &event =  m_eventMap.at(EditArea::CLOSED);
     for (EventCallback callback : event.GetCallbackSet()) {
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 
     m_editingFile->editArea = nullptr;
@@ -221,8 +226,8 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
     g_signal_connect(m_textViewBuffer, "insert-text", G_CALLBACK(OnTextInserted), this);
     g_signal_connect(m_textViewBuffer, "delete-range", G_CALLBACK(OnTextDeleted), this);
-    g_signal_connect_after(m_textViewBuffer, "changed", G_CALLBACK(OnTextChanged), this);
-    g_signal_connect_after(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
+    g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(OnTextChanged), this);
+    g_signal_connect(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
     g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnosticButtonClicked), this);
@@ -279,6 +284,10 @@ const Difference &EditArea::GetPendingDiff() const{
     return m_pendingDif;
 }
 
+py_EditArea *EditArea::GetPyEditArea(){
+    return m_py_EditArea.get();
+}
+
 CompletionTool &EditArea::GetCompletionTool(){
     return *m_completionTool;
 }
@@ -332,7 +341,7 @@ void EditArea::LoadFile(FileData* newfile){
 
     SimpleEvent &event = m_eventMap.at(EditArea::FILE_DATA_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 }
 
@@ -348,7 +357,7 @@ void EditArea::Save(){
 void EditArea::Close(){
     SimpleEvent &event = m_eventMap.at(EditArea::CLOSED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 
     session::CloseFile(m_editingFile);
@@ -407,7 +416,7 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
 
     if (state & GDK_ALT_MASK) {
         if (keyval == GDK_KEY_s) {
-            //gui::AppSettingPanel.Show();
+            //gui::GetSettingPanel()->Show();
         }
     }
 
@@ -445,6 +454,7 @@ void EditArea::MouseMoved(double x, double y){
             gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, startpos.line, startpos.column);
             gtk_text_view_get_iter_location(m_textView, &itr, &r);
             m_diagnosticPopover->Show(*d, r.x - adjx, r.y - adjy);
+            //printf("x:%f y:%f\n", x - adjx, r.y - adjy);
         }
     }else {
         m_diagnosticPopover->Hide();
@@ -485,7 +495,22 @@ void EditArea::TextChanged(){
     syntaxprovider::FastHighlight(this);
     SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
+    }
+
+    this->LoadCursorPos();
+
+    if (!gtk_text_iter_starts_line(&m_cursorItr)) {
+        GtkTextIter* previtr = gtk_text_iter_copy(&m_cursorItr);
+        gtk_text_iter_backward_char(previtr);
+        char charbefore = *gtk_text_buffer_get_text(m_textViewBuffer, previtr, &m_cursorItr, false);
+        //printf("before %c\n", charbefore);
+        if (charbefore != ' ' && charbefore != '\t') {
+            SimpleEvent& event = m_eventMap.at(COMPLETION_REQUESTED);
+            for (EventCallback callback : event.GetCallbackSet()) {
+                ((CompletionRequestedCallback)callback)(this, m_cursorZPos);
+            }
+        }
     }
 }
 
@@ -494,7 +519,7 @@ void EditArea::CursorPosChanged(){
 
     SimpleEvent &event = m_eventMap.at(EditArea::CURSOR_MOVED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 
     if(m_isCurMovedByKey == true){
@@ -527,7 +552,7 @@ void EditArea::FileSaved(FileData *filedata){
 
     SimpleEvent &event = m_eventMap.at(EditArea::FILE_SAVED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicEvent)callback)(this);
+        ((EditAreaBasicCallback)callback)(this);
     }
 }
 

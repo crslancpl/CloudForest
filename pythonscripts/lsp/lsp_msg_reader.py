@@ -1,86 +1,119 @@
 import json
+from typing import Callable
 
 from cloudforest import editarea
 
-
-def read_as_response(content: dict) -> None:
-    for key in content:
-        print(f"{key} {content[key]}")
-        pass
+from .lsp_request_method import LspRequestMethod
 
 
-def read_as_error(content: dict) -> None:
-    code: int | None = content.get("code")
-    msg: str | None = content.get("message")
+class LspReader:
+    def __init__(self):
+        self.request_dict: dict[str, tuple] = {}
 
-    # print(f"lsp error: code {code} message {msg}")
-    return
+    def add_request(self, id: str, type: LspRequestMethod, data: dict | None):
+        req: tuple[LspRequestMethod, dict | None] = (type, data)
+        self.request_dict[id] = req
 
+    def on_initialize(self, callback: Callable):
+        self.initialize_callback = callback
 
-"""
-messages with "method"
-"""
+    def read(self, message: str):
+        content: dict = json.loads(message)
+        id: int | str | None = content.get("id")
+        result: dict = {}
+        if id:
+            # response
+            match id:
+                case 1000:
+                    # response for initialize message
+                    result = content.get("result", {})
+                    # print(f"result {result}\n")
+                    self.__as_initialize(result)
 
+                case _:
+                    tup: tuple[LspRequestMethod, dict | None] | None = (
+                        self.request_dict.get(id)
+                    )
+                    if tup:
+                        match tup[0]:
+                            case LspRequestMethod.COMPLETION:
+                                # result = content.get("result", {})
+                                # req_data = tup[1]
+                                # self.__as_completion(result, req_data)
+                                pass
 
-def read_as_show_message(params: dict) -> None:
-    msg: str | None = params.get("message")
-    print(f"lsp show message: {msg}")
+            return
 
+        elif content.get("method"):
+            method = content.get("method", "")
+            params = content.get("params", {})
 
-def read_as_completion(params: dict) -> None:
-    result: None | dict = params.get("result")
-    if result:
-        print(result)
-    else:
-        print("no value for item")
-    return
+            match method:
+                case "window/showMessage":
+                    self.__as_show_message(params)
+                case "textDocument/publishDiagnostics":
+                    self.__as_publish_diagnostics(params)
+            pass
+            # self.__find_method_processor(content.get("method"), content.get("params"))
+        elif content.get("error"):
+            self.__as_error(content.get("error", {}))
+        else:
+            print(f"other message: {message}\n")
+        return content
 
+    def __as_completion(self, result: dict, req_data: dict | None):
+        if req_data:
+            ea: editarea.EditArea | None = req_data.get("EditArea")
+            if ea:
+                print("completion:")
+                for item in result.get("items", []):
+                    # text: str = item.get("filterText", "")
+                    label: str = item.get("label", "")
+                    print(label)
+                print("end")
 
-def read_as_publish_diagnostics(params: dict, version_dict: dict) -> None:
-    diagnostics: list | None = params.get("diagnostics")
-    uri: str | None = params.get("uri")
-    version = params.get("version")
+    def __as_error(self, params: dict):
+        code: int | None = params.get("code")
+        msg: str | None = params.get("message")
+        print(f"lsp error: code {code} message {msg}")
 
-    # caomparing variables and None because version 0 will be treadted as false.
-    if diagnostics is None:
-        return
-    if uri is None:
-        return
-    if version is None:
-        return
+    def __as_initialize(self, result: dict):
+        self.initialize_callback(result)
 
-    path = str(uri).removeprefix("file://")
-    v = version_dict.get(path)
+    def __as_publish_diagnostics(self, params: dict):
+        diagnostics: list = params.get("diagnostics", [])
+        uri: str = params.get("uri", "file://")
+        version = params.get("version", 0)
 
-    if version < v:
-        # version too old
-        return
-    # print(f"diagnostics: {path} version {version}")
-    ea = editarea.find_by_file_path(path)
-    if not ea:
-        return
-    ea.clear_diagnostics()
+        path = str(uri).removeprefix("file://")
 
-    for diagnostic in diagnostics:
-        range = diagnostic.get("range")
-        start = range.get("start")
-        end = range.get("end")
-        code = diagnostic.get("code")
-        if code is None:
-            code = "none"
-        """
-        print(
-            f"diagnostic severity {diagnostic.get('severity')}: range {range} code '{code}' diagnostic: '{diagnostic.get('message')}'"
-        )
-        """
-        ea.add_diagnostic(
-            code,
-            diagnostic.get("message"),
-            start.get("line"),
-            start.get("character"),
-            end.get("line"),
-            end.get("character"),
-            diagnostic.get("severity"),
-        )
+        # print(f"diagnostics: {path} version {version}")
+        ea = editarea.find_by_file_path(path)
+        if not ea:
+            return
 
-    ea.process_diagnostics(version)
+        ea.clear_diagnostics()
+
+        for diagnostic in diagnostics:
+            range = diagnostic.get("range")
+            start = range.get("start")
+            end = range.get("end")
+            code = diagnostic.get("code")
+            if code is None:
+                code = "none"
+
+            ea.add_diagnostic(
+                code,
+                diagnostic.get("message"),
+                start.get("line"),
+                start.get("character"),
+                end.get("line"),
+                end.get("character"),
+                diagnostic.get("severity"),
+            )
+
+        ea.process_diagnostics(version)
+
+    def __as_show_message(self, params: dict):
+        msg: str = params.get("message", "")
+        print(f"lsp show message: {msg}")

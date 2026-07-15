@@ -11,6 +11,8 @@
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -31,7 +33,7 @@ typedef struct {
     const std::unordered_set<EditArea*> EMPTY_EDITAREA_SET;
 
     std::unordered_set<EditArea*> allEditAreaSet;
-    std::unordered_map<const Language*, LanguageGroup*> languageGroupsMap;
+    std::unordered_map<const Language*, std::unique_ptr<LanguageGroup>> languageGroupsMap;
     EditArea* focusedEditArea;
 } SessionEditAreaData;
 
@@ -53,9 +55,9 @@ static void OnEditAreaCreated(EditArea* ea){
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
-        LanguageGroup* langgroup = new LanguageGroup(lang);
-        session_editarea_data.languageGroupsMap.emplace(lang, langgroup);
-        langgroup->Add(ea);
+        std::unique_ptr<LanguageGroup> newlanggroup = std::make_unique<LanguageGroup>(lang);
+        newlanggroup->Add(ea);
+        session_editarea_data.languageGroupsMap.emplace(lang, std::move(newlanggroup));
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
             ((LanguageUsedCallback)callback)(lang);
@@ -80,9 +82,9 @@ static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const L
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
-        LanguageGroup* langgroup = new LanguageGroup(newlang);// free on app closed
-        session_editarea_data.languageGroupsMap.emplace(newlang, langgroup);
-        langgroup->Add(ea);
+        std::unique_ptr<LanguageGroup> newlanggroup = std::make_unique<LanguageGroup>(newlang);// free on app closed
+        newlanggroup->Add(ea);
+        session_editarea_data.languageGroupsMap.emplace(newlang, std::move(newlanggroup));
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
             ((LanguageUsedCallback)callback)(newlang);
@@ -151,7 +153,7 @@ void SetFocusedEditArea(EditArea* editarea){
 LanguageGroup* FindLanguageGroup(const Language* lang){
     auto itr = session_editarea_data.languageGroupsMap.find(lang);
     if (itr != session_editarea_data.languageGroupsMap.end()) {
-        return itr->second;
+        return itr->second.get();
     }
     return nullptr;
 }

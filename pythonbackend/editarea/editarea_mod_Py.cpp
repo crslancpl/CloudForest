@@ -12,7 +12,6 @@
 #include "datatypes/file.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <floatobject.h>
 #include <longobject.h>
 #include <methodobject.h>
@@ -37,20 +36,6 @@ static PythonEventMap event_map = {
     {EVENT_LANGUAGE_CHANGED, PythonEvent()},
     {EVENT_NEW_EDITAREA, PythonEvent()}
 };
-
-py_EditArea* find_editarea_py(const EditArea *ea){
-    if (registered_editareas == nullptr) {
-        return nullptr;
-    }
-
-    for(size_t itr = 0; itr < PyList_GET_SIZE(registered_editareas); itr++){
-        py_EditArea *registeredea = (py_EditArea*)PyList_GET_ITEM(registered_editareas, itr);
-        if(registeredea->editarea == ea){
-            return registeredea;
-        }
-    }
-    return nullptr;
-}
 
 static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
     char* event;
@@ -81,7 +66,7 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
     if(!ea){
         Py_RETURN_NONE;
     }
-    PyObject* ea_py = (PyObject*)find_editarea_py(ea);
+    PyObject* ea_py = (PyObject*)ea->GetPyEditArea();
     return  ea_py;
 }
 
@@ -95,8 +80,8 @@ static PyObject *editarea_module_get_by_language(PyObject *self, PyObject *args)
     const Language *lang = langmanager::FindByName(langname);
     const std::unordered_set<EditArea*>& set = session::GetEditAreasByLanguage(lang);
     PyObject* editarealist = PyList_New(0);
-    for (const EditArea* ea : set){
-        py_EditArea* py_ea = find_editarea_py(ea);
+    for (EditArea* ea : set){
+        py_EditArea* py_ea = ea->GetPyEditArea();
         if(py_ea){
             PyList_Append(editarealist, (PyObject*)py_ea);
         }
@@ -142,10 +127,7 @@ void editarea_py_register(EditArea *ea){
      * manipulate the edit area
      */
     RestoreThreadLock();
-    py_EditArea *newEa = py_EditArea_create_object();
-
-    newEa->editarea = ea;
-    newEa->filePath = strdup(ea->GetFilePath());
+    py_EditArea *newEa = ea->GetPyEditArea();
 
     py_EditArea_connect_events(newEa);
     // we are trying to make filepath a variable

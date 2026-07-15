@@ -27,7 +27,7 @@
 
 static void OnEditAreaClosed(EditArea *ea){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     const Difference &dif = ea->GetPendingDiff();
@@ -38,12 +38,12 @@ static void OnEditAreaClosed(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaCompletionRequested(EditArea *ea){
+static void OnEditAreaCompletionRequested(EditArea *ea, const ZPosition& zpos){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
-    PyObject* args = PyTuple_Pack(1, py_ea);
+    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(zpos.line), PyLong_FromLong(zpos.column));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
     event.Invoke(args);
     Py_DECREF((PyObject*) args);
@@ -52,7 +52,7 @@ static void OnEditAreaCompletionRequested(EditArea *ea){
 
 static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
@@ -64,7 +64,7 @@ static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
 
 static void OnEditAreaFileDataChanged(EditArea *ea){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
@@ -76,7 +76,7 @@ static void OnEditAreaFileDataChanged(EditArea *ea){
 
 static void OnEditAreaFileSaved(EditArea *ea){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
@@ -88,7 +88,7 @@ static void OnEditAreaFileSaved(EditArea *ea){
 
 static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* newlang){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
@@ -100,7 +100,7 @@ static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* new
 
 static void OnEditAreaTextChanged(EditArea *ea){
     RestoreThreadLock();
-    py_EditArea* py_ea = find_editarea_py(ea);
+    py_EditArea* py_ea = ea->GetPyEditArea();
     if(py_ea == nullptr) return;
     Py_INCREF(py_ea);
     const Difference &dif = ea->GetPendingDiff();
@@ -341,8 +341,13 @@ void py_EditArea_connect_events(py_EditArea* py_ea){
     ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)OnEditAreaTextChanged);
 }
 
-py_EditArea* py_EditArea_create_object(){
-    return (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);
+std::unique_ptr<py_EditArea> py_EditArea_create_object(EditArea* ea){
+    RestoreThreadLock();
+    py_EditArea* py_ea = (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);
+    py_ea->editarea = ea;
+    py_ea->filePath = strdup(ea->GetFilePath());
+    ReleaseThreadLock();
+    return std::unique_ptr<py_EditArea>(py_ea);
 }
 
 PyTypeObject* PyInit_py_EditArea_class(){

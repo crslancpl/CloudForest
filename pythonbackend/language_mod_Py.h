@@ -7,7 +7,4 @@ class EditArea;
 
 PyMODINIT_FUNC PyInit_language_module();
 
-void language_module_invoke_language_used(const char* langname);
-void language_module_invoke_new_editarea(const char* langname, EditArea* ea);
-
 #endif
