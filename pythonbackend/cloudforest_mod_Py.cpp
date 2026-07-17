@@ -14,6 +14,7 @@
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
+#include <memory>
 #include <methodobject.h>
 #include <modsupport.h>
 #include <moduleobject.h>
@@ -66,7 +67,7 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
      */
 
     PyObject* wslist = PyList_New(0);
-    for(Workspace* ws : session::GetWorkspaceList()){
+    for(const std::unique_ptr<Workspace>& ws : session::GetWorkspaceList()){
         PyObject* wsproperty = PyDict_New();
         PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetName()));
         std::string uri = "file://" + std::string(ws->GetFileData()->absoPath);

@@ -164,13 +164,16 @@ LanguageGroup* FindLanguageGroup(const Language* lang){
  */
 
 void EditNewFile(){
-    FileData* filedata = filemanager::CreateNewFile();
-    session::AddSingleFile(filedata);
+    std::unique_ptr<FileData> filedata = filemanager::CreateNewFile();
+    FileData* filedataraw = filedata.get();
+    session::AddSingleFile(std::move(filedata));
 
-    EditArea* ea = new EditArea(filedata);//freed on EditArea closed(Editarea.Destroy())
+    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(filedataraw);
+    EditArea* ea = neweditarea.get();
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
+        tablayout->Add(std::move(neweditarea));
         tablayout->Show(*ea);
         session::SetFocusedEditArea(ea);
     }
@@ -186,10 +189,12 @@ void EditFile(FileData *file){
         return;
     }
 
-    ea = new EditArea(file);//freed on EditArea closed(Editarea.Destroy())
+    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(file);
+    ea = neweditarea.get();
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
+        tablayout->Add(std::move(neweditarea));
         tablayout->Show(*ea);
         session::SetFocusedEditArea(ea);
     }

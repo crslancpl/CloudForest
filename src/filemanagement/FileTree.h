@@ -4,6 +4,7 @@
 #include "datatypes/file.h"
 #include "src/filemanagement/FileReader.h"
 
+#include <memory>
 #include <vector>
 
 /*
@@ -16,7 +17,7 @@ class Workspace;
 
 class Branch{
 public:
-    Branch(FileData* file);
+    Branch(std::unique_ptr<FileData> file);
 
     const char* GetName();
 
@@ -26,7 +27,7 @@ public:
 
 protected:
     const char* m_name;
-    FileData* m_fileData;
+    std::unique_ptr<FileData> m_fileData;
     FolderBranch* m_parent;
 };
 
@@ -34,7 +35,7 @@ protected:
 
 class FileBranch : public Branch{
 public:
-    FileBranch(FileData* file);
+    FileBranch(std::unique_ptr<FileData> file);
 
     void SetParent(FolderBranch* parent) override;
 };
@@ -43,30 +44,34 @@ public:
 
 class FolderBranch : public Branch{
 public:
-    FolderBranch(FileData* folder);
+    FolderBranch(std::unique_ptr<FileData> folder);
 
     bool GetIsChildLoaded();
     void SetIsChildLoaded(bool loaded);
-    const std::vector<FileBranch*> &GetChildFiles();
-    const std::vector<FolderBranch*> &GetChildFolders();
-    void AddChildFile(FileBranch* child);
+    const std::vector<std::unique_ptr<FileBranch>> &GetChildFiles();
+    const std::vector<std::unique_ptr<FolderBranch>> &GetChildFolders();
+
+    void AddChildFile(std::unique_ptr<FileBranch> child);
+    std::unique_ptr<FileBranch> MoveChildFile(FileBranch* child);
     void RemoveChildFile(FileBranch* child);
-    void AddChildFolder(FolderBranch* child);
+
+    void AddChildFolder(std::unique_ptr<FolderBranch> child);
+    std::unique_ptr<FolderBranch> MoveChildFolder(FolderBranch* child);
     void RemoveChildFolder(FolderBranch* child);
 
     void SetParent(FolderBranch* parent) override;
 
 protected:
     bool m_isChildLoaded = false;
-    std::vector<FileBranch*> m_childFiles;
-    std::vector<FolderBranch*> m_childFolders;
+    std::vector<std::unique_ptr<FileBranch>> m_childFiles;
+    std::vector<std::unique_ptr<FolderBranch>> m_childFolders;
 };
 
 
 
 class Workspace : public FolderBranch{
 public:
-    Workspace(FileData* root);
+    Workspace(std::unique_ptr<FileData> root);
 
     FileData* FindChildByPath(const char* path);
     Branch* FileChildBranchByPath(const char* path);

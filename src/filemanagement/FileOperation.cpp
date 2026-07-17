@@ -12,9 +12,11 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
+#include <cstdio>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 
 // typedef
@@ -56,14 +58,15 @@ static void OnFileDialogFileSelected(GObject *source, GAsyncResult *result, void
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* filedata = filemanager::LoadFileData(file, info, true);
+    std::unique_ptr<FileData> filedata = filemanager::LoadFileData(file, info, true);
+    FileData* filedataraw = filedata.get();
 
     const SimpleEvent& event = filemanager::GetEvent(filemanager::FILE_EVENT_FILE_CHOOSEN);
     for (EventCallback callback : event.GetCallbackSet()) {
-        ((LocationChoosenCallback)callback)(filedata);
+        ((LocationChoosenCallback)callback)(filedataraw);
     }
-    session::AddSingleFile(filedata);
-    session::EditFile(filedata);
+    session::AddSingleFile(std::move(filedata));
+    session::EditFile(filedataraw);
 }
 
 static void OnFileDialogFolderSelected(GObject *source, GAsyncResult *result, void *data){
@@ -77,13 +80,14 @@ static void OnFileDialogFolderSelected(GObject *source, GAsyncResult *result, vo
         return;
     }
     info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
-    FileData* filedata = filemanager::LoadFileData(file, info, false);
+    std::unique_ptr<FileData> filedata = filemanager::LoadFileData(file, info, false);
+    FileData* filedataraw = filedata.get();
 
     const SimpleEvent &event = GetEvent(filemanager::FILE_EVENT_FOLDER_CHOOSEN);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((LocationChoosenCallback)callback)(filedata);
+        ((LocationChoosenCallback)callback)(filedataraw);
     }
-    session::NewWorkspace(filedata);
+    session::NewWorkspace(std::move(filedata));
 }
 
 static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
@@ -92,14 +96,15 @@ static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
 
     if(file != nullptr){
         session::RemoveSingleFile(userdata->oldFileData);
-        delete userdata->oldFileData;
 
         GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
-        FileData* filedata = filemanager::LoadFileData(file, info, true);
-        WriteFile(filedata, userdata->content);
-        session::AddSingleFile(filedata);
+        std::unique_ptr<FileData> filedata = filemanager::LoadFileData(file, info, true);
+
+        FileData* filedataraw = filedata.get();
+        WriteFile(filedata.get(), userdata->content);
+        session::AddSingleFile(std::move(filedata));
         if(userdata->fileSavedCallback){
-            userdata->fileSavedCallback(filedata);
+            userdata->fileSavedCallback(filedataraw);
         }
     }
 
@@ -113,8 +118,8 @@ void FileOperationInit(App& app){
 
 namespace filemanager{
 
-FileData* CreateNewFile(){
-    FileData* data = new FileData();
+std::unique_ptr<FileData> CreateNewFile(){
+    std::unique_ptr<FileData> data = std::make_unique<FileData>();
     std::string name = "untitled" + tools::GenerateId();
     data->fileName = strdup(name.c_str());
     data->absoPath = strdup(("_/" + name).c_str());
@@ -124,8 +129,8 @@ FileData* CreateNewFile(){
     return data;
 }
 
-FileData* CreateVirtualFile(){
-    FileData* data = new FileData();
+std::unique_ptr<FileData> CreateVirtualFile(){
+    std::unique_ptr<FileData> data = std::make_unique<FileData>();
     std::string name = "untitled" + tools::GenerateId();
     data->fileName = strdup(name.c_str());
     data->absoPath = strdup(("virtual/" + name).c_str());
@@ -135,8 +140,8 @@ FileData* CreateVirtualFile(){
     return data;
 }
 
-FileData* CreateVirtualFolder(){
-    FileData* data = new FileData();
+std::unique_ptr<FileData> CreateVirtualFolder(){
+    std::unique_ptr<FileData> data = std::make_unique<FileData>();
     data->fileName = strdup("virtual");
     data->absoPath = strdup("virtual/");
     data->isVirtual = true;

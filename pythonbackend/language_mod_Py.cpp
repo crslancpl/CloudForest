@@ -3,7 +3,6 @@
 #include "datatypes/common.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/languages/LanguageGroup.h"
-#include "src/languages/LanguageListener.h"
 #include "src/languages/LanguageManager_if.h"
 #include "src/session/EditAreaData.h"
 #include "python_tool.h"

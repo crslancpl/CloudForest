@@ -4,7 +4,6 @@
 #include "FilePanel.h"
 #include "datatypes/file.h"
 #include "Gui_if.h"
-#include "src/filemanagement/FileManagement_if.h"
 #include "src/filemanagement/FileReader.h"
 #include "src/filemanagement/FileTree.h"
 #include "src/session/EditAreaData.h"
@@ -12,6 +11,7 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 /*
  * For FPFileButton and FPFolderButton. It will load the icon and the file name of
@@ -82,13 +82,13 @@ void FPFolderButton::ToggleFolder(){
         folder_button_to_enumerate = this;
         filemanager::ExpandFolderBranch(m_folderBranch);
 
-        for(FileBranch* b : m_folderBranch->GetChildFiles()){
-            FPFileButton* childfilebtn = new FPFileButton(b, m_level + 1);
+        for(const std::unique_ptr<FileBranch>& b : m_folderBranch->GetChildFiles()){
+            FPFileButton* childfilebtn = new FPFileButton(b.get(), m_level + 1);
             this->AddChildFile(childfilebtn);
         }
 
-        for (FolderBranch* b : m_folderBranch->GetChildFolders()){
-            FPFolderButton* childfolderbtn = new FPFolderButton(b, m_level + 1);
+        for (const std::unique_ptr<FolderBranch>& b : m_folderBranch->GetChildFolders()){
+            FPFolderButton* childfolderbtn = new FPFolderButton(b.get(), m_level + 1);
             this->AddChildFolder(childfolderbtn);
         }
     }

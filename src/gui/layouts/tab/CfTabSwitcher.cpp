@@ -2,6 +2,8 @@
 
 #include "CfTabLayout.h"
 #include "components/CfContent.h"
+#include <gtk/gtk.h>
+#include <memory>
 
 
 
@@ -12,13 +14,13 @@ static void CloseButtonClicked(GtkButton *self, CfTabSwitcher *switchbutton){
     switchbutton->Close();
 }
 
-CfTabSwitcher::CfTabSwitcher(CfContent& content, CfTabLayout& parent):
-    m_content(content), m_parentTabLayout(parent)
+CfTabSwitcher::CfTabSwitcher(std::unique_ptr<CfContent> content):
+    m_content(std::move(content))
     {
     m_closeButton = GTK_BUTTON(gtk_button_new());
-    m_switchButton = GTK_BUTTON(gtk_button_new());
+    m_switchButton = GTK_BUTTON(gtk_button_new_with_label(m_content->GetContentName().c_str()));
     m_baseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-    m_parentTabLayout = parent;
+    m_content->SetParent(this);
 
     gtk_button_set_icon_name(m_closeButton, "window-close-symbolic");
 
@@ -38,8 +40,20 @@ CfTabSwitcher::~CfTabSwitcher(){
     //
 }
 
+void CfTabSwitcher::ChildDataChanged(CfContent* child){
+    this->SetText(child->GetContentName().c_str());
+}
+
 GtkWidget* CfTabSwitcher::GetBaseWidget(){
     return GTK_WIDGET(m_baseBox);
+}
+
+CfContent* CfTabSwitcher::GetContent(){
+    return m_content.get();
+}
+
+void CfTabSwitcher::SetParent(CfTabLayout* parent){
+    m_parent = parent;
 }
 
 void CfTabSwitcher::SetText(const char *text){
@@ -47,11 +61,20 @@ void CfTabSwitcher::SetText(const char *text){
 }
 
 void CfTabSwitcher::Switch(){
-    m_parentTabLayout.Show(m_content);
+    (m_parent->*m_switchedCallback)(this);
 }
 
 void CfTabSwitcher::Close(){
-    m_parentTabLayout.Remove(m_content, *this);
-    m_content.Destroy();
-    delete this;
+    (m_parent->*m_closedCallback)(this);
+    //m_parentTabLayout.Remove(*m_content, *this);
+    //m_content.Destroy();
+    //delete this;
+}
+
+void CfTabSwitcher::OnClose(TabClosedCallback callback){
+    m_closedCallback = callback;
+}
+
+void CfTabSwitcher::OnSwitch(TabSwitchedCallback callback){
+    m_switchedCallback = callback;
 }

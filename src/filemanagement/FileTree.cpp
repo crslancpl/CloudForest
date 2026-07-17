@@ -5,10 +5,10 @@
 #include "toolset/tools/Tool.h"
 
 #include <algorithm>
-#include <cstdio>
+#include <memory>
 #include <string>
 
-Branch::Branch(FileData* data) : m_fileData(data){
+Branch::Branch(std::unique_ptr<FileData> data) : m_fileData(std::move(data)){
     m_name = m_fileData->fileName;
 }
 
@@ -21,20 +21,20 @@ FolderBranch* Branch::GetParent(){
 }
 
 FileData* Branch::GetFileData(){
-    return m_fileData;
+    return m_fileData.get();
 }
 
 /*
  * FileBranch
  */
 
-FileBranch::FileBranch(FileData* file) : Branch(file){
+FileBranch::FileBranch(std::unique_ptr<FileData> file) : Branch(std::move(file)){
     //
 }
 
 void FileBranch::SetParent(FolderBranch* parent){
-    m_parent->RemoveChildFile(this);
-    parent->AddChildFile(this);
+    std::unique_ptr<FileBranch> thisuniqueptr = m_parent->MoveChildFile(this);
+    parent->AddChildFile(std::move(thisuniqueptr));
     m_parent = parent;
 }
 
@@ -51,56 +51,79 @@ void FolderBranch::SetIsChildLoaded(bool loaded){
     m_isChildLoaded = loaded;
 }
 
-const std::vector<FileBranch*> &FolderBranch::GetChildFiles(){
+const std::vector<std::unique_ptr<FileBranch>> &FolderBranch::GetChildFiles(){
     return m_childFiles;
 }
 
-const std::vector<FolderBranch*> &FolderBranch::GetChildFolders(){
+const std::vector<std::unique_ptr<FolderBranch>> &FolderBranch::GetChildFolders(){
     return m_childFolders;
 }
 
-FolderBranch::FolderBranch(FileData* folder) : Branch(folder){
+FolderBranch::FolderBranch(std::unique_ptr<FileData> folder) : Branch(std::move(folder)){
     //
 }
 
-void FolderBranch::AddChildFile(FileBranch* child){
+void FolderBranch::AddChildFile(std::unique_ptr<FileBranch> child){
     if (!child) return;
 
     int itr = 0;
-    for (FileBranch* item : m_childFiles) {
+    for (std::unique_ptr<FileBranch>& item : m_childFiles) {
         if (item->GetFileData()->sortingCode1 > child->GetFileData()->sortingCode1) {
             break;
         }
         itr++;
     }
-    m_childFiles.insert(m_childFiles.begin() + itr, child);
+    m_childFiles.insert(m_childFiles.begin() + itr, std::move(child));
+}
+
+std::unique_ptr<FileBranch> FolderBranch::MoveChildFile(FileBranch* child){
+    if (!child) return nullptr;
+
+    for (std::unique_ptr<FileBranch>& item : m_childFiles) {
+        if (item.get() == child) {
+            return std::move(item);
+        }
+    }
+    return nullptr;
 }
 
 void FolderBranch::RemoveChildFile(FileBranch* child){
-    m_childFiles.erase(std::find(m_childFiles.begin(), m_childFiles.end(), child));
+    //m_childFiles.erase(std::find(m_childFiles.begin(), m_childFiles.end(), child));
 }
 
-void FolderBranch::AddChildFolder(FolderBranch* child){
+void FolderBranch::AddChildFolder(std::unique_ptr<FolderBranch> child){
     if (!child) return;
 
     int itr = 0;
-    for (FolderBranch* item : m_childFolders) {
+    for (std::unique_ptr<FolderBranch>& item : m_childFolders) {
         if (item->GetFileData()->sortingCode1 > child->GetFileData()->sortingCode1) {
             break;
         }
         itr++;
     }
 
-    m_childFolders.insert(m_childFolders.begin() + itr, child);
+    m_childFolders.insert(m_childFolders.begin() + itr, std::move(child));
+}
+
+std::unique_ptr<FolderBranch> FolderBranch::MoveChildFolder(FolderBranch* child){
+    if (!child) return nullptr;
+
+    for (std::unique_ptr<FolderBranch>& item : m_childFolders) {
+        if (item.get() == child) {
+            return std::move(item);
+        }
+    }
+
+    return nullptr;
 }
 
 void FolderBranch::RemoveChildFolder(FolderBranch* child){
-    m_childFolders.erase(std::find(m_childFolders.begin(), m_childFolders.end(), child));
+    //m_childFolders.erase(std::find(m_childFolders.begin(), m_childFolders.end(), child));
 }
 
 void FolderBranch::SetParent(FolderBranch* parent){
-    m_parent->RemoveChildFolder(this);
-    parent->AddChildFolder(this);
+    std::unique_ptr<FolderBranch> thisuniqueptr = m_parent->MoveChildFolder(this);
+    parent->AddChildFolder(std::move(thisuniqueptr));
     m_parent = parent;
 }
 
@@ -108,7 +131,7 @@ void FolderBranch::SetParent(FolderBranch* parent){
  * Workspace
  */
 
-Workspace::Workspace(FileData* root) : FolderBranch(root){
+Workspace::Workspace(std::unique_ptr<FileData> root) : FolderBranch(std::move(root)){
     //
 }
 
@@ -125,18 +148,18 @@ FileData* Workspace::FindChildByPath(const char* path){
     FolderBranch* parent = this;
     for (int i = 0; i < trimmed.size(); i++) {
         std::string& str = trimmed[i];
-        for (FolderBranch* b : parent->GetChildFolders()) {
+        for (const std::unique_ptr<FolderBranch>& b : parent->GetChildFolders()) {
             if(b->GetName() == str){
                 if (i == trimmed.size() - 1) {
                     // target
                     return b->GetFileData();
                 }
-                parent = b;
+                parent = b.get();
                 break;
             }
         }
 
-        for (FileBranch* b : parent->GetChildFiles()) {
+        for (const std::unique_ptr<FileBranch>& b : parent->GetChildFiles()) {
             if (b->GetName() == str) {
                 return b->GetFileData();
             }
@@ -159,21 +182,21 @@ Branch* Workspace::FileChildBranchByPath(const char* path){
     FolderBranch* parent = this;
     for (int i = 0; i < trimmed.size(); i++) {
         std::string &str = trimmed[i];
-        for (FolderBranch* b : parent->GetChildFolders()) {
+        for (const std::unique_ptr<FolderBranch>& b : parent->GetChildFolders()) {
             if(b->GetName() == str){
                 //printf("found folder %s\n", b->GetName());
                 if (i == trimmed.size() - 1) {
                     // target
-                    return b;
+                    return b.get();
                 }
-                parent = b;
+                parent = b.get();
                 break;
             }
         }
 
-        for (FileBranch* b : parent->GetChildFiles()) {
+        for (const std::unique_ptr<FileBranch>& b : parent->GetChildFiles()) {
             if (b->GetName() == str) {
-                return b;
+                return b.get();
             }
         }
     }

@@ -5,6 +5,7 @@
 #include "toolset/tools/StringSorting.h"
 
 #include <gio/gio.h>
+#include <memory>
 
 /*
  * File Tree:
@@ -31,23 +32,23 @@ void ExpandFolderBranch(FolderBranch *branch){
 
     while ((info = g_file_enumerator_next_file(enumerator, nullptr, nullptr)) != nullptr) {
         GFile *child = g_file_enumerator_get_child(enumerator, info);
-        FileData* data = LoadFileData(child, info, false);
+        std::unique_ptr<FileData> data = LoadFileData(child, info, false);
         if (child == nullptr|| data->fileInfo == nullptr) continue;
 
         if (data->type == G_FILE_TYPE_REGULAR){
-            FileBranch* b = new FileBranch(data);
-            branch->AddChildFile(b);
+            std::unique_ptr<FileBranch> b = std::make_unique<FileBranch>(std::move(data));
+            branch->AddChildFile(std::move(b));
         } else if (data->type == G_FILE_TYPE_DIRECTORY){
-            FolderBranch* b = new FolderBranch(data);
-            branch->AddChildFolder(b);
+            std::unique_ptr<FolderBranch> b = std::make_unique<FolderBranch>(std::move(data));
+            branch->AddChildFolder(std::move(b));
         }
     }
     branch->SetIsChildLoaded(true);
 }
 
 
-FileData* LoadFileData(GFile *file, GFileInfo* info, bool issinglefile){
-    FileData *newfile = new FileData();
+std::unique_ptr<FileData> LoadFileData(GFile *file, GFileInfo* info, bool issinglefile){
+    std::unique_ptr<FileData> newfile = std::make_unique<FileData>();
     newfile->isVirtual = false;
     newfile->file = file;
     newfile->fileInfo = info;
