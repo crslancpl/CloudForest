@@ -1,7 +1,6 @@
 #include "CfContent.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <string>
@@ -94,7 +93,7 @@ void CfContent::StopListen(Signal signal, EventCallback callback){
 //virtual
 
 void CfContent::Destroy(){
-    delete this;
+    //
 }
 
 void CfContent::ParentDataChanged(CfContent *parent){

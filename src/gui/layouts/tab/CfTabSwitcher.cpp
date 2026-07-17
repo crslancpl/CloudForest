@@ -2,6 +2,7 @@
 
 #include "CfTabLayout.h"
 #include "components/CfContent.h"
+
 #include <gtk/gtk.h>
 #include <memory>
 
@@ -66,9 +67,6 @@ void CfTabSwitcher::Switch(){
 
 void CfTabSwitcher::Close(){
     (m_parent->*m_closedCallback)(this);
-    //m_parentTabLayout.Remove(*m_content, *this);
-    //m_content.Destroy();
-    //delete this;
 }
 
 void CfTabSwitcher::OnClose(TabClosedCallback callback){

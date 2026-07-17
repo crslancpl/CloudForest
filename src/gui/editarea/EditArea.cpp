@@ -284,7 +284,7 @@ const Difference &EditArea::GetPendingDiff() const{
 }
 
 py_EditArea *EditArea::GetPyEditArea(){
-    return m_py_EditArea.get();
+    return m_py_EditArea;
 }
 
 CompletionTool &EditArea::GetCompletionTool(){

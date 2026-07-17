@@ -18,8 +18,6 @@ public:
     void Show(CfContent& content);
     void Remove(CfContent& content, CfTabSwitcher& switcher);
 
-    void ChildDataChanged(CfContent* child) override;
-
 private:
     std::unordered_map<CfContent*, CfTabSwitcher*> m_switcherMap;
     std::vector<std::unique_ptr<CfTabSwitcher>> m_childList;// switcher holds the ownership of content

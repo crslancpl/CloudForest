@@ -28,6 +28,7 @@ private:
 class DiagnosticPopover{
 public:
     DiagnosticPopover(GtkTextView* textview);
+    ~DiagnosticPopover();
 
     void Hide();
     void Show(const Diagnostic& diagnostic, double xpos, double ypos);

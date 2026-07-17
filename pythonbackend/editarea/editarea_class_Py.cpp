@@ -35,6 +35,7 @@ static void OnEditAreaClosed(EditArea *ea){
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CLOSED);
     event.Invoke(args);
     Py_DECREF(args);
+    Py_DECREF(py_ea);
     ReleaseThreadLock();
 }
 
@@ -341,13 +342,13 @@ void py_EditArea_connect_events(py_EditArea* py_ea){
     ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)OnEditAreaTextChanged);
 }
 
-std::unique_ptr<py_EditArea> py_EditArea_create_object(EditArea* ea){
+py_EditArea* py_EditArea_create_object(EditArea* ea){
     RestoreThreadLock();
     py_EditArea* py_ea = (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);
     py_ea->editarea = ea;
     py_ea->filePath = strdup(ea->GetFilePath());
     ReleaseThreadLock();
-    return std::unique_ptr<py_EditArea>(py_ea);
+    return py_ea;
 }
 
 PyTypeObject* PyInit_py_EditArea_class(){

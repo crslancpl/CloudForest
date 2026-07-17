@@ -12,7 +12,6 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
-#include <cstdio>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>

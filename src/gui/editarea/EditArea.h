@@ -82,7 +82,7 @@ private:
     std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
-    std::unique_ptr<py_EditArea> m_py_EditArea;
+    py_EditArea* m_py_EditArea;
     std::unique_ptr<DiagnosticTool> m_diagnosticTool;
     std::unique_ptr<CompletionTool> m_completionTool;
 

@@ -51,6 +51,10 @@ DiagnosticPopover::DiagnosticPopover(GtkTextView* textview)
     gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_targetTextView));
 }
 
+DiagnosticPopover::~DiagnosticPopover(){
+    //
+}
+
 void DiagnosticPopover::Hide(){
     gtk_popover_popdown(m_popover);
     m_showingDiagnostic = nullptr;

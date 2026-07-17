@@ -3,7 +3,6 @@
 
 #include "pythonbackend/python_tool.h"
 #include <Python.h>
-#include <memory>
 
 #define PY_EDITAREA_EVENT_CLOSED "closed"
 #define PY_EDITAREA_EVENT_COMPLETION_REQUESTED "completion-requested"
@@ -27,7 +26,7 @@ typedef struct py_EditArea{
 
 void py_EditArea_connect_events(py_EditArea* py_ea);
 
-std::unique_ptr<py_EditArea> py_EditArea_create_object(EditArea* ea);
+py_EditArea* py_EditArea_create_object(EditArea* ea);
 PyTypeObject* PyInit_py_EditArea_class();
 
 #endif
