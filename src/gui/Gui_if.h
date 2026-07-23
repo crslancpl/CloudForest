@@ -6,6 +6,9 @@ class FilePanel;
 class SettingPanel;
 class DiagnosticPanel;
 class LangPanel;
+class CompletionPopover;
+class CompletionTool;
+
 typedef struct App App;
 
 namespace gui{
@@ -17,6 +20,7 @@ FilePanel* GetFilePanel();
 SettingPanel* GetSettingPanel();
 DiagnosticPanel* GetDiagnosticPanel();
 LangPanel* GetLangPanel();
+void TransferCompletionPopover(CompletionTool* newowner);
 
 }// namespace gui
 

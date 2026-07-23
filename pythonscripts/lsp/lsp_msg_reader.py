@@ -37,9 +37,9 @@ class LspReader:
                     if tup:
                         match tup[0]:
                             case LspRequestMethod.COMPLETION:
-                                # result = content.get("result", {})
-                                # req_data = tup[1]
-                                # self.__as_completion(result, req_data)
+                                result = content.get("result", {})
+                                req_data = tup[1]
+                                self.__as_completion(result, req_data)
                                 pass
 
             return
@@ -65,12 +65,24 @@ class LspReader:
         if req_data:
             ea: editarea.EditArea | None = req_data.get("EditArea")
             if ea:
-                print("completion:")
+                ea.clear_completion()
                 for item in result.get("items", []):
-                    # text: str = item.get("filterText", "")
+                    text: str = item.get("filterText", "")
                     label: str = item.get("label", "")
-                    print(label)
-                print("end")
+                    textEdit: dict = item.get("textEdit", {})
+                    range: dict = textEdit.get("range", {})
+                    start: dict = range.get("start", {})
+                    end: dict = range.get("end", {})
+
+                    ea.add_completion(
+                        text,
+                        label,
+                        start["line"],
+                        start["character"],
+                        end["line"],
+                        end["character"],
+                    )
+                ea.show_completion()
 
     def __as_error(self, params: dict):
         code: int | None = params.get("code")

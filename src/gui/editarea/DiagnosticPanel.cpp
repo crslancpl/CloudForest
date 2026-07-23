@@ -15,7 +15,9 @@
 #include <string>
 #include <unordered_set>
 
-DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic){
+DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic, DiagnosticPanel& parent)
+    : m_parent(parent)
+    {
     //
     ZPosition startpos = diagnostic.range.start;
     std::string location = "> line " + std::to_string(startpos.line) + " col " + std::to_string(startpos.column);
@@ -84,19 +86,18 @@ void DiagnosticPanel::ShowFor(EditArea* target){
     }
 
     for (const std::unique_ptr<Diagnostic>& diagn : diagns){
-        DiagnosticPanelItem* item = new DiagnosticPanelItem(*diagn);// delete on Clear()
+        std::unique_ptr<DiagnosticPanelItem> item = std::make_unique<DiagnosticPanelItem>(*diagn, *this);// delete on Clear()
         gtk_box_prepend(m_diagnItemBox, GTK_WIDGET(item->GetBaseWidget()));
-        m_itemSet.insert(item);
+        m_itemSet.insert(std::move(item));
     }
 
     this->Show();
 }
 
 void DiagnosticPanel::Clear(){
-    for (DiagnosticPanelItem* item : m_itemSet) {
+    for (const std::unique_ptr<DiagnosticPanelItem> &item : m_itemSet) {
         //
         gtk_box_remove(m_diagnItemBox, item->GetBaseWidget());
-        delete item;
     }
 
     m_itemSet.clear();

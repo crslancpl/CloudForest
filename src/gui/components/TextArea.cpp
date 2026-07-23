@@ -4,6 +4,7 @@
 #include "style/Style.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -89,6 +90,30 @@ void TextArea::SetLanguage(Language *newlang){
     for (auto callback : event.GetCallbackSet()) {
         ((LangChangedCallback)callback)(this, oldlang, newlang);
     }
+}
+
+
+
+void TextArea::Insert(const ZPosition& pos, const char* text){
+    m_isUserInput = false;
+    gtk_text_iter_set_line(&m_startItr, pos.line);
+    gtk_text_iter_set_line_offset(&m_startItr, pos.column);
+    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
+}
+
+void TextArea::InsertAtCursor(const char* text){
+    m_isUserInput = false;
+    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
+}
+
+void TextArea::Replace(const ZRange& range, const char* text){
+    m_isUserInput = false;
+    GtkTextIter startitr, enditr;
+    printf("start %i end %i\n", range.start.column, range.end.column);
+    gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &startitr, range.start.line, range.start.column);
+    gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &enditr, range.end.line, range.end.column);
+    gtk_text_buffer_delete(m_textViewBuffer, &startitr, &enditr);
+    gtk_text_buffer_insert(m_textViewBuffer, &startitr, text, strlen(text));
 }
 
 void TextArea::ClearHighlight(){

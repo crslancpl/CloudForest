@@ -225,23 +225,23 @@ static PyObject* py_EditArea_add_completion(py_EditArea *self, PyObject *args){
     comp->range.end.line = endline;
     comp->range.end.column = endpos;
 
-    self->editarea->GetCompletionTool().New(std::move(comp));
+    self->editarea->GetCompletionTool().Add(std::move(comp));
 
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_clear_completion(py_EditArea *self, PyObject *args){
-    //lsppopovers::suggestion::Clear();
+    self->editarea->GetCompletionTool().Clear();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
-    //lsppopovers::suggestion::Show();
+    self->editarea->GetCompletionTool().ShowPopover();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_hide_completion(py_EditArea *self, PyObject *args){
-    //lsppopovers::suggestion::Hide();
+    self->editarea->GetCompletionTool().HidePopover();
     Py_RETURN_NONE;
 }
 

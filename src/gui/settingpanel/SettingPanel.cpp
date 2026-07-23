@@ -40,7 +40,7 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
     this->BindUI(builder);
 
-    m_baseLayout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);// freed on app closed
+    m_baseLayout = std::make_unique<CfLayout>(GTK_ORIENTATION_HORIZONTAL);// freed on app closed
 
     auto stack = cfcontent::PackAsCfContent(GTK_WIDGET(m_stack));
     auto tabbutboxcontent = cfcontent::PackAsCfContent(GTK_WIDGET(m_tabButtonBox));
@@ -62,7 +62,7 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
 }
 
 SettingPanel::~SettingPanel(){
-    delete m_baseLayout;
+    //
 }
 
 void SettingPanel::Show(){

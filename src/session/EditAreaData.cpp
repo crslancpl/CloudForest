@@ -2,6 +2,8 @@
 
 #include "SessionEvent.h"
 #include "datatypes/common.h" // for Language
+#include "editarea/CompletionPopover.h"
+#include "editarea/CompletionTool.h"
 #include "editarea/EditArea.h" // for EditArea
 #include "layouts/tab/CfTabLayout.h"
 #include "src/filemanagement/FileCallback.h"
@@ -11,7 +13,6 @@
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>

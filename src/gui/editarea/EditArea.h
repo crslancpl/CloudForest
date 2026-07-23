@@ -4,6 +4,7 @@
 #include "components/TextArea.h"
 #include "CompletionTool.h"
 #include "DiagnosticTool.h"
+#include "datatypes/common.h"
 #include "pythonbackend/editarea/editarea_class_Py.h"
 #include "toolset/event/Event.h"
 
@@ -39,7 +40,7 @@ public:
     //override
     void SetLanguage(Language* newlang) override;
 
-    GtkTextBuffer* GetTextBuffer();
+    GtkTextView* GetTextView();
     GdkRectangle* GetCursorRectangle();
 
     const FileData* GetFileData() const;
@@ -57,8 +58,7 @@ public:
     void Close();
     void ShowSearchDialog();
     void ShowReplaceDialog();
-    void Insert(unsigned int line, unsigned int column, const char* text);
-    void InsertAtCursor(const char* text);
+    void Goto(const ZPosition& zpos);
 
     //callbacks
     bool KeyInput(guint keyval, guint keycode, GdkModifierType state);

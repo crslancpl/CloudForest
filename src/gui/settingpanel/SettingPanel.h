@@ -32,7 +32,7 @@ private:
     AppUI& m_appUI;
     GtkWindow *m_parentWindow;
 
-    CfLayout *m_baseLayout;// Saperates TabButtonBox and Stack
+    std::unique_ptr<CfLayout> m_baseLayout;// Saperates TabButtonBox and Stack
     GtkBox *m_tabButtonBox;// left-hand side
     GtkGrid *m_tabButtonBoxSeparator;
     GtkButton *m_closeButton;

@@ -6,25 +6,32 @@
 #include "datatypes/lsp.h"
 
 #include <gtk/gtk.h>
+#include <memory>
 #include <unordered_set>
 // forward declare
+class DiagnosticPanel;
 class EditArea;
 
 typedef struct AppUI AppUI ;
 
+
+
 class DiagnosticPanelItem : public CfComponent{
 public:
-    DiagnosticPanelItem(const Diagnostic& diagnostic);
+    DiagnosticPanelItem(const Diagnostic& diagnostic, DiagnosticPanel& parent);
     ~DiagnosticPanelItem();
 
     GtkWidget * GetBaseWidget() override;
 
 private:
+    DiagnosticPanel& m_parent;
     GtkButton* m_button;
     GtkBox* m_box;
     GtkLabel* m_locationLabel;
     GtkLabel* m_messageLabel;// diagnostic text
 };
+
+
 
 class DiagnosticPanel : public Flyout{
 public:
@@ -35,7 +42,7 @@ public:
 
 private:
     EditArea *m_target;
-    std::unordered_set<DiagnosticPanelItem*> m_itemSet;
+    std::unordered_set<std::unique_ptr<DiagnosticPanelItem>> m_itemSet;
     GtkScrolledWindow* m_scrolledWindow;
     GtkBox* m_diagnItemBox;
 };

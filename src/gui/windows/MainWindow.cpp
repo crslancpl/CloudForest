@@ -7,6 +7,7 @@
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <memory>
 
 #include "Gui_if.h"
 #include "AppUI.h"
@@ -18,7 +19,7 @@
 MainWindow::MainWindow(AppUI& appui) : Window(true){
     gtk_widget_add_css_class(GTK_WIDGET(m_window), "main-window");
 
-    m_layout = new CfLayout(GTK_ORIENTATION_HORIZONTAL);// freed on MainWindow deleted(app closed)
+    m_layout = std::make_unique<CfLayout>(GTK_ORIENTATION_HORIZONTAL);// freed on MainWindow deleted(app closed)
     gtk_window_set_child(m_window, GTK_WIDGET(m_layout->GetBaseWidget()));
 
     gtk_window_set_default_size(m_window, 1000, 600);
@@ -28,7 +29,7 @@ MainWindow::MainWindow(AppUI& appui) : Window(true){
 }
 
 MainWindow::~MainWindow(){
-    delete m_layout;
+    //
 }
 
 void MainWindow::SetHeaderBar(HeaderBar& headerbar){

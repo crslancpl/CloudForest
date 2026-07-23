@@ -5,6 +5,7 @@
 #include "headerbar/Headerbar.h"
 
 #include <gtk/gtk.h>
+#include <memory>
 
 class CfContent;
 class CfLayout;
@@ -20,7 +21,7 @@ public:
     void Insert(CfContent& content);
 
 private:
-    CfLayout *m_layout;
+    std::unique_ptr<CfLayout> m_layout;
 };
 
 #endif

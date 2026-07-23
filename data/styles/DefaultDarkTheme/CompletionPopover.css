@@ -1,0 +1,42 @@
+/*
+.completion-popover * {
+    background-image: none;
+}
+*/
+.completion-popover {
+    background-image: none;
+    background-color: transparent;
+}
+
+.completion-popover scrolledwindow {
+    background-color: transparent;
+}
+
+.completion-popover button {
+    border-radius: 0;
+    background-image: none;
+    color: white;
+    border: none;
+}
+
+.completion-popover button:hover {
+    color: black;
+    background-image: none;
+    background-color: rgba(179, 233, 196, 0.9);
+}
+
+.completion-popover .selected {
+    color: black;
+    background-image: none;
+    background-color: rgba(179, 233, 196, 0.9);
+}
+
+.normalitem {
+    background-color: transparent;
+}
+
+.selecteditem {
+    color: black;
+    background-image: none;
+    background-color: rgba(179, 233, 196, 0.9);
+}

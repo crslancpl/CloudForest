@@ -8,6 +8,7 @@ set(COMPONENTS
 )
 
 set(EDITAREA
+    editarea/CompletionPopover.cpp
     editarea/CompletionTool.cpp
     editarea/DiagnosticTool.cpp
     editarea/LangPanel.cpp

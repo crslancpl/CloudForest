@@ -5,8 +5,8 @@
 #include "windows/MainWindow.h"
 #include "settingpanel/SettingPanel.h"
 #include "filepanel/FilePanel.h"
-#include "editarea/LangPanel.h"
 #include "editarea/DiagnosticPanel.h"
+#include "editarea/LangPanel.h"
 
 
 #include <gtk/gtk.h>

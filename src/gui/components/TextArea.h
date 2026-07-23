@@ -29,6 +29,10 @@ public:
     const Language* GetLanguage() const;
     virtual void SetLanguage(Language *newlang);
 
+    void Insert(const ZPosition& pos, const char* text);
+    void InsertAtCursor(const char* text);
+    void Replace(const ZRange& range, const char* text);
+
     void ClearHighlight();
     void ApplyTagByRange(ZRange *range, const char *tagname);
     void ApplyTagByLength(unsigned int textstartpos, unsigned int textlength, const char *tagname);
@@ -65,6 +69,8 @@ protected:
 
     unsigned int m_cursorIndex = 0;
     ZPosition m_cursorZPos;
+
+    bool m_isUserInput = true;// false for Insert(), InsertAtCursor(), and Replace()
 };
 
 #endif

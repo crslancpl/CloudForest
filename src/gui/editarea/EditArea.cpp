@@ -256,8 +256,8 @@ void EditArea::LoadCursorPos(){
         m_cursorRec.x, m_cursorRec.y, &m_cursorRec.x, &m_cursorRec.y);
 }
 
-GtkTextBuffer* EditArea::GetTextBuffer(){
-    return m_textViewBuffer;
+GtkTextView* EditArea::GetTextView(){
+    return m_textView;
 }
 
 GdkRectangle* EditArea::GetCursorRectangle(){
@@ -311,6 +311,7 @@ void EditArea::SetLanguage(Language* newlang){
         ((LangChangedCallback)callback)(this, oldlang, newlang);
     }
 }
+
 
 void EditArea::LoadFile(FileData* newfile){
     m_editingFile = newfile;
@@ -376,16 +377,14 @@ void EditArea::ShowReplaceDialog() {
     searchDialog->Show();
 }
 
-void EditArea::Insert(unsigned int line, unsigned int column, const char* text){
-    gtk_text_iter_set_line(&m_startItr, line);
-    gtk_text_iter_set_line_offset(&m_startItr, column);
-    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
+void EditArea::Goto(const ZPosition& zpos){
+    GtkTextIter itr;
+    GdkRectangle rec;
+    gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, zpos.line, zpos.column);
+    gtk_text_view_get_iter_location(m_textView, &itr, &rec);
+    gtk_adjustment_set_upper(m_vAdjustment, rec.y);
+    gtk_adjustment_set_lower(m_hAdjustment, rec.x);
 }
-
-void EditArea::InsertAtCursor(const char* text){
-    gtk_text_buffer_insert(m_textViewBuffer, &m_cursorItr, text, strlen(text));
-}
-
 
 
 /*
@@ -419,13 +418,36 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
         }
     }
 
-    switch (keyval) {
-    case GDK_KEY_Tab:
-        this->InsertAtCursor("    ");
-        return true;
-    default:
-        break;
+
+    if (m_completionTool->GetIsShowing()) {
+        switch (keyval) {
+        case GDK_KEY_Tab:
+        case GDK_KEY_Return:
+            m_completionTool->Confirm();
+            return true;
+        case GDK_KEY_Up:
+            m_completionTool->SelectUp();
+            return true;
+        case GDK_KEY_Down:
+            m_completionTool->SelectDown();
+            return true;
+        }
     }
+
+    // text input
+    m_isUserInput = true;
+    if (state & GDK_SHIFT_MASK) {
+        // special char
+    } else {
+        switch (keyval) {
+        case GDK_KEY_Tab:
+            this->InsertAtCursor("    ");
+            return true;
+        default:
+            break;
+        }
+    }
+
     return false;
 }
 
@@ -434,6 +456,10 @@ void EditArea::Unfocused(){
 }
 
 void EditArea::MouseMoved(double x, double y){
+    if (m_completionTool->GetIsShowing()) {
+        m_diagnosticPopover->Hide();
+        return;
+    }
 
     double adjx = gtk_adjustment_get_value(m_hAdjustment);
     double adjy = gtk_adjustment_get_value(m_vAdjustment);
@@ -445,6 +471,7 @@ void EditArea::MouseMoved(double x, double y){
     };// should not be less than 0
 
     Diagnostic* d = m_diagnosticTool->Find(zpos);
+
     if(d){
         if (d != m_diagnosticPopover->GetShowingDiagnostic()) {
             GdkRectangle r;
@@ -453,7 +480,6 @@ void EditArea::MouseMoved(double x, double y){
             gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, startpos.line, startpos.column);
             gtk_text_view_get_iter_location(m_textView, &itr, &r);
             m_diagnosticPopover->Show(*d, r.x - adjx, r.y - adjy);
-            //printf("x:%f y:%f\n", x - adjx, r.y - adjy);
         }
     }else {
         m_diagnosticPopover->Hide();
@@ -499,18 +525,27 @@ void EditArea::TextChanged(){
 
     this->LoadCursorPos();
 
-    if (!gtk_text_iter_starts_line(&m_cursorItr)) {
+    if (!gtk_text_iter_starts_line(&m_cursorItr) && m_isUserInput) {
         GtkTextIter* previtr = gtk_text_iter_copy(&m_cursorItr);
         gtk_text_iter_backward_char(previtr);
         char charbefore = *gtk_text_buffer_get_text(m_textViewBuffer, previtr, &m_cursorItr, false);
         //printf("before %c\n", charbefore);
-        if (charbefore != ' ' && charbefore != '\t') {
+        bool result = CompletionTool::IsCompletionTriggerChar(charbefore);
+        if (result) {
+            m_completionTool->Clear();
             SimpleEvent& event = m_eventMap.at(COMPLETION_REQUESTED);
             for (EventCallback callback : event.GetCallbackSet()) {
                 ((CompletionRequestedCallback)callback)(this, m_cursorZPos);
             }
+        } else {
+            m_completionTool->HidePopover();
+            m_completionTool->Clear();
         }
+    } else {
+        m_completionTool->HidePopover();
+        m_completionTool->Clear();
     }
+    m_isUserInput = true;
 }
 
 void EditArea::CursorPosChanged(){

@@ -1,6 +1,7 @@
 #include "Gui_if.h"
 
 #include "AppUI.h"
+#include "editarea/CompletionPopover.h"
 #include "editarea/DiagnosticPanel.h"
 #include "editarea/LangPanel.h"
 #include "filepanel/FilePanel.h"
@@ -12,6 +13,8 @@
 #include "src/session/EditAreaData.h"
 #include "layouts/tab/CfTab_if.h"
 #include "layouts/tab/CfTabLayout.h"
+
+#include "editarea/CompletionTool.h"
 
 #include <cstdio>
 #include <gtk/gtk.h>
@@ -31,6 +34,7 @@ static void AppActivated (GtkApplication *gtkapp, App* app){
     appui.settingPanel = std::make_unique<SettingPanel>(appui);
     appui.langPanel = std::make_unique<LangPanel>(appui);
     appui.diagnosticPanel = std::make_unique<DiagnosticPanel>(appui);
+    //appui.completionPopover = std::make_unique<CompletionPopover>();
 
     appui.mainWindow->SetHeaderBar(*appui.headerBar);
     appui.mainWindow->Insert(*appui.filePanel);
@@ -83,6 +87,22 @@ DiagnosticPanel* GetDiagnosticPanel(){
 
 LangPanel* GetLangPanel(){
     return current_app->appUI.langPanel.get();
+}
+
+
+void TransferCompletionPopover(CompletionTool* newowner){
+    static CompletionTool* owner = nullptr;
+    std::unique_ptr<CompletionPopover> popover;
+    if (owner) {
+        popover = owner->GetPopoverOwnership();
+    } else if (!popover) {
+        popover = std::make_unique<CompletionPopover>();
+    }
+
+    if (newowner) {
+        newowner->SetPopoverOwnership(std::move(popover));
+        owner = newowner;
+    }
 }
 
 }// namespace gui
