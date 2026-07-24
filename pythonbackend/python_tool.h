@@ -43,5 +43,6 @@ void RestoreThreadLock();
 void PrintGILState();
 
 PyObject* GetPyDictFromZRange(const ZRange &range);
+ZRange GetZRangeFromPyDict(PyObject* dict);
 
 #endif

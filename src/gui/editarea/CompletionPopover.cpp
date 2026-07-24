@@ -10,9 +10,9 @@
 #include <gtk/gtkshortcut.h>
 #include <memory>
 
-CompletionPopoverItem::CompletionPopoverItem(const Completion& completion)
-    :m_completion(completion){
-    m_label = GTK_LABEL(gtk_label_new(completion.label.c_str()));
+CompletionPopoverItem::CompletionPopoverItem(std::unique_ptr<Completion> completion)
+    :m_completion(std::move(completion)){
+    m_label = GTK_LABEL(gtk_label_new(m_completion->label.c_str()));
     gtk_label_set_xalign(m_label, 0);
     m_button = GTK_BUTTON(gtk_button_new());
     gtk_button_set_child(m_button, GTK_WIDGET(m_label));
@@ -33,7 +33,7 @@ void CompletionPopoverItem::SetSelected(bool selected){
 }
 
 const Completion& CompletionPopoverItem::GetCompletion(){
-    return m_completion;
+    return *m_completion.get();
 }
 
 GtkWidget* CompletionPopoverItem::GetBaseWidget(){
@@ -66,13 +66,12 @@ CompletionPopover::~CompletionPopover(){
     g_object_unref(m_popover);
 }
 
-/*
+
 void CompletionPopover::Add(std::unique_ptr<Completion> completion){
     std::unique_ptr<CompletionPopoverItem> item = std::make_unique<CompletionPopoverItem>(std::move(completion));
     gtk_box_append(m_box, item->GetBaseWidget());
     m_items.emplace_back(std::move(item));
 }
-*/
 
 void CompletionPopover::Clear(){
     for (const std::unique_ptr<CompletionPopoverItem>& item : m_items) {
@@ -134,7 +133,7 @@ void CompletionPopover::Show(const GdkRectangle* cursorrec){
     gtk_popover_set_pointing_to(m_popover, cursorrec);
     gtk_popover_popup(m_popover);
 }
-
+/*
 void CompletionPopover::Show(const GdkRectangle* cursorrec, const std::vector<std::unique_ptr<Completion>>& completions){
     this->Clear();
 
@@ -153,7 +152,7 @@ void CompletionPopover::Show(const GdkRectangle* cursorrec, const std::vector<st
         gtk_popover_popdown(m_popover);
     }
 }
-
+*/
 
 
 // private

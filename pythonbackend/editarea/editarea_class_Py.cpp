@@ -1,5 +1,6 @@
 #include "editarea_class_Py.h"
 
+#include "editarea/CompletionTool.h"
 #include "editarea_mod_Py.h"
 #include "pythonbackend/python_tool.h"
 #include "editarea/DiagnosticTool.h"
@@ -10,16 +11,20 @@
 #include "toolset/event/Event.h"
 
 #include <Python.h>
+#include <abstract.h>
 #include <cpython/classobject.h>
 #include <cstdio>
 #include <cstring>
+#include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
 #include <longobject.h>
 #include <memory>
 #include <methodobject.h>
+#include <modsupport.h>
 #include <object.h>
 #include <pytypedefs.h>
+#include <unicodeobject.h>
 
 /*
  * Callbacks
@@ -209,34 +214,47 @@ static PyObject *py_EditArea_highlight(py_EditArea *self, PyObject *args){
 }
 
 
-static PyObject* py_EditArea_add_completion(py_EditArea *self, PyObject *args){
-    char *absolutepath, *text, *label;
-    unsigned int startline, startpos, endline, endpos;
-    if(!PyArg_ParseTuple(args, "ssiiii",
-        &text, &label,&startline,&startpos, &endline, &endpos)){
-            Py_RETURN_NAN;
+static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
+    PyObject *result;
+    if (!PyArg_ParseTuple(args, "O", &result)) {
+        Py_RETURN_NAN;
+    }
+    CompletionTool& comptool = self->editarea->GetCompletionTool();
+    PyObject *items = PyDict_GetItemString(result, "items");//list
+
+    int itemcount = PyList_GET_SIZE(items);
+    comptool.Clear();
+    if (itemcount == 0) {
+        comptool.HidePopover();
+        Py_RETURN_NONE;
     }
 
-    std::unique_ptr<Completion> comp = std::make_unique<Completion>();
-    comp->insertText = text;
-    comp->label = label;
-    comp->range.start.line = startline;
-    comp->range.start.column = startpos;
-    comp->range.end.line = endline;
-    comp->range.end.column = endpos;
+    for (int itr = 0; itr < itemcount; itr++) {
+        std::unique_ptr<Completion> completion = std::make_unique<Completion>();
+        PyObject* item = PyList_GetItem(items, itr);//dict
+        PyObject* label = PyDict_GetItemString(item, "label");
+        completion->label = PyUnicode_AsUTF8(label);
 
-    self->editarea->GetCompletionTool().Add(std::move(comp));
+        PyObject* inserttext = PyDict_GetItemString(item, "insertText");
+        completion->insertText = PyUnicode_AsUTF8(inserttext);
 
+        PyObject* kind = PyDict_GetItemString(item, "kind");
+        completion->itemKind = PyLong_AsLong(kind);
+
+        {
+            PyObject* textedit = PyDict_GetItemString(item, "textEdit");
+            PyObject* range = PyDict_GetItemString(textedit, "range");
+            completion->range = GetZRangeFromPyDict(range);
+        }
+        comptool.Add(std::move(completion));
+    }
+
+    comptool.ShowPopover();
     Py_RETURN_NONE;
 }
 
 static PyObject* py_EditArea_clear_completion(py_EditArea *self, PyObject *args){
     self->editarea->GetCompletionTool().Clear();
-    Py_RETURN_NONE;
-}
-
-static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
-    self->editarea->GetCompletionTool().ShowPopover();
     Py_RETURN_NONE;
 }
 
@@ -295,10 +313,9 @@ static PyMethodDef py_EditArea_class_method[]={
     {"highlight", (PyCFunction)py_EditArea_highlight, METH_VARARGS, "highlight line(>= 0) pos(>= 0) length(>= 0) with tagname"},
     {"set_language", (PyCFunction)py_EditArea_set_lang, METH_VARARGS, "set the language of edit area"},
     {"get_language", (PyCFunction)py_EditArea_get_lang, METH_VARARGS, "get the language of edit area"},
-    {"add_completion", (PyCFunction)py_EditArea_add_completion, METH_VARARGS, "add a suggestion to the autocomplete"},
+    {"show_completion", (PyCFunction)py_EditArea_show_completion, METH_VARARGS, "param: 'result' of lsp as a dict"},
     {"clear_completion", (PyCFunction)py_EditArea_clear_completion, METH_VARARGS, "clear the suggestions of the edit area"},
     {"hide_completion", (PyCFunction)py_EditArea_hide_completion, METH_VARARGS, "hide the suggestion popover"},
-    {"show_completion", (PyCFunction)py_EditArea_show_completion, METH_VARARGS, "show the suggestion popover"},
     {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
     {"process_diagnostics", (PyCFunction)py_EditArea_process_diagnostics, METH_VARARGS, "read diagnostics and apply tags in the EditArea"},
     {"clear_diagnostics", (PyCFunction)py_EditArea_clear_diagnostics, METH_VARARGS, "clear all diagnostics in the EditArea"},

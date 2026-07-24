@@ -156,3 +156,34 @@ PyObject* GetPyDictFromZRange(const ZRange &range){
 
     return rangedict;
 }
+
+ZRange GetZRangeFromPyDict(PyObject* dict){
+    ZRange range;
+    PyObject *line, *col;
+
+    PyObject* start = PyDict_GetItemString(dict, "start");
+
+    line = PyDict_GetItemString(start, "line");
+    range.start.line = PyLong_AS_LONG(line);
+    Py_DECREF(line);
+
+    col = PyDict_GetItemString(start, "character");
+    range.start.column = PyLong_AS_LONG(col);
+    Py_DECREF(col);
+
+    Py_DECREF(start);
+
+    PyObject* end = PyDict_GetItemString(dict, "end");
+
+    line = PyDict_GetItemString(end, "line");
+    range.end.line = PyLong_AS_LONG(line);
+    Py_DECREF(line);
+
+    col = PyDict_GetItemString(end, "character");
+    range.end.column = PyLong_AS_LONG(col);
+    Py_DECREF(col);
+
+    Py_DECREF(start);
+
+    return range;
+}

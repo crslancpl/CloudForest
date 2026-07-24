@@ -8,7 +8,6 @@
 #include <gtk/gtkshortcut.h>
 #include <memory>
 #include <unordered_set>
-#include <vector>
 
 // forward declare
 class EditArea;
@@ -41,7 +40,6 @@ public:
 private:
     EditArea& m_parent;
     bool m_isShowing;
-    std::vector<std::unique_ptr<Completion>> m_completionsList;
     std::unique_ptr<CompletionPopover> m_completionPopover;
 };
 

@@ -5,10 +5,12 @@
 #include "CompletionTool.h"
 #include "DiagnosticTool.h"
 #include "datatypes/common.h"
+#include "editarea/CompletionPopover.h"
 #include "pythonbackend/editarea/editarea_class_Py.h"
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
+#include <gtk/gtkshortcut.h>
 #include <memory>
 #include <unordered_map>
 #include <mutex>
@@ -64,6 +66,7 @@ public:
     bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
     void Unfocused();
     void MouseMoved(double x, double y);
+    void MouseClicked(int n_press, double x, double y);
     void CursorMovedByKey();
     void TextInserted(GtkTextIter* itr, char* text, long int length);
     void TextDeleted(GtkTextIter* start, GtkTextIter* end);
@@ -109,6 +112,7 @@ private:
     GtkEventController *m_keyDownEventCtrl;
     GtkEventController *m_focusEventCtrl;
     GtkEventController *m_mouseMovedEventCtrl;
+    GtkGestureClick *m_mouseClickedGesture;
 
     Difference m_pendingDif;
     ZRange m_currentDiagnosticRange;

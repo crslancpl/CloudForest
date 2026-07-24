@@ -66,23 +66,7 @@ class LspReader:
             ea: editarea.EditArea | None = req_data.get("EditArea")
             if ea:
                 ea.clear_completion()
-                for item in result.get("items", []):
-                    text: str = item.get("filterText", "")
-                    label: str = item.get("label", "")
-                    textEdit: dict = item.get("textEdit", {})
-                    range: dict = textEdit.get("range", {})
-                    start: dict = range.get("start", {})
-                    end: dict = range.get("end", {})
-
-                    ea.add_completion(
-                        text,
-                        label,
-                        start["line"],
-                        start["character"],
-                        end["line"],
-                        end["character"],
-                    )
-                ea.show_completion()
+                ea.show_completion(result)
 
     def __as_error(self, params: dict):
         code: int | None = params.get("code")

@@ -4,7 +4,6 @@
 #include "style/Style.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -109,7 +108,6 @@ void TextArea::InsertAtCursor(const char* text){
 void TextArea::Replace(const ZRange& range, const char* text){
     m_isUserInput = false;
     GtkTextIter startitr, enditr;
-    printf("start %i end %i\n", range.start.column, range.end.column);
     gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &startitr, range.start.line, range.start.column);
     gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &enditr, range.end.line, range.end.column);
     gtk_text_buffer_delete(m_textViewBuffer, &startitr, &enditr);

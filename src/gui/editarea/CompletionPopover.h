@@ -17,7 +17,7 @@ class CompletionPopoverItem : CfComponent{
 public:
     static const int ITEM_HEIGHT = 32;
 
-    CompletionPopoverItem(const Completion& completion);
+    CompletionPopoverItem(std::unique_ptr<Completion> completion);
     ~CompletionPopoverItem();
 
     void SetSelected(bool selected);
@@ -29,7 +29,7 @@ private:
     GtkButton* m_button;
     GtkLabel* m_label;
 
-    const Completion& m_completion;
+    std::unique_ptr<Completion> m_completion;
 };
 
 
@@ -39,7 +39,7 @@ public:
     CompletionPopover();
     ~CompletionPopover();
 
-    //void Add(std::unique_ptr<Completion> completion);
+    void Add(std::unique_ptr<Completion> completion);
     void Clear();
     void Hide();
 
@@ -48,8 +48,9 @@ public:
     const Completion& Confirm();
 
     void SetTarget(EditArea* ea);
+
     void Show(const GdkRectangle *cursorrec);
-    void Show(const GdkRectangle *cursorrec, const std::vector<std::unique_ptr<Completion>>& completions);
+    //void Show(const GdkRectangle *cursorrec, const std::vector<std::unique_ptr<Completion>>& completions);
 
 private:
     void ScrollToSelected();

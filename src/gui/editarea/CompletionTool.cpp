@@ -10,7 +10,6 @@
 #include <memory>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 /*
  * CompletionTool
@@ -59,13 +58,16 @@ CompletionTool::~CompletionTool(){
 }
 
 void CompletionTool::Add(std::unique_ptr<Completion> completion){
-    m_completionsList.push_back(std::move(completion));
+    if (!m_completionPopover) {
+        gui::TransferCompletionPopover(this);
+    }
+    m_completionPopover->Add(std::move(completion));
 }
 
 void CompletionTool::Clear(){
     //
     if (m_completionPopover) {
-        m_completionsList.clear();
+        m_completionPopover->Clear();
     }
 }
 
@@ -85,9 +87,7 @@ void CompletionTool::ShowPopover(){
     if (!m_completionPopover) {
         gui::TransferCompletionPopover(this);
     }
-
-    m_completionPopover->SetTarget(&m_parent);
-    m_completionPopover->Show(m_parent.GetCursorRectangle(), m_completionsList);
+    m_completionPopover->Show(m_parent.GetCursorRectangle());
     m_isShowing = true;
 }
 
@@ -116,4 +116,5 @@ std::unique_ptr<CompletionPopover> CompletionTool::GetPopoverOwnership(){
 
 void CompletionTool::SetPopoverOwnership(std::unique_ptr<CompletionPopover> popover){
     m_completionPopover = std::move(popover);
+    m_completionPopover->SetTarget(&m_parent);
 }

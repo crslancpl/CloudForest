@@ -8,6 +8,7 @@
 #include "datatypes/lsp.h"
 #include "datatypes/file.h"
 #include "Gui_if.h"
+#include "editarea/CompletionPopover.h"
 #include "editarea/CompletionTool.h"
 #include "editarea/DiagnosticTool.h"
 #include "pythonbackend/editarea/editarea_class_Py.h"
@@ -56,6 +57,10 @@ static void OnUnfocused(GtkEventControllerFocus* self, EditArea* parent){
 
 static void OnMouseMoved(GtkEventControllerMotion* self, double x, double y, EditArea* parent){
     parent->MouseMoved(x, y);
+}
+
+static void OnMouseClicked(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, EditArea* parent){
+    parent->MouseClicked(n_press, x, y);
 }
 
 static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
@@ -201,6 +206,7 @@ void EditArea::LoadGui(){
     m_keyDownEventCtrl = gtk_event_controller_key_new();
     m_focusEventCtrl = gtk_event_controller_focus_new();
     m_mouseMovedEventCtrl = gtk_event_controller_motion_new();
+    m_mouseClickedGesture = GTK_GESTURE_CLICK(gtk_gesture_click_new());
 
     gtk_widget_set_has_tooltip(GTK_WIDGET(m_saveBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_saveBut), "Save");
@@ -222,6 +228,9 @@ void EditArea::ConnectSignals(){
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_focusEventCtrl);
     g_signal_connect(m_mouseMovedEventCtrl, "motion", G_CALLBACK(OnMouseMoved), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_mouseMovedEventCtrl);
+    g_signal_connect(m_mouseClickedGesture, "pressed", G_CALLBACK(OnMouseClicked), this);
+    gtk_widget_add_controller(GTK_WIDGET(m_textView), GTK_EVENT_CONTROLLER(m_mouseClickedGesture));
+
     g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
     g_signal_connect(m_textViewBuffer, "insert-text", G_CALLBACK(OnTextInserted), this);
     g_signal_connect(m_textViewBuffer, "delete-range", G_CALLBACK(OnTextDeleted), this);
@@ -452,6 +461,7 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
 }
 
 void EditArea::Unfocused(){
+    m_completionTool->HidePopover();
     m_diagnosticPopover->Hide();
 }
 
@@ -484,6 +494,11 @@ void EditArea::MouseMoved(double x, double y){
     }else {
         m_diagnosticPopover->Hide();
     }
+}
+
+void EditArea::MouseClicked(int n_press, double x, double y){
+    m_completionTool->HidePopover();
+    m_diagnosticPopover->Hide();
 }
 
 void EditArea::CursorMovedByKey(){
