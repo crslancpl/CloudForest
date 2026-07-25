@@ -32,10 +32,11 @@ MainWindow::~MainWindow(){
     //
 }
 
-void MainWindow::SetHeaderBar(HeaderBar& headerbar){
-    gtk_window_set_titlebar(m_window, headerbar.GetBaseWidget());
+void MainWindow::SetHeaderBar(std::unique_ptr<HeaderBar> headerbar){
+    gtk_window_set_titlebar(m_window, headerbar->GetBaseWidget());
+    m_headerBar = std::move(headerbar);
 }
 
-void MainWindow::Insert(CfContent& content){
-    m_layout->InsertChild(content);
+void MainWindow::Insert(std::unique_ptr<CfContent> content){
+    m_layout->Insert(std::move(content));
 }

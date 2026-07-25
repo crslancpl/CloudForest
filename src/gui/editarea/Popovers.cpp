@@ -62,7 +62,7 @@ void DiagnosticPopover::Hide(){
 
 void DiagnosticPopover::Show(const Diagnostic& diagnostic, double xpos, double ypos){
     //
-    gtk_label_set_label(m_messageLabel, diagnostic.message);
+    gtk_label_set_label(m_messageLabel, diagnostic.message.c_str());
     int height = gtk_widget_get_height(GTK_WIDGET(m_messageLabel));
     if(m_height != height){
         gtk_popover_popdown(m_popover);

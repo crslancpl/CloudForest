@@ -13,6 +13,7 @@
 class CfTabLayout : public CfContent{
 public:
     CfTabLayout();
+    ~CfTabLayout();
 
     void Add(std::unique_ptr<CfContent> content);
     void Show(CfContent& content);

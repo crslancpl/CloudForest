@@ -44,8 +44,8 @@ typedef struct Completion{
 
 
 typedef struct Diagnostic{
-    char* code;
-    char* message;
+    std::string code;
+    std::string message;
     int severity;
     ZRange range;
 }Diagnostic;

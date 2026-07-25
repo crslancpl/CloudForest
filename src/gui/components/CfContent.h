@@ -5,6 +5,7 @@
 #include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -58,7 +59,7 @@ private:
 };
 
 namespace cfcontent{
-CfContent *PackAsCfContent(GtkWidget *widget);
+std::unique_ptr<CfContent> PackAsCfContent(GtkWidget *widget);
 }
 
 #endif

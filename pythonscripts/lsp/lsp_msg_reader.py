@@ -21,6 +21,7 @@ class LspReader:
         content: dict = json.loads(message)
         id: int | str | None = content.get("id")
         result: dict = {}
+        # print(message)
         if id:
             # response
             match id:
@@ -40,7 +41,6 @@ class LspReader:
                                 result = content.get("result", {})
                                 req_data = tup[1]
                                 self.__as_completion(result, req_data)
-                                pass
 
             return
 
@@ -53,7 +53,7 @@ class LspReader:
                     self.__as_show_message(params)
                 case "textDocument/publishDiagnostics":
                     self.__as_publish_diagnostics(params)
-            pass
+
             # self.__find_method_processor(content.get("method"), content.get("params"))
         elif content.get("error"):
             self.__as_error(content.get("error", {}))
@@ -80,35 +80,14 @@ class LspReader:
         diagnostics: list = params.get("diagnostics", [])
         uri: str = params.get("uri", "file://")
         version = params.get("version", 0)
-
         path = str(uri).removeprefix("file://")
 
         # print(f"diagnostics: {path} version {version}")
-        ea = editarea.find_by_file_path(path)
-        if not ea:
+        ea: editarea.EditArea | None = editarea.find_by_file_path(path)
+        if not ea or not isinstance(ea, editarea.EditArea):
             return
 
-        ea.clear_diagnostics()
-
-        for diagnostic in diagnostics:
-            range = diagnostic.get("range")
-            start = range.get("start")
-            end = range.get("end")
-            code = diagnostic.get("code")
-            if code is None:
-                code = "none"
-
-            ea.add_diagnostic(
-                code,
-                diagnostic.get("message"),
-                start.get("line"),
-                start.get("character"),
-                end.get("line"),
-                end.get("character"),
-                diagnostic.get("severity"),
-            )
-
-        ea.process_diagnostics(version)
+        ea.process_diagnostic(diagnostics, version)
 
     def __as_show_message(self, params: dict):
         msg: str = params.get("message", "")

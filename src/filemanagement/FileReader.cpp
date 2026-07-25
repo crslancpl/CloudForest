@@ -15,17 +15,17 @@
 
 namespace filemanager {
 
-void ExpandFolderBranch(FolderBranch *branch){
-    if(branch->GetIsChildLoaded()){
+void ExpandFolderBranch(FolderBranch &branch){
+    if(branch.GetIsChildLoaded()){
         // already expanded
         return;
     }
-    if (branch->GetFileData()->isVirtual) {
-        branch->SetIsChildLoaded(true);
+    if (branch.GetFileData()->isVirtual) {
+        branch.SetIsChildLoaded(true);
         return;
     }
 
-    GFileEnumerator *enumerator = g_file_enumerate_children(branch->GetFileData()->file, "*", G_FILE_QUERY_INFO_NONE,
+    GFileEnumerator *enumerator = g_file_enumerate_children(branch.GetFileData()->file, "*", G_FILE_QUERY_INFO_NONE,
         nullptr, nullptr);
 
     GFileInfo* info;
@@ -37,13 +37,13 @@ void ExpandFolderBranch(FolderBranch *branch){
 
         if (data->type == G_FILE_TYPE_REGULAR){
             std::unique_ptr<FileBranch> b = std::make_unique<FileBranch>(std::move(data));
-            branch->AddChildFile(std::move(b));
+            branch.AddChildFile(std::move(b));
         } else if (data->type == G_FILE_TYPE_DIRECTORY){
             std::unique_ptr<FolderBranch> b = std::make_unique<FolderBranch>(std::move(data));
-            branch->AddChildFolder(std::move(b));
+            branch.AddChildFolder(std::move(b));
         }
     }
-    branch->SetIsChildLoaded(true);
+    branch.SetIsChildLoaded(true);
 }
 
 

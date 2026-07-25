@@ -1,5 +1,6 @@
 #include "DiagnosticTool.h"
 
+#include "Gui_if.h"
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
 #include "editarea/EditArea.h"
@@ -13,6 +14,7 @@ DiagnosticTool::DiagnosticTool(EditArea& parent):
 DiagnosticTool::~DiagnosticTool(){
     //
     this->Clear();
+    gui::TransferCompletionPopover(nullptr);
 }
 
 void DiagnosticTool::Add(std::unique_ptr<Diagnostic> diagnostic){
@@ -46,11 +48,6 @@ void DiagnosticTool::Process(int version){
 }
 
 void DiagnosticTool::Clear(){
-    for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList){
-        delete [] diagnostic->message;
-        delete [] diagnostic->code;
-    }
-
     m_diagnosticsList.clear();
     m_clearedCallback();
 }

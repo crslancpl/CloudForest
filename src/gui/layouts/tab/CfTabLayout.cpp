@@ -23,6 +23,10 @@ CfTabLayout::CfTabLayout(){
     session::SetFocusedTabLayout(this);
 }
 
+CfTabLayout::~CfTabLayout(){
+    //
+}
+
 void CfTabLayout::Add(std::unique_ptr<CfContent> content){
     //
     std::unique_ptr<CfTabSwitcher> newswitcher = std::make_unique<CfTabSwitcher>(std::move(content));

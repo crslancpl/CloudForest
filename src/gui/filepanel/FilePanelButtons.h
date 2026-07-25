@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
+#include <vector>
 
 
 class FPFolderButton;
@@ -18,12 +20,12 @@ typedef struct FileData FileData;
 /* File panel folder button */
 class FPFolderButton : public CfComponent {
 public:
-    FPFolderButton(FolderBranch *folderbranch, int level);
+    FPFolderButton(FolderBranch &folderbranch, int level);
     ~FPFolderButton();
 
 
-    void AddChildFolder(FPFolderButton* child);
-    void AddChildFile(FPFileButton* child);
+    void AddChildFolder(std::unique_ptr<FPFolderButton> child);
+    void AddChildFile(std::unique_ptr<FPFileButton> child);
     void UnrefBuilder();
     void ToggleFolder();
     unsigned int GetLevel();
@@ -31,7 +33,10 @@ public:
     GtkWidget* GetBaseWidget() override;
 
 private:
-    FolderBranch* m_folderBranch;
+    FolderBranch& m_folderBranch;
+    std::vector<std::unique_ptr<FPFileButton>> m_childFiles;
+    std::vector<std::unique_ptr<FPFolderButton>> m_childFolders;
+
     GtkBuilder *builder;// unref by UnrefBuilder();
     GtkBox *m_baseBox;// Containing FolderToggleBut and Content
     GtkButton *m_folderToggleBut;
@@ -49,14 +54,14 @@ private:
 /* File panel file button */
 class FPFileButton : public CfComponent {
 public:
-    FPFileButton(FileBranch *filebranch, int level);// the level of Root folder is 0
+    FPFileButton(FileBranch &filebranch, int level);// the level of Root folder is 0
     ~FPFileButton();
 
     void Clicked();
     GtkWidget* GetBaseWidget() override;
 
 private:
-    FileBranch* m_fileBranch;
+    FileBranch& m_fileBranch;
     GtkButton *m_button;
 };
 

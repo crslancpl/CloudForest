@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 #include <memory>
+#include <vector>
 
 class CfContent;
 class CfLayout;
@@ -17,11 +18,13 @@ public:
     MainWindow(AppUI &appui);
     ~MainWindow();
 
-    void SetHeaderBar(HeaderBar& headerbar);
-    void Insert(CfContent& content);
+    void SetHeaderBar(std::unique_ptr<HeaderBar> headerbar);
+    void Insert(std::unique_ptr<CfContent> content);
 
 private:
     std::unique_ptr<CfLayout> m_layout;
+    std::unique_ptr<HeaderBar> m_headerBar;
+    std::vector<std::unique_ptr<Window>> m_childWindow;
 };
 
 #endif

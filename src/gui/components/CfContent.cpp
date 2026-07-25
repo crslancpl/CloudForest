@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 #include <string>
 
 
@@ -106,8 +107,8 @@ void CfContent::ChildDataChanged(CfContent *child){
 
 
 
-CfContent* cfcontent::PackAsCfContent(GtkWidget *widget){
-    auto content = new CfContent();
+std::unique_ptr<CfContent> cfcontent::PackAsCfContent(GtkWidget *widget){
+    std::unique_ptr<CfContent> content = std::make_unique<CfContent>();
     content->SetContentWidget(widget);
     return content;
 }

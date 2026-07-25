@@ -46,7 +46,9 @@ static void OnFolderClicked(GtkButton* self,FPFolderButton *filefolderbut){
 }
 
 
-FPFolderButton::FPFolderButton(FolderBranch *folderbranch, int level):m_level(level){
+FPFolderButton::FPFolderButton(FolderBranch &folderbranch, int level)
+    : m_level(level),
+    m_folderBranch(folderbranch){
     /* binding */
     builder = gtk_builder_new_from_file("data/ui/FPFolderButton.ui");
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "folder-base-box"));
@@ -54,9 +56,8 @@ FPFolderButton::FPFolderButton(FolderBranch *folderbranch, int level):m_level(le
     m_childArea = GTK_BOX(gtk_builder_get_object(builder, "child-area"));
     m_folderArea = GTK_BOX(gtk_builder_get_object(builder, "child-folder-area"));
     m_fileArea = GTK_BOX(gtk_builder_get_object(builder, "child-file-area"));
-    m_folderBranch = folderbranch;
 
-    ButtonLoadFileNameAndIcon(m_folderToggleBut, m_folderBranch->GetFileData(), level);
+    ButtonLoadFileNameAndIcon(m_folderToggleBut, m_folderBranch.GetFileData(), level);
 
     gtk_widget_add_css_class(GTK_WIDGET(m_folderToggleBut), std::string("folder-button").c_str());
     gtk_widget_set_visible(GTK_WIDGET(m_childArea), false);
@@ -69,27 +70,29 @@ FPFolderButton::~FPFolderButton(){
 }
 
 
-void FPFolderButton::AddChildFolder(FPFolderButton* child){
+void FPFolderButton::AddChildFolder(std::unique_ptr<FPFolderButton> child){
     gtk_box_append(m_folderArea, child->GetBaseWidget());
+    m_childFolders.emplace_back(std::move(child));
 }
 
-void FPFolderButton::AddChildFile(FPFileButton* child){
+void FPFolderButton::AddChildFile(std::unique_ptr<FPFileButton> child){
     gtk_box_append(m_fileArea, child->GetBaseWidget());
+    m_childFiles.emplace_back(std::move(child));
 }
 
 void FPFolderButton::ToggleFolder(){
-    if(!m_folderBranch->GetIsChildLoaded()){
+    if(!m_folderBranch.GetIsChildLoaded()){
         folder_button_to_enumerate = this;
         filemanager::ExpandFolderBranch(m_folderBranch);
 
-        for(const std::unique_ptr<FileBranch>& b : m_folderBranch->GetChildFiles()){
-            FPFileButton* childfilebtn = new FPFileButton(b.get(), m_level + 1);
-            this->AddChildFile(childfilebtn);
+        for(const std::unique_ptr<FileBranch>& b : m_folderBranch.GetChildFiles()){
+            std::unique_ptr<FPFileButton> childfilebtn = std::make_unique<FPFileButton>(*b, m_level + 1);
+            this->AddChildFile(std::move(childfilebtn));
         }
 
-        for (const std::unique_ptr<FolderBranch>& b : m_folderBranch->GetChildFolders()){
-            FPFolderButton* childfolderbtn = new FPFolderButton(b.get(), m_level + 1);
-            this->AddChildFolder(childfolderbtn);
+        for (const std::unique_ptr<FolderBranch>& b : m_folderBranch.GetChildFolders()){
+            std::unique_ptr<FPFolderButton> childfolderbtn = std::make_unique<FPFolderButton>(*b, m_level + 1);
+            this->AddChildFolder(std::move(childfolderbtn));
         }
     }
 
@@ -120,10 +123,10 @@ static void FileButtonClick(GtkButton *self,FPFileButton &Parent){
     Parent.Clicked();
 }
 
-FPFileButton::FPFileButton(FileBranch *filebranch, int level){
+FPFileButton::FPFileButton(FileBranch &filebranch, int level):
+    m_fileBranch(filebranch){
     m_button = GTK_BUTTON(gtk_button_new());
-    m_fileBranch = filebranch;
-    ButtonLoadFileNameAndIcon(m_button, m_fileBranch->GetFileData(), level);
+    ButtonLoadFileNameAndIcon(m_button, m_fileBranch.GetFileData(), level);
 
     gtk_widget_add_css_class(GTK_WIDGET(m_button), "file-button");
     gtk_widget_set_hexpand(GTK_WIDGET(m_button), true);
@@ -135,7 +138,7 @@ FPFileButton::~FPFileButton(){
 }
 
 void FPFileButton::Clicked(){
-    session::EditFile(m_fileBranch->GetFileData());
+    session::EditFile(m_fileBranch.GetFileData());
 }
 
 GtkWidget* FPFileButton::GetBaseWidget(){

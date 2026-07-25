@@ -6,6 +6,8 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
+#include <vector>
 
 typedef struct FileData FileData;
 typedef struct Workspace Workspace;
@@ -16,15 +18,17 @@ class FPFolderButton;
 
 class WorkspaceBox: public CfComponent{
 public:
-    WorkspaceBox(Workspace* ws);
+    WorkspaceBox(Workspace& ws);
     ~WorkspaceBox();
 
     void SetName(const char* name);
 
     GtkWidget* GetBaseWidget() override;
+
 private:
-    Workspace* m_ws;
-    FPFolderButton* m_folderBtn;
+    Workspace& m_ws;
+    std::unique_ptr<FPFolderButton> m_folderBtn;
+
     GtkBox *m_box;
     GtkLabel *m_label;
 };
@@ -42,7 +46,7 @@ private:
     void AddWorkspace(Workspace* ws);
 
     GtkBox *m_workspaceArea;
-    std::unordered_set<WorkspaceBox*> m_workspaceList;
+    std::vector<std::unique_ptr<WorkspaceBox>> m_workspaceList;
 };
 
 

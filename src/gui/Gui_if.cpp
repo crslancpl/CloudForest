@@ -28,18 +28,22 @@ static void AppActivated (GtkApplication *gtkapp, App* app){
 
     AppUI& appui = current_app->appUI;
 
-    appui.headerBar = std::make_unique<HeaderBar>(appui);
     appui.mainWindow = std::make_unique<MainWindow>(appui);
-    appui.filePanel = std::make_unique<FilePanel>(appui);
+
+    std::unique_ptr<HeaderBar> headerbar = std::make_unique<HeaderBar>(appui);
+    appui.headerBar = headerbar.get();
+    std::unique_ptr<FilePanel> filepanel = std::make_unique<FilePanel>(appui);
+    appui.filePanel = filepanel.get();
+
     appui.settingPanel = std::make_unique<SettingPanel>(appui);
     appui.langPanel = std::make_unique<LangPanel>(appui);
     appui.diagnosticPanel = std::make_unique<DiagnosticPanel>(appui);
-    //appui.completionPopover = std::make_unique<CompletionPopover>();
 
-    appui.mainWindow->SetHeaderBar(*appui.headerBar);
-    appui.mainWindow->Insert(*appui.filePanel);
-    CfTabLayout* tab = new CfTabLayout();// freed on app closed
-    appui.mainWindow->Insert(*tab);
+    appui.mainWindow->SetHeaderBar(std::move(headerbar));
+    appui.mainWindow->Insert(std::move(filepanel));
+
+    std::unique_ptr<CfTabLayout> tab = std::make_unique<CfTabLayout>();// freed on app closed
+    appui.mainWindow->Insert(std::move(tab));
 
     session::EditNewFile();
     app->appUI.mainWindow->Show();
@@ -66,6 +70,11 @@ int RunApp(int argc, char* argv[], App& app){
     int status = g_application_run (G_APPLICATION (appui.gtkApp), argc, argv);// loop
     g_object_unref (appui.gtkApp);
 
+    appui.mainWindow.reset();
+    appui.diagnosticPanel.reset();
+    appui.langPanel.reset();
+    appui.settingPanel.reset();
+
     return status;
 }
 
@@ -74,7 +83,7 @@ MainWindow* GetMainWindow(){
 }
 
 FilePanel* GetFilePanel(){
-    return current_app->appUI.filePanel.get();
+    return current_app->appUI.filePanel;
 }
 
 SettingPanel* GetSettingPanel(){
@@ -92,7 +101,7 @@ LangPanel* GetLangPanel(){
 
 void TransferCompletionPopover(CompletionTool* newowner){
     static CompletionTool* owner = nullptr;
-    std::unique_ptr<CompletionPopover> popover;
+    static std::unique_ptr<CompletionPopover> popover;
     if (owner) {
         popover = owner->GetPopoverOwnership();
     } else if (!popover) {

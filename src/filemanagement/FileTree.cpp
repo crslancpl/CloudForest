@@ -4,7 +4,6 @@
 #include "src/filemanagement/FileReader.h"
 #include "toolset/tools/Tool.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 

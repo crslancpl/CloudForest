@@ -25,7 +25,7 @@ DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic, Diagnosti
     gtk_label_set_xalign(m_locationLabel, 0);
     gtk_widget_add_css_class(GTK_WIDGET(m_locationLabel), "location-label");
 
-    m_messageLabel = GTK_LABEL(gtk_label_new(diagnostic.message));
+    m_messageLabel = GTK_LABEL(gtk_label_new(diagnostic.message.c_str()));
     gtk_label_set_xalign(m_messageLabel, 0);
     gtk_label_set_wrap(m_messageLabel, true);
     gtk_widget_add_css_class(GTK_WIDGET(m_messageLabel), "message-label");

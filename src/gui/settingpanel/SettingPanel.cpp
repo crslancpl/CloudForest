@@ -40,18 +40,17 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     GtkBuilder *builder = gtk_builder_new_from_file("data/ui/SettingPanel.ui");
     this->BindUI(builder);
 
-    m_baseLayout = std::make_unique<CfLayout>(GTK_ORIENTATION_HORIZONTAL);// freed on app closed
-
-    auto stack = cfcontent::PackAsCfContent(GTK_WIDGET(m_stack));
-    auto tabbutboxcontent = cfcontent::PackAsCfContent(GTK_WIDGET(m_tabButtonBox));
-
+    m_baseLayout = std::make_unique<CfLayout>(GTK_ORIENTATION_HORIZONTAL);
     gtk_window_set_child(m_window, GTK_WIDGET(m_baseLayout->GetBaseWidget()));
 
-    tabbutboxcontent->SetDefaultSize(200, 0);
-    m_baseLayout->InsertChild(*tabbutboxcontent);
-    m_baseLayout->InsertChild(*stack);
+    std::unique_ptr<CfContent> btnbox = cfcontent::PackAsCfContent(GTK_WIDGET(m_tabButtonBox));
+    btnbox->SetDefaultSize(200, 0);
+    m_baseLayout->Insert(std::move(btnbox));
+
+    std::unique_ptr<CfContent> stack = cfcontent::PackAsCfContent(GTK_WIDGET(m_stack));
     stack->SetHorizontalExpand(true);
     stack->SetVerticalExpand(true);
+    m_baseLayout->Insert(std::move(stack));
 
     m_extensionPage = std::make_unique<ExtensionPage>();
     this->AddPage("Extension", m_extensionPage.get());

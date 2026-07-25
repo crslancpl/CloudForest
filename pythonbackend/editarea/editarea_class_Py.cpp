@@ -33,9 +33,11 @@
 static void OnEditAreaClosed(EditArea *ea){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
-    const Difference &dif = ea->GetPendingDiff();
     PyObject* args = PyTuple_Pack(1, py_ea);
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CLOSED);
     event.Invoke(args);
@@ -47,7 +49,10 @@ static void OnEditAreaClosed(EditArea *ea){
 static void OnEditAreaCompletionRequested(EditArea *ea, const ZPosition& zpos){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(zpos.line), PyLong_FromLong(zpos.column));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
@@ -59,7 +64,10 @@ static void OnEditAreaCompletionRequested(EditArea *ea, const ZPosition& zpos){
 static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CURSOR_MOVED);
@@ -71,7 +79,10 @@ static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
 static void OnEditAreaFileDataChanged(EditArea *ea){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_DATA_CHANGED);
@@ -83,7 +94,10 @@ static void OnEditAreaFileDataChanged(EditArea *ea){
 static void OnEditAreaFileSaved(EditArea *ea){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_FILE_SAVED);
@@ -95,7 +109,10 @@ static void OnEditAreaFileSaved(EditArea *ea){
 static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* newlang){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     PyObject* args = PyTuple_Pack(1, py_ea);
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_LANG_CHANGED);
@@ -107,7 +124,10 @@ static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* new
 static void OnEditAreaTextChanged(EditArea *ea){
     RestoreThreadLock();
     py_EditArea* py_ea = ea->GetPyEditArea();
-    if(py_ea == nullptr) return;
+    if (py_ea == nullptr) {
+        ReleaseThreadLock();
+        return;
+    }
     Py_INCREF(py_ea);
     const Difference &dif = ea->GetPendingDiff();
     PyObject* args = PyTuple_Pack(4, py_ea, GetPyDictFromZRange(dif.before), PyUnicode_FromString(dif.text), PyLong_FromLong(ea->GetFileVersion()));
@@ -222,6 +242,10 @@ static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
     CompletionTool& comptool = self->editarea->GetCompletionTool();
     PyObject *items = PyDict_GetItemString(result, "items");//list
 
+    if (!PyList_Check(items)) {
+        Py_RETURN_NAN;
+    }
+
     int itemcount = PyList_GET_SIZE(items);
     comptool.Clear();
     if (itemcount == 0) {
@@ -263,39 +287,43 @@ static PyObject* py_EditArea_hide_completion(py_EditArea *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-static PyObject* py_EditArea_add_diagnostic(py_EditArea *self, PyObject *args){
-    /*
-     * The message cannot be paseds directly to diagnostic as Python will free the char*
-     */
-
-    std::unique_ptr<Diagnostic> diagnostic = std::make_unique<Diagnostic>();
-    char* message;
-    char* code;
-    if(!PyArg_ParseTuple(
-        args, "ssiiiii",
-        &code,
-        &message,
-        &diagnostic->range.start.line,
-        &diagnostic->range.start.column,
-        &diagnostic->range.end.line,
-        &diagnostic->range.end.column,
-        &diagnostic->severity)
-    ){
-        Py_RETURN_NAN;
-    }
-
-    diagnostic->message = strdup(message);
-    diagnostic->code = strdup(code);
-    self->editarea->GetDiagnosticTool().Add(std::move(diagnostic));
-    Py_RETURN_NONE;
-}
-
-static PyObject* py_EditArea_process_diagnostics(py_EditArea* self, PyObject *args){
+static PyObject* py_EditArea_process_diagnostics(py_EditArea *self, PyObject *args){
+    PyObject *diagnostics;// list
     int version;
-    if(!PyArg_ParseTuple(args, "i", &version)){
+
+    if (!PyArg_ParseTuple(args, "Oi", &diagnostics, &version)) {
         Py_RETURN_NAN;
     }
-    self->editarea->GetDiagnosticTool().Process(version);
+
+    if (!PyList_Check(diagnostics)) {
+        printf("diagnostics not a list\n");
+        Py_RETURN_NAN;
+    }
+
+    DiagnosticTool& diagtool = self->editarea->GetDiagnosticTool();
+    diagtool.Clear();
+
+    if (self->editarea->GetFileVersion() != version) {
+        printf("wrong version\n");
+        Py_RETURN_NONE;
+    }
+
+    int itemcount = PyList_GET_SIZE(diagnostics);
+    for (int i = 0; i < itemcount; i++) {
+        std::unique_ptr<Diagnostic> diagnostic = std::make_unique<Diagnostic>();
+        PyObject* item = PyList_GetItem(diagnostics, i);//dict
+        PyObject* range = PyDict_GetItemString(item, "range");
+        diagnostic->range = GetZRangeFromPyDict(range);
+        PyObject* code = PyDict_GetItemString(item, "code");
+        diagnostic->code = PyUnicode_AsUTF8(code);
+        PyObject* message = PyDict_GetItemString(item, "message");
+        diagnostic->message = PyUnicode_AsUTF8(message);
+        PyObject* severity = PyDict_GetItemString(item, "severity");
+        diagnostic->severity = PyLong_AsLong(severity);
+        diagtool.Add(std::move(diagnostic));
+    }
+
+    diagtool.Process(version);
     Py_RETURN_NONE;
 }
 
@@ -316,8 +344,7 @@ static PyMethodDef py_EditArea_class_method[]={
     {"show_completion", (PyCFunction)py_EditArea_show_completion, METH_VARARGS, "param: 'result' of lsp as a dict"},
     {"clear_completion", (PyCFunction)py_EditArea_clear_completion, METH_VARARGS, "clear the suggestions of the edit area"},
     {"hide_completion", (PyCFunction)py_EditArea_hide_completion, METH_VARARGS, "hide the suggestion popover"},
-    {"add_diagnostic", (PyCFunction)py_EditArea_add_diagnostic, METH_VARARGS, "add diagnostic to EditArea"},
-    {"process_diagnostics", (PyCFunction)py_EditArea_process_diagnostics, METH_VARARGS, "read diagnostics and apply tags in the EditArea"},
+    {"process_diagnostic", (PyCFunction)py_EditArea_process_diagnostics, METH_VARARGS, "param: 1.diagnostics as dict, 2.version as int"},
     {"clear_diagnostics", (PyCFunction)py_EditArea_clear_diagnostics, METH_VARARGS, "clear all diagnostics in the EditArea"},
     {NULL, NULL, 0, NULL}
 };

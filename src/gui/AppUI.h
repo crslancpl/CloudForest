@@ -16,11 +16,13 @@ typedef struct AppUI{
     GtkApplication *gtkApp;
     GtkFileDialog *fileDialog;// for filemanager;
     std::unique_ptr<MainWindow> mainWindow;
-    std::unique_ptr<HeaderBar> headerBar;
-    std::unique_ptr<SettingPanel> settingPanel;
-    std::unique_ptr<FilePanel> filePanel;
-    std::unique_ptr<LangPanel> langPanel;
     std::unique_ptr<DiagnosticPanel> diagnosticPanel;
+    std::unique_ptr<SettingPanel> settingPanel;
+    std::unique_ptr<LangPanel> langPanel;
+
+    //borrow reference
+    HeaderBar* headerBar;
+    FilePanel* filePanel;
 } AppUI;
 
 #endif

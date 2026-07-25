@@ -5,33 +5,31 @@
 #include "FilePanelButtons.h"
 #include "src/session/SessionEvent.h"
 
-
-
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
+#include <memory>
 
 
 
-WorkspaceBox::WorkspaceBox(Workspace* ws): m_ws(ws){
+WorkspaceBox::WorkspaceBox(Workspace& ws): m_ws(ws){
     m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 1));
     gtk_widget_add_css_class(GTK_WIDGET(m_box), "ws-box");
-    m_label = GTK_LABEL(gtk_label_new(ws->GetName()));
+    m_label = GTK_LABEL(gtk_label_new(ws.GetName()));
     gtk_box_append(m_box, GTK_WIDGET(m_label));
-    m_folderBtn = new FPFolderButton(ws, 0);
+    m_folderBtn = std::make_unique<FPFolderButton>(ws, 0);
     gtk_box_append(m_box, m_folderBtn->GetBaseWidget());
 }
 
 WorkspaceBox::~WorkspaceBox(){
     //
-    delete m_folderBtn;
 }
 
 void WorkspaceBox::SetName(const char* name){
-    m_ws->SetCustomName(name);
+    m_ws.SetCustomName(name);
     gtk_label_set_text(m_label, name);
 }
 
@@ -66,17 +64,16 @@ FilePanel::FilePanel(AppUI& appui){
 }
 
 FilePanel::~FilePanel(){
-    for (WorkspaceBox* wsbox : m_workspaceList) {
+    for (std::unique_ptr<WorkspaceBox>& wsbox : m_workspaceList) {
         gtk_box_remove(m_workspaceArea, wsbox->GetBaseWidget());
-        delete wsbox;
     }
 
     m_workspaceList.clear();
 }
 
 void FilePanel::NewWorkspace(Workspace* ws){
-    WorkspaceBox* wsbox = new WorkspaceBox(ws);
+    std::unique_ptr<WorkspaceBox> wsbox = std::make_unique<WorkspaceBox>(*ws);
     gtk_widget_add_css_class(wsbox->GetBaseWidget(), "workspace-box");
-    m_workspaceList.emplace(wsbox);
     gtk_box_append(m_workspaceArea, wsbox->GetBaseWidget());
+    m_workspaceList.emplace_back(std::move(wsbox));
 }
