@@ -13,7 +13,7 @@ set(EDITAREA
     editarea/DiagnosticTool.cpp
     editarea/LangPanel.cpp
     editarea/DiagnosticPanel.cpp
-    editarea/Popovers.cpp
+    editarea/DiagnosticPopover.cpp
     editarea/SearchReplaceDialog.cpp
     editarea/EditArea.cpp
 )
@@ -59,6 +59,7 @@ add_library(${PROJECT_NAME} STATIC
     ${SETTINGPANEL}
     ${STYLE}
 
+    AppUI.cpp
     Gui_if.cpp
 )
 

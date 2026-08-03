@@ -6,11 +6,11 @@ this
 typedef
 default
 #Type
-auto int char class void enum bool unsigned long short struct
+auto int char class void enum bool unsigned long short struct double float
 #Value
 true false nullptr NULL
 #Modifier
-static const inline virtual extern friend template typename
+static const inline virtual extern friend template typename override
 #AreaModifier
 public private protected
 #SLCmt

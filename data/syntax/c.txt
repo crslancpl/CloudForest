@@ -5,7 +5,7 @@ clangd:#
 if else return while for continue break switch case do
 typedef default
 #Type
-auto bool int char void enum unsigned long short struct float
+auto bool int char void enum unsigned long short struct float double
 #Value
 true false NULL
 #Modifier

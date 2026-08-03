@@ -177,10 +177,10 @@ class LspClient:
         # self.stop_reading()
         if self.LSP.stdin is None:
             return
-        ContentLengthHeader = lsp_msg_writer.content_length_header(message)
-        # print(f"send message: {message}\n")
+        content_length_header = lsp_msg_writer.content_length_header(message)
+        # print(f"lsp_client_class send message: {message}\n")
         self.LSP.stdin.flush()
-        self.LSP.stdin.write(ContentLengthHeader.encode("utf-8"))
+        self.LSP.stdin.write(content_length_header.encode("utf-8"))
         self.LSP.stdin.flush()
         self.LSP.stdin.write(message.encode("utf-8"))
         self.LSP.stdin.flush()

@@ -61,12 +61,12 @@ HeaderBar::HeaderBar(AppUI& appui) :
     m_fileBut = GTK_MENU_BUTTON(gtk_builder_get_object(builder, "file-btn"));
     m_ideBut = GTK_BUTTON(gtk_builder_get_object(builder, "app-btn"));
     g_signal_connect(m_ideBut, "clicked",G_CALLBACK(OnIdeButtonClicked), this);
-    g_action_map_add_action_entries (G_ACTION_MAP (appui.gtkApp), app_entries, G_N_ELEMENTS (app_entries), appui.gtkApp);
+    g_action_map_add_action_entries (G_ACTION_MAP (appui.GetGtkApp()), app_entries, G_N_ELEMENTS (app_entries), appui.GetGtkApp());
 }
 
 
 void HeaderBar::IdeButtonClicked(){
-    m_appUI.settingPanel->Show();
+    m_appUI.GetSettingPanel()->Show();
 }
 
 GtkWidget *HeaderBar::GetBaseWidget(){

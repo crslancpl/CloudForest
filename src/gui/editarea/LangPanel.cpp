@@ -13,8 +13,6 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-static AppUI* app_ui = nullptr;
-
 typedef struct {
     LangPanel* parent;
     Language* lang;
@@ -27,13 +25,11 @@ static void OnLangChoosen(GtkButton* self, LangChoosenData* data){
     data->parent->LangChoosen(data->lang);
 }
 
-static void OnFocusLost(GtkEventControllerFocus* self, void* data){
-    if (app_ui) {
-        app_ui->langPanel->Hide();
-    }
+static void OnFocusLost(GtkEventControllerFocus* self, LangPanel* langpanel){
+    langpanel->Hide();
 }
 
-LangPanel::LangPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow())
+LangPanel::LangPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow())
     , m_appUI(appui)
     {
     /*
@@ -72,11 +68,4 @@ void LangPanel::ChooseFor(EditArea* target){
 
 void LangPanel::LangChoosen(Language* lang){
     m_target->SetLanguage(lang);
-}
-
-void OpenLangPanelForEditArea(EditArea *target){
-    if (!app_ui->langPanel) {
-        return;
-    }
-    app_ui->langPanel->ChooseFor(target);
 }

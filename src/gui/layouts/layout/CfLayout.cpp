@@ -15,8 +15,8 @@ static void SeparatorDragged(GtkGestureDrag* self, gdouble x, gdouble y, CfSepar
         return;
     }
 
-    GtkWidget* prevw = neighbors.prevContent->GetContentWidget();
-    GtkWidget* nextw = neighbors.nextContent->GetContentWidget();;
+    GtkWidget* prevw = neighbors.prevContent->GetBaseWidget();
+    GtkWidget* nextw = neighbors.nextContent->GetBaseWidget();;
     if(gtk_widget_get_width(prevw) + x <= 0 || gtk_widget_get_width(nextw) - x <= 0){
         return;
     }

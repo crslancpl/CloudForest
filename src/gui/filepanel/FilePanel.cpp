@@ -38,7 +38,7 @@ GtkWidget* WorkspaceBox::GetBaseWidget(){
 }
 
 static void OnNewWorkspace(Workspace* ws){
-    gui::GetFilePanel()->NewWorkspace(ws);
+    gui::GetCurrentUI().GetFilePanel()->NewWorkspace(ws);
 }
 
 /*
@@ -55,11 +55,12 @@ FilePanel::FilePanel(AppUI& appui){
     SetDefaultSize(270, 20);
     SetHorizontalExpand(false);
     SetVerticalExpand(true);
+    g_object_ref(m_workspaceArea);
     gtk_widget_set_hexpand(GTK_WIDGET(m_workspaceArea), true);
     gtk_widget_set_vexpand(GTK_WIDGET(m_workspaceArea), true);
     gtk_box_set_spacing(m_workspaceArea, 5);
     gtk_widget_add_css_class(GTK_WIDGET(m_workspaceArea), "ws-area");
-    SetContentWidget(GTK_WIDGET(m_workspaceArea));
+    this->SetContentWidget(GTK_WIDGET(m_workspaceArea));
     g_object_unref(builder);
 }
 

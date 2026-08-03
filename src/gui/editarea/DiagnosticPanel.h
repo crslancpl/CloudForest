@@ -21,10 +21,14 @@ public:
     DiagnosticPanelItem(const Diagnostic& diagnostic, DiagnosticPanel& parent);
     ~DiagnosticPanelItem();
 
+    // callback
+    void Clicked();
+
     GtkWidget * GetBaseWidget() override;
 
 private:
     DiagnosticPanel& m_parent;
+    const Diagnostic& m_diagnostic;
     GtkButton* m_button;
     GtkBox* m_box;
     GtkLabel* m_locationLabel;
@@ -39,6 +43,8 @@ public:
 
     void ShowFor(EditArea* target);
     void Clear();
+
+    void GotoDiagnostic(const Diagnostic& diag);
 
 private:
     EditArea *m_target;

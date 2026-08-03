@@ -1,9 +1,7 @@
 #include "Gui_if.h"
 
 #include "AppUI.h"
-#include "editarea/CompletionPopover.h"
 #include "editarea/DiagnosticPanel.h"
-#include "editarea/LangPanel.h"
 #include "filepanel/FilePanel.h"
 #include "headerbar/Headerbar.h"
 #include "windows/MainWindow.h"
@@ -11,14 +9,9 @@
 #include "style/Style.h"
 #include "src/App.h"
 #include "src/session/EditAreaData.h"
-#include "layouts/tab/CfTab_if.h"
-#include "layouts/tab/CfTabLayout.h"
-
-#include "editarea/CompletionTool.h"
 
 #include <cstdio>
 #include <gtk/gtk.h>
-#include <memory>
 
 static App* current_app;
 
@@ -27,33 +20,22 @@ static void AppActivated (GtkApplication *gtkapp, App* app){
     session::InitEditAreaData();
 
     AppUI& appui = current_app->appUI;
-
-    appui.mainWindow = std::make_unique<MainWindow>(appui);
-
-    std::unique_ptr<HeaderBar> headerbar = std::make_unique<HeaderBar>(appui);
-    appui.headerBar = headerbar.get();
-    std::unique_ptr<FilePanel> filepanel = std::make_unique<FilePanel>(appui);
-    appui.filePanel = filepanel.get();
-
-    appui.settingPanel = std::make_unique<SettingPanel>(appui);
-    appui.langPanel = std::make_unique<LangPanel>(appui);
-    appui.diagnosticPanel = std::make_unique<DiagnosticPanel>(appui);
-
-    appui.mainWindow->SetHeaderBar(std::move(headerbar));
-    appui.mainWindow->Insert(std::move(filepanel));
-
-    std::unique_ptr<CfTabLayout> tab = std::make_unique<CfTabLayout>();// freed on app closed
-    appui.mainWindow->Insert(std::move(tab));
+    appui.Start(gtkapp);
 
     session::EditNewFile();
-    app->appUI.mainWindow->Show();
+    appui.GetMainWindow()->Show();
 }
 
 static void AppClosed (GtkApplication *gtkapp, App* app){
+    app->appUI.Finalize();
     printf("\nGtk application closed\n");
 }
 
 namespace gui{
+
+AppUI& GetCurrentUI(){
+    return current_app->appUI;
+}
 
 int RunApp(int argc, char* argv[], App& app){
 #ifdef GTK_SRCDIR
@@ -61,57 +43,14 @@ int RunApp(int argc, char* argv[], App& app){
 #endif
     current_app = &app;
     AppUI& appui = current_app->appUI;
+    GtkApplication* gtkapp = gtk_application_new ("ide.cf", G_APPLICATION_NON_UNIQUE);
 
-    appui.gtkApp = gtk_application_new ("ide.cf", G_APPLICATION_NON_UNIQUE);
-
-    g_signal_connect(appui.gtkApp, "activate", G_CALLBACK (AppActivated), &app);
-    g_signal_connect(appui.gtkApp, "shutdown", G_CALLBACK(AppClosed), &app);
-
-    int status = g_application_run (G_APPLICATION (appui.gtkApp), argc, argv);// loop
-    g_object_unref (appui.gtkApp);
-
-    appui.mainWindow.reset();
-    appui.diagnosticPanel.reset();
-    appui.langPanel.reset();
-    appui.settingPanel.reset();
+    g_signal_connect(gtkapp, "activate", G_CALLBACK (AppActivated), &app);
+    g_signal_connect(gtkapp, "shutdown", G_CALLBACK(AppClosed), &app);
+    int status = g_application_run (G_APPLICATION (gtkapp), argc, argv);// loop
+    g_object_unref (gtkapp);
 
     return status;
-}
-
-MainWindow* GetMainWindow(){
-    return current_app->appUI.mainWindow.get();
-}
-
-FilePanel* GetFilePanel(){
-    return current_app->appUI.filePanel;
-}
-
-SettingPanel* GetSettingPanel(){
-    return current_app->appUI.settingPanel.get();
-}
-
-DiagnosticPanel* GetDiagnosticPanel(){
-    return current_app->appUI.diagnosticPanel.get();
-}
-
-LangPanel* GetLangPanel(){
-    return current_app->appUI.langPanel.get();
-}
-
-
-void TransferCompletionPopover(CompletionTool* newowner){
-    static CompletionTool* owner = nullptr;
-    static std::unique_ptr<CompletionPopover> popover;
-    if (owner) {
-        popover = owner->GetPopoverOwnership();
-    } else if (!popover) {
-        popover = std::make_unique<CompletionPopover>();
-    }
-
-    if (newowner) {
-        newowner->SetPopoverOwnership(std::move(popover));
-        owner = newowner;
-    }
 }
 
 }// namespace gui

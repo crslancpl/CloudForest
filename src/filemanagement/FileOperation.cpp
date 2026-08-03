@@ -86,6 +86,7 @@ static void OnFileDialogFolderSelected(GObject *source, GAsyncResult *result, vo
     for (EventCallback callback : event.GetCallbackSet()){
         ((LocationChoosenCallback)callback)(filedataraw);
     }
+
     session::NewWorkspace(std::move(filedata));
 }
 
@@ -112,7 +113,6 @@ static void OnFileSaved(GObject *source, GAsyncResult *result, void* data){
 
 void FileOperationInit(App& app){
     current_app = &app;
-    current_app->appUI.fileDialog = gtk_file_dialog_new();
 }
 
 namespace filemanager{
@@ -157,29 +157,33 @@ void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(Fil
             savedcallback
         };// free by OnFileSaved()
 
-        gtk_file_dialog_set_title(current_app->appUI.fileDialog, "Save file");
-        GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-        gtk_file_dialog_save(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileSaved, userdata);
+        AppUI& ui = current_app->appUI;
+        gtk_file_dialog_set_title(ui.GetFileDialog(), "Save file");
+        GtkWindow* parentGtkWindow = ui.GetMainWindow()->GetGtkWindow();
+        gtk_file_dialog_save(ui.GetFileDialog(), parentGtkWindow, nullptr, OnFileSaved, userdata);
     } else {
         WriteFile(filedata, content);
+        savedcallback(filedata);
     }
 }
 
 
 
 void ChooseFile(){
-    gtk_file_dialog_set_title(current_app->appUI.fileDialog, "choose a file");
+    AppUI& ui = current_app->appUI;
+    gtk_file_dialog_set_title(ui.GetFileDialog(), "choose a file");
     if (current_app == nullptr){
         return;
     }
-    GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-    gtk_file_dialog_open(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileDialogFileSelected, nullptr);
+    GtkWindow* parentGtkWindow = ui.GetMainWindow()->GetGtkWindow();
+    gtk_file_dialog_open(ui.GetFileDialog(), parentGtkWindow, nullptr, OnFileDialogFileSelected, nullptr);
 }
 
 void ChooseFolder(){
-    gtk_file_dialog_set_title(current_app->appUI.fileDialog, "Choose a folder");
-    GtkWindow* parentGtkWindow = current_app->appUI.mainWindow->GetGtkWindow();
-    gtk_file_dialog_select_folder(current_app->appUI.fileDialog, parentGtkWindow, nullptr, OnFileDialogFolderSelected, nullptr);
+    AppUI& ui = current_app->appUI;
+    gtk_file_dialog_set_title(ui.GetFileDialog(), "Choose a folder");
+    GtkWindow* parentGtkWindow = ui.GetMainWindow()->GetGtkWindow();
+    gtk_file_dialog_select_folder(ui.GetFileDialog(), parentGtkWindow, nullptr, OnFileDialogFolderSelected, nullptr);
 }
 
 }// namespace filemanager

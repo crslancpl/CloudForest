@@ -9,6 +9,7 @@
 #include "pythonbackend/editarea/editarea_class_Py.h"
 #include "toolset/event/Event.h"
 
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
@@ -16,9 +17,7 @@
 #include <mutex>
 
 // Forward declaration
-class DiagnosticPopover;
 class SearchReplaceDialog;
-typedef struct Diagnostic Diagnostic;
 typedef struct FileData FileData;
 typedef struct AppUI AppUI;
 
@@ -62,6 +61,8 @@ public:
     void ShowReplaceDialog();
     void Goto(const ZPosition& zpos);
 
+    GdkRectangle CalculatePositionRectangle(const ZPosition& zpos);
+
     //callbacks
     bool KeyInput(guint keyval, guint keycode, GdkModifierType state);
     void Unfocused();
@@ -89,7 +90,6 @@ private:
     std::unique_ptr<DiagnosticTool> m_diagnosticTool;
     std::unique_ptr<CompletionTool> m_completionTool;
 
-    DiagnosticPopover* m_diagnosticPopover;
     std::mutex m_mutex;
 
     bool m_isCurMovedByKey = false;

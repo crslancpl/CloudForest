@@ -3,10 +3,9 @@
 #include "SearchReplaceDialog.h"
 #include "LangPanel.h"
 #include "DiagnosticPanel.h"
-#include "Popovers.h"
 #include "datatypes/common.h"
-#include "datatypes/lsp.h"
 #include "datatypes/file.h"
+#include "AppUI.h"
 #include "Gui_if.h"
 #include "editarea/CompletionPopover.h"
 #include "editarea/CompletionTool.h"
@@ -47,55 +46,55 @@ typedef void (*CompletionRequestedCallback)(EditArea*, const ZPosition&);
 
 static EditArea *saving_editarea;// cache the edit area that is waiting for saving
 
-static bool OnKeyInput(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
+static bool on_key_input(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, EditArea* parent){
     return parent->KeyInput(keyval, keycode, state);
 }
 
-static void OnUnfocused(GtkEventControllerFocus* self, EditArea* parent){
+static void on_unfocused(GtkEventControllerFocus* self, EditArea* parent){
     parent->Unfocused();
 }
 
-static void OnMouseMoved(GtkEventControllerMotion* self, double x, double y, EditArea* parent){
+static void on_mouse_moved(GtkEventControllerMotion* self, double x, double y, EditArea* parent){
     parent->MouseMoved(x, y);
 }
 
-static void OnMouseClicked(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, EditArea* parent){
+static void on_mouse_clicked(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, EditArea* parent){
     parent->MouseClicked(n_press, x, y);
 }
 
-static void OnCursorMovedByKey(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
+static void on_cursor_moved_by_key(GtkTextView* self, GtkMovementStep* step, gint count, gboolean extend_selection, EditArea *parent){
     parent->CursorMovedByKey();
 }
 
-static void OnTextInserted(GtkTextBuffer* buffer, GtkTextIter* itr, char* text, long int length, EditArea* parent){
+static void on_text_inserted(GtkTextBuffer* buffer, GtkTextIter* itr, char* text, long int length, EditArea* parent){
     parent->TextInserted(itr, text, length);
 }
 
-static void OnTextDeleted (GtkTextBuffer* buffer, GtkTextIter* start, GtkTextIter* end, EditArea* parent){
+static void on_text_deleted (GtkTextBuffer* buffer, GtkTextIter* start, GtkTextIter* end, EditArea* parent){
     parent->TextDeleted(start, end);
 }
 
-static void OnTextChanged (GtkTextBuffer* buffer, EditArea* parent){
+static void on_text_changed (GtkTextBuffer* buffer, EditArea* parent){
     parent->TextChanged();
 }
 
-static void OnCursorPosChanged (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
+static void on_cursor_pos_changed (GtkTextBuffer *buffer, GParamSpec *pspec G_GNUC_UNUSED, EditArea *parent){
     parent->CursorPosChanged();
 }
 
-static void OnSaveButtonClicked(GtkButton *self, EditArea* parent){
+static void on_save_button_clicked(GtkButton *self, EditArea* parent){
     parent->Save();
 }
 
-static void OnLangButtonClicked(GtkButton *self, EditArea *parent){
+static void on_lang_button_clicked(GtkButton *self, EditArea *parent){
     parent->LangButtonClicked();
 }
 
-static void OnDiagnosticButtonClicked(GtkButton *self, EditArea *parent){
+static void on_diagnostic_button_clicked(GtkButton *self, EditArea *parent){
     parent->DiagnosticButtonClicked();
 }
 
-static void OnFileSaved(FileData* file){
+static void on_file_saved(FileData* file){
     saving_editarea->FileSaved(file);
     saving_editarea = nullptr;
 }
@@ -114,8 +113,6 @@ EditArea::EditArea(FileData* file){
 
     this->LoadGui();
     this->LoadFile(file);
-
-    m_diagnosticPopover = new DiagnosticPopover(m_textView);// freed on EditArea deleted
 
     m_completionTool = std::make_unique<CompletionTool>(*this);
 
@@ -222,23 +219,23 @@ void EditArea::LoadGui(){
 
 //private
 void EditArea::ConnectSignals(){
-    g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(OnKeyInput), this);
+    g_signal_connect(m_keyDownEventCtrl, "key-pressed", G_CALLBACK(on_key_input), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView),m_keyDownEventCtrl);
-    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(OnUnfocused), this);
+    g_signal_connect(m_focusEventCtrl, "leave", G_CALLBACK(on_unfocused), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_focusEventCtrl);
-    g_signal_connect(m_mouseMovedEventCtrl, "motion", G_CALLBACK(OnMouseMoved), this);
+    g_signal_connect(m_mouseMovedEventCtrl, "motion", G_CALLBACK(on_mouse_moved), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), m_mouseMovedEventCtrl);
-    g_signal_connect(m_mouseClickedGesture, "pressed", G_CALLBACK(OnMouseClicked), this);
+    g_signal_connect(m_mouseClickedGesture, "pressed", G_CALLBACK(on_mouse_clicked), this);
     gtk_widget_add_controller(GTK_WIDGET(m_textView), GTK_EVENT_CONTROLLER(m_mouseClickedGesture));
 
-    g_signal_connect(m_textView, "move-cursor", G_CALLBACK(OnCursorMovedByKey),this);
-    g_signal_connect(m_textViewBuffer, "insert-text", G_CALLBACK(OnTextInserted), this);
-    g_signal_connect(m_textViewBuffer, "delete-range", G_CALLBACK(OnTextDeleted), this);
-    g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(OnTextChanged), this);
-    g_signal_connect(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(OnCursorPosChanged),this);
-    g_signal_connect(m_saveBut, "clicked", G_CALLBACK(OnSaveButtonClicked), this);
-    g_signal_connect(m_langBut, "clicked", G_CALLBACK(OnLangButtonClicked), this);
-    g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(OnDiagnosticButtonClicked), this);
+    g_signal_connect(m_textView, "move-cursor", G_CALLBACK(on_cursor_moved_by_key),this);
+    g_signal_connect(m_textViewBuffer, "insert-text", G_CALLBACK(on_text_inserted), this);
+    g_signal_connect(m_textViewBuffer, "delete-range", G_CALLBACK(on_text_deleted), this);
+    g_signal_connect(m_textViewBuffer, "changed", G_CALLBACK(on_text_changed), this);
+    g_signal_connect(m_textViewBuffer, "notify::cursor-position",G_CALLBACK(on_cursor_pos_changed),this);
+    g_signal_connect(m_saveBut, "clicked", G_CALLBACK(on_save_button_clicked), this);
+    g_signal_connect(m_langBut, "clicked", G_CALLBACK(on_lang_button_clicked), this);
+    g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(on_diagnostic_button_clicked), this);
 }
 
 void EditArea::LoadCursorPos(){
@@ -360,7 +357,7 @@ void EditArea::Save(){
     const char* content = gtk_text_buffer_get_text(m_textViewBuffer, &m_startItr, &m_endItr, true);
 
     saving_editarea = this;
-    filemanager::SaveFile(m_editingFile, content, OnFileSaved);
+    filemanager::SaveFile(m_editingFile, content, on_file_saved);
 }
 
 void EditArea::Close(){
@@ -391,8 +388,23 @@ void EditArea::Goto(const ZPosition& zpos){
     GdkRectangle rec;
     gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, zpos.line, zpos.column);
     gtk_text_view_get_iter_location(m_textView, &itr, &rec);
-    gtk_adjustment_set_upper(m_vAdjustment, rec.y);
-    gtk_adjustment_set_lower(m_hAdjustment, rec.x);
+    gtk_adjustment_set_value(m_vAdjustment, rec.y);
+    gtk_adjustment_set_value(m_hAdjustment, rec.x);
+}
+
+GdkRectangle EditArea::CalculatePositionRectangle(const ZPosition& zpos){
+    GdkRectangle r;
+    GdkRectangle itrrec;
+    GtkTextIter itr;
+    gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, zpos.line, zpos.column);
+    gtk_text_view_get_iter_location(m_textView, &itr, &itrrec);
+    int hadj = gtk_adjustment_get_value(m_hAdjustment);
+    int vadj = gtk_adjustment_get_value(m_vAdjustment);
+    r.x = itrrec.x - hadj;
+    r.y = itrrec.y - vadj;
+    r.width = 0;
+    r.height = 40;
+    return r;
 }
 
 
@@ -462,12 +474,15 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
 
 void EditArea::Unfocused(){
     m_completionTool->HidePopover();
-    m_diagnosticPopover->Hide();
+    m_diagnosticTool->HidePopover();
 }
 
 void EditArea::MouseMoved(double x, double y){
     if (m_completionTool->GetIsShowing()) {
-        m_diagnosticPopover->Hide();
+        /*
+         * Prefer completion popover over diagnostic popover
+         */
+        m_diagnosticTool->HidePopover();
         return;
     }
 
@@ -475,30 +490,17 @@ void EditArea::MouseMoved(double x, double y){
     double adjy = gtk_adjustment_get_value(m_vAdjustment);
 
     gtk_text_view_get_iter_at_position(m_textView, &m_startItr, 0, x + adjx, y + adjy);
-    ZPosition zpos{
+    ZPosition mousezpos{
         .line = (unsigned int)gtk_text_iter_get_line(&m_startItr),
         .column = (unsigned int)gtk_text_iter_get_line_index(&m_startItr)
     };// should not be less than 0
 
-    Diagnostic* d = m_diagnosticTool->Find(zpos);
-
-    if(d){
-        if (d != m_diagnosticPopover->GetShowingDiagnostic()) {
-            GdkRectangle r;
-            GtkTextIter itr;
-            ZPosition& startpos = d->range.start;
-            gtk_text_buffer_get_iter_at_line_offset(m_textViewBuffer, &itr, startpos.line, startpos.column);
-            gtk_text_view_get_iter_location(m_textView, &itr, &r);
-            m_diagnosticPopover->Show(*d, r.x - adjx, r.y - adjy);
-        }
-    }else {
-        m_diagnosticPopover->Hide();
-    }
+    m_diagnosticTool->ShowPopover(mousezpos);
 }
 
 void EditArea::MouseClicked(int n_press, double x, double y){
     m_completionTool->HidePopover();
-    m_diagnosticPopover->Hide();
+    m_diagnosticTool->HidePopover();
 }
 
 void EditArea::CursorMovedByKey(){
@@ -606,11 +608,11 @@ void EditArea::FileSaved(FileData *filedata){
 }
 
 void EditArea::DiagnosticButtonClicked(){
-    gui::GetDiagnosticPanel()->ShowFor(this);
+    m_diagnosticTool->ShowPanel();
 }
 
 void EditArea::LangButtonClicked(){
-    gui::GetLangPanel()->ChooseFor(this);
+    gui::GetCurrentUI().GetLangPanel()->ChooseFor(this);
 }
 
 

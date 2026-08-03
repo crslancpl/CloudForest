@@ -15,12 +15,16 @@
 #include <string>
 #include <unordered_set>
 
+static void on_diagnostic_panel_item_clicked(GtkButton* self, DiagnosticPanelItem* item){
+    item->Clicked();
+}
+
 DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic, DiagnosticPanel& parent)
-    : m_parent(parent)
+    : m_parent(parent), m_diagnostic(diagnostic)
     {
     //
     ZPosition startpos = diagnostic.range.start;
-    std::string location = "> line " + std::to_string(startpos.line) + " col " + std::to_string(startpos.column);
+    std::string location = "> line " + std::to_string(startpos.line + 1) + " col " + std::to_string(startpos.column);
     m_locationLabel = GTK_LABEL(gtk_label_new(location.c_str()));
     gtk_label_set_xalign(m_locationLabel, 0);
     gtk_widget_add_css_class(GTK_WIDGET(m_locationLabel), "location-label");
@@ -36,6 +40,7 @@ DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic, Diagnosti
 
     m_button = GTK_BUTTON(gtk_button_new());
     gtk_button_set_child(m_button, GTK_WIDGET(m_box));
+    g_signal_connect(m_button, "clicked", G_CALLBACK(on_diagnostic_panel_item_clicked), this);
 
     switch (diagnostic.severity) {
         case 1:
@@ -59,8 +64,12 @@ DiagnosticPanelItem::~DiagnosticPanelItem(){
     //
 }
 
+void DiagnosticPanelItem::Clicked(){
+    m_parent.GotoDiagnostic(m_diagnostic);
+}
 
-DiagnosticPanel::DiagnosticPanel(AppUI& appui) : Flyout(appui.mainWindow->GetGtkWindow()){
+
+DiagnosticPanel::DiagnosticPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow()){
     gtk_widget_add_css_class(GTK_WIDGET(m_flyoutWindow), "diagnostic-panel");
     m_diagnItemBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 4));
 
@@ -96,9 +105,12 @@ void DiagnosticPanel::ShowFor(EditArea* target){
 
 void DiagnosticPanel::Clear(){
     for (const std::unique_ptr<DiagnosticPanelItem> &item : m_itemSet) {
-        //
         gtk_box_remove(m_diagnItemBox, item->GetBaseWidget());
     }
 
     m_itemSet.clear();
+}
+
+void DiagnosticPanel::GotoDiagnostic(const Diagnostic& diag){
+    m_target->Goto(diag.range.start);
 }

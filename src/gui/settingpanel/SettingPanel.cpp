@@ -55,7 +55,7 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     m_extensionPage = std::make_unique<ExtensionPage>();
     this->AddPage("Extension", m_extensionPage.get());
 
-    m_parentWindow = GTK_WINDOW(m_appUI.mainWindow->GetGtkWindow());
+    m_parentWindow = GTK_WINDOW(m_appUI.GetMainWindow()->GetGtkWindow());
 
     g_object_unref(builder);
 }
@@ -110,7 +110,7 @@ void SettingPanel::BindUI(GtkBuilder* builder){
 
 
     gtk_window_set_decorated(m_window, false);
-    gtk_window_set_transient_for(m_window, m_appUI.mainWindow->GetGtkWindow());
+    gtk_window_set_transient_for(m_window, m_appUI.GetMainWindow()->GetGtkWindow());
     gtk_widget_set_hexpand(GTK_WIDGET(m_tabButtonBox), false);
     gtk_widget_set_hexpand(GTK_WIDGET(m_stack), true);
 

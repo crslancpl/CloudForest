@@ -25,7 +25,7 @@ MainWindow::MainWindow(AppUI& appui) : Window(true){
     gtk_window_set_default_size(m_window, 1000, 600);
     gtk_window_set_hide_on_close(m_window, false);
 
-    gtk_application_add_window(appui.gtkApp, m_window);
+    gtk_application_add_window(appui.GetGtkApp(), m_window);
 }
 
 MainWindow::~MainWindow(){

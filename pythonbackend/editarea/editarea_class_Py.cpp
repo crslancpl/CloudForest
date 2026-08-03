@@ -315,7 +315,9 @@ static PyObject* py_EditArea_process_diagnostics(py_EditArea *self, PyObject *ar
         PyObject* range = PyDict_GetItemString(item, "range");
         diagnostic->range = GetZRangeFromPyDict(range);
         PyObject* code = PyDict_GetItemString(item, "code");
-        diagnostic->code = PyUnicode_AsUTF8(code);
+        if (code) {
+            diagnostic->code = PyUnicode_AsUTF8(code);
+        }
         PyObject* message = PyDict_GetItemString(item, "message");
         diagnostic->message = PyUnicode_AsUTF8(message);
         PyObject* severity = PyDict_GetItemString(item, "severity");

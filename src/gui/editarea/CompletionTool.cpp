@@ -1,5 +1,6 @@
 #include "CompletionTool.h"
 
+#include "AppUI.h"
 #include "EditArea.h"
 #include "CompletionPopover.h"
 #include "datatypes/lsp.h"
@@ -51,21 +52,19 @@ CompletionTool::CompletionTool(EditArea& parent):
 }
 
 CompletionTool::~CompletionTool(){
-    //
     if (m_completionPopover) {
-        gui::TransferCompletionPopover(nullptr);
+        gui::GetCurrentUI().TransferCompletionPopover(nullptr);
     }
 }
 
 void CompletionTool::Add(std::unique_ptr<Completion> completion){
     if (!m_completionPopover) {
-        gui::TransferCompletionPopover(this);
+        gui::GetCurrentUI().TransferCompletionPopover(this);
     }
     m_completionPopover->Add(std::move(completion));
 }
 
 void CompletionTool::Clear(){
-    //
     if (m_completionPopover) {
         m_completionPopover->Clear();
     }
@@ -85,7 +84,7 @@ void CompletionTool::Request(unsigned int line, unsigned int column){
 void CompletionTool::ShowPopover(){
     //
     if (!m_completionPopover) {
-        gui::TransferCompletionPopover(this);
+        gui::GetCurrentUI().TransferCompletionPopover(this);
     }
     m_completionPopover->Show(m_parent.GetCursorRectangle());
     m_isShowing = true;
