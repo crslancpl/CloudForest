@@ -11,6 +11,21 @@
 #include <gdk/gdk.h>
 #include <memory>
 
+const char* DiagnosticTool::StringifySeverity(int severity){
+    static const char* tags[5] = {
+        "unknown",// severity must not be 0
+        "error",
+        "warning",
+        "info",
+        "hint"
+    };
+    if (severity >=1 && severity <= 4) {
+        return tags[severity];
+    } else {
+        return tags[0];
+    }
+}
+
 DiagnosticTool::DiagnosticTool(EditArea& parent):
     m_parent(parent){
     //
@@ -57,16 +72,10 @@ void DiagnosticTool::Process(int version){
     char severityList[5] = {-1, 0, 0, 0, 0};
     // [0      , 1    , 2      , 3          , 4   ]
     // [Unknown, Error, Warning, Information, Hint]
-    static const char* tags[5] = {
-        "none",// severity must not be 0
-        "error",
-        "warning",
-        "info",
-        "hint"
-    };
 
     for (const std::unique_ptr<Diagnostic>& diagnostic : m_diagnosticsList) {
-        m_parent.ApplyTagByRange(&diagnostic->range, tags[diagnostic->severity]);
+        m_parent.ApplyTagByRange(&diagnostic->range,
+            DiagnosticTool::StringifySeverity(diagnostic->severity));
         severityList[diagnostic->severity] ++;
     }
 

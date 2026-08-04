@@ -1,4 +1,5 @@
 import json
+from threading import Lock
 from typing import Callable
 
 from cloudforest import editarea
@@ -8,6 +9,7 @@ from .lsp_request_method import LspRequestMethod
 
 class LspReader:
     def __init__(self):
+        self.thread_lock = Lock()
         self.request_dict: dict[str, tuple] = {}
 
     def add_request(self, id: str, type: LspRequestMethod, data: dict | None):
@@ -18,18 +20,18 @@ class LspReader:
         self.initialize_callback = callback
 
     def read(self, message: str):
-        content: dict = json.loads(message)
+        content: dict = {}
+        content = json.loads(message)
         id: int | str | None = content.get("id")
-        result: dict = {}
         # print(message)
         if id:
             # response
             match id:
                 case 1000:
                     # response for initialize message
-                    result = content.get("result", {})
+                    init_result: dict = content.get("result", {})
                     # print(f"result {result}\n")
-                    self.__as_initialize(result)
+                    self.__as_initialize(init_result)
 
                 case _:
                     tup: tuple[LspRequestMethod, dict | None] | None = (
@@ -38,16 +40,20 @@ class LspReader:
                     if tup:
                         match tup[0]:
                             case LspRequestMethod.COMPLETION:
-                                result = content.get("result", {})
+                                comp_result: dict | None = content.get("result")
                                 req_data = tup[1]
-                                self.__as_completion(result, req_data)
+                                if comp_result:
+                                    self.__as_completion(comp_result, req_data)
+                                else:
+                                    comp_error: dict | None = content.get("error")
+                                    if comp_error:
+                                        self.__as_completion_error(comp_error, req_data)
 
             return
 
         elif content.get("method"):
             method = content.get("method", "")
             params = content.get("params", {})
-
             match method:
                 case "window/showMessage":
                     self.__as_show_message(params)
@@ -68,6 +74,10 @@ class LspReader:
                 ea.clear_completion()
                 ea.show_completion(result)
 
+    def __as_completion_error(self, error: dict, req_data: dict | None):
+        print("lsp: completion error")
+        self.__as_error(error)
+
     def __as_error(self, params: dict):
         code: int | None = params.get("code")
         msg: str | None = params.get("message")
@@ -81,12 +91,10 @@ class LspReader:
         uri: str = params.get("uri", "file://")
         version = params.get("version", 0)
         path = str(uri).removeprefix("file://")
-
         # print(f"diagnostics: {path} version {version}")
         ea: editarea.EditArea | None = editarea.find_by_file_path(path)
         if not ea or not isinstance(ea, editarea.EditArea):
             return
-
         ea.process_diagnostic(diagnostics, version)
 
     def __as_show_message(self, params: dict):

@@ -51,7 +51,9 @@ exception:
 
 
 void End(){
-    RestoreThreadLock();
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     cloudforest_module_invoke_app_closed();
     if (Py_FinalizeEx() < 0) {
         exit(120);
@@ -59,7 +61,9 @@ void End(){
 }
 
 void RunEnabledExtensions(){
-    RestoreThreadLock();
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     const std::vector<std::unique_ptr<Extension>>& extensions = setting::GetAllExtensions();
 
     for(const std::unique_ptr<Extension>& ext : extensions){

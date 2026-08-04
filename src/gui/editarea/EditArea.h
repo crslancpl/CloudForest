@@ -42,7 +42,7 @@ public:
     void SetLanguage(Language* newlang) override;
 
     GtkTextView* GetTextView();
-    GdkRectangle* GetCursorRectangle();
+    const GdkRectangle &GetCursorRectangle();
 
     const FileData* GetFileData() const;
     const char* GetFilePath() const;

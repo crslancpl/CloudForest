@@ -24,17 +24,20 @@
 #include <modsupport.h>
 #include <object.h>
 #include <pytypedefs.h>
+#include <string>
+#include <sysmodule.h>
 #include <unicodeobject.h>
 
 /*
  * Callbacks
  */
 
-static void OnEditAreaClosed(EditArea *ea){
-    RestoreThreadLock();
+static void on_edit_area_closed(EditArea *ea){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -46,11 +49,12 @@ static void OnEditAreaClosed(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaCompletionRequested(EditArea *ea, const ZPosition& zpos){
-    RestoreThreadLock();
+static void on_edit_area_completion_requested(EditArea *ea, const ZPosition& zpos){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -61,11 +65,12 @@ static void OnEditAreaCompletionRequested(EditArea *ea, const ZPosition& zpos){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
-    RestoreThreadLock();
+static void on_edit_area_cursor_moved(EditArea *ea, const ZPosition &pos){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -76,11 +81,12 @@ static void OnEditAreaCursorMoved(EditArea *ea, const ZPosition &pos){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaFileDataChanged(EditArea *ea){
-    RestoreThreadLock();
+static void on_edit_area_file_data_changed(EditArea *ea){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -91,11 +97,12 @@ static void OnEditAreaFileDataChanged(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaFileSaved(EditArea *ea){
-    RestoreThreadLock();
+static void on_edit_area_file_saved(EditArea *ea){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -106,11 +113,12 @@ static void OnEditAreaFileSaved(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* newlang){
-    RestoreThreadLock();
+static void on_edit_area_lang_changed(EditArea *ea, Language* oldlang, Language* newlang){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -121,11 +129,12 @@ static void OnEditAreaLangChanged(EditArea *ea, Language* oldlang, Language* new
     ReleaseThreadLock();
 }
 
-static void OnEditAreaTextChanged(EditArea *ea){
-    RestoreThreadLock();
+static void on_edit_area_text_changed(EditArea *ea){
     py_EditArea* py_ea = ea->GetPyEditArea();
     if (py_ea == nullptr) {
-        ReleaseThreadLock();
+        return;
+    }
+    if (!TryRestoreThreadLock()) {
         return;
     }
     Py_INCREF(py_ea);
@@ -245,11 +254,12 @@ static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
     if (!PyList_Check(items)) {
         Py_RETURN_NAN;
     }
-
+    BlockRestoringThreadLock();
     int itemcount = PyList_GET_SIZE(items);
     comptool.Clear();
     if (itemcount == 0) {
         comptool.HidePopover();
+        AllowRestoringThreadLock();
         Py_RETURN_NONE;
     }
 
@@ -260,10 +270,28 @@ static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
         completion->label = PyUnicode_AsUTF8(label);
 
         PyObject* inserttext = PyDict_GetItemString(item, "insertText");
-        completion->insertText = PyUnicode_AsUTF8(inserttext);
+        if (inserttext) {
+            completion->insertText = PyUnicode_AsUTF8(inserttext);
+        }
 
         PyObject* kind = PyDict_GetItemString(item, "kind");
-        completion->itemKind = PyLong_AsLong(kind);
+        if (kind) {
+            completion->itemKind = PyLong_AsLong(kind);
+        }
+        PyObject* documentation = PyDict_GetItemString(item, "documentation");
+        if (documentation) {
+            if (PyDict_Check(documentation)) {
+                // markup content
+                PyObject* kind = PyDict_GetItemString(documentation, "kind");
+                std::string dockind = PyUnicode_AsUTF8(kind);
+                PyObject* value = PyDict_GetItemString(documentation, "value");
+                if (dockind == "plaintext") {
+                    completion->doc = PyUnicode_AsUTF8(value);
+                }
+            } else {
+                completion->doc = PyUnicode_AsUTF8(documentation);
+            }
+        }
 
         {
             PyObject* textedit = PyDict_GetItemString(item, "textEdit");
@@ -274,6 +302,7 @@ static PyObject* py_EditArea_show_completion(py_EditArea *self, PyObject *args){
     }
 
     comptool.ShowPopover();
+    AllowRestoringThreadLock();
     Py_RETURN_NONE;
 }
 
@@ -290,13 +319,12 @@ static PyObject* py_EditArea_hide_completion(py_EditArea *self, PyObject *args){
 static PyObject* py_EditArea_process_diagnostics(py_EditArea *self, PyObject *args){
     PyObject *diagnostics;// list
     int version;
-
     if (!PyArg_ParseTuple(args, "Oi", &diagnostics, &version)) {
         Py_RETURN_NAN;
     }
 
     if (!PyList_Check(diagnostics)) {
-        printf("diagnostics not a list\n");
+        printf("editarea_class_Py: diagnostics not a list\n");
         Py_RETURN_NAN;
     }
 
@@ -304,7 +332,7 @@ static PyObject* py_EditArea_process_diagnostics(py_EditArea *self, PyObject *ar
     diagtool.Clear();
 
     if (self->editarea->GetFileVersion() != version) {
-        printf("wrong version\n");
+        printf("editarea_class_Py: wrong version\n");
         Py_RETURN_NONE;
     }
 
@@ -379,17 +407,17 @@ PyTypeObject py_EditArea_class = {
 void py_EditArea_connect_events(py_EditArea* py_ea){
     //
     EditArea* ea = py_ea->editarea;
-    ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
-    ea->Listen(EditArea::COMPLETION_REQUESTED, (EventCallback)OnEditAreaCompletionRequested);
-    ea->Listen(EditArea::CURSOR_MOVED, (EventCallback)OnEditAreaCursorMoved);
-    ea->Listen(EditArea::FILE_DATA_CHANGED, (EventCallback)OnEditAreaFileDataChanged);
-    ea->Listen(EditArea::FILE_SAVED, (EventCallback)OnEditAreaFileSaved);
-    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)OnEditAreaLangChanged);
-    ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)OnEditAreaTextChanged);
+    ea->Listen(EditArea::CLOSED, (EventCallback)on_edit_area_closed);
+    ea->Listen(EditArea::COMPLETION_REQUESTED, (EventCallback)on_edit_area_completion_requested);
+    ea->Listen(EditArea::CURSOR_MOVED, (EventCallback)on_edit_area_cursor_moved);
+    ea->Listen(EditArea::FILE_DATA_CHANGED, (EventCallback)on_edit_area_file_data_changed);
+    ea->Listen(EditArea::FILE_SAVED, (EventCallback)on_edit_area_file_saved);
+    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)on_edit_area_lang_changed);
+    ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)on_edit_area_text_changed);
 }
 
 py_EditArea* py_EditArea_create_object(EditArea* ea){
-    RestoreThreadLock();
+    TryRestoreThreadLock();
     py_EditArea* py_ea = (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);
     py_ea->editarea = ea;
     py_ea->filePath = strdup(ea->GetFilePath());
@@ -399,7 +427,7 @@ py_EditArea* py_EditArea_create_object(EditArea* ea){
 
 PyTypeObject* PyInit_py_EditArea_class(){
     if(PyType_Ready(&py_EditArea_class)<0){
-        g_print("cannot build edit area python type\n");
+        printf("editarea_class_Py: cannot build edit area python type\n");
         return nullptr;
     }
     return &py_EditArea_class;

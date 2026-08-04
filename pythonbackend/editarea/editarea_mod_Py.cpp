@@ -126,7 +126,7 @@ void editarea_py_register(EditArea *ea){
      * instance of the cf_EditArea, so the python extension can
      * manipulate the edit area
      */
-    RestoreThreadLock();
+    TryRestoreThreadLock();
     py_EditArea *newEa = ea->GetPyEditArea();
 
     py_EditArea_connect_events(newEa);

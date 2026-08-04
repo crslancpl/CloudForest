@@ -83,6 +83,7 @@ void CompletionPopover::Clear(){
 
 void CompletionPopover::Hide(){
     gtk_popover_popdown(m_popover);
+    m_isShowing = false;
 }
 
 const Completion& CompletionPopover::SelectUp(){
@@ -129,9 +130,12 @@ void CompletionPopover::SetTarget(EditArea* ea){
     }
 }
 
-void CompletionPopover::Show(const GdkRectangle* cursorrec){
-    gtk_popover_set_pointing_to(m_popover, cursorrec);
-    gtk_popover_popup(m_popover);
+void CompletionPopover::Show(const GdkRectangle& cursorrec){
+    gtk_popover_set_pointing_to(m_popover, &cursorrec);
+    if (!m_isShowing) {
+        gtk_popover_popup(m_popover);
+        m_isShowing = true;
+    }
 }
 /*
 void CompletionPopover::Show(const GdkRectangle* cursorrec, const std::vector<std::unique_ptr<Completion>>& completions){

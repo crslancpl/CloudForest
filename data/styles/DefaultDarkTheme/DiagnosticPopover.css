@@ -1,0 +1,27 @@
+.diagnostic-popover {
+    background-color: rgb(30, 30, 30);
+    border-radius: 5px;
+    border: 2px solid;
+    font-size: 15px;
+    padding: 10px;
+}
+
+.diagnostic-popover.error {
+    color: rgb(200, 0, 0);
+    border-color: rgb(200, 0, 0);
+}
+
+.diagnostic-popover.warning {
+    color: rgb(200, 120, 0);
+    border-color: rgb(200, 120, 0);
+}
+
+.diagnostic-popover.info {
+    color: rgb(0, 200, 0);
+    border-color: rgb(0, 200, 0);
+}
+
+.diagnostic-popover.hint {
+    color: cyan;
+    border-color: cyan;
+}

@@ -21,8 +21,10 @@ static PythonEventMap event_map = {
     {EVENT_EXTENSION_ENABLED, PythonEvent()}
 };
 
-static void OnExtensionEnabled(Extension* extension){
-    RestoreThreadLock();
+static void on_extension_enabled(Extension* extension){
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(strdup(extension->folder)));
     PythonEvent &event = event_map.at(EVENT_EXTENSION_ENABLED);
     event.Invoke(args);
@@ -30,8 +32,10 @@ static void OnExtensionEnabled(Extension* extension){
     ReleaseThreadLock();
 }
 
-static void OnExtensionDisabled(Extension* extension){
-    RestoreThreadLock();
+static void on_extension_disabled(Extension* extension){
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(extension->folder));
     PythonEvent &event = event_map.at(EVENT_EXTENSION_DISABLED);
     event.Invoke(args);
@@ -95,8 +99,8 @@ static struct PyModuleDef setting_moddule = {
 };
 
 PyMODINIT_FUNC PyInit_setting_module(){
-    setting::Listen(setting::SETTING_EXTENSION_ENABLED, (EventCallback)OnExtensionEnabled);
-    setting::Listen(setting::SETTING_EXTENSION_DISABLED, (EventCallback)OnExtensionDisabled);
+    setting::Listen(setting::SETTING_EXTENSION_ENABLED, (EventCallback)on_extension_enabled);
+    setting::Listen(setting::SETTING_EXTENSION_DISABLED, (EventCallback)on_extension_disabled);
     PyObject *settingmodule = PyModule_Create(&setting_moddule);
     return settingmodule;
 }

@@ -37,8 +37,8 @@ static std::unordered_map<std::string, PythonEvent> event_map= {
     {EVENT_NEW_WORKSPACE, PythonEvent()}
 };
 
-static void OnNewWorkspace(Workspace* ws){
-    RestoreThreadLock();
+static void on_new_workspace(Workspace* ws){
+    TryRestoreThreadLock();
     PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->GetName()), PyUnicode_FromString(ws->GetFileData()->absoPath));
     PythonEvent &event = event_map.at(EVENT_NEW_WORKSPACE);
     event.Invoke(args);
@@ -124,7 +124,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     PyModule_AddObject(cfmodule, "setting", (PyObject*)PyInit_setting_module());
 
-    session::Listen(session::NEW_WORKSPACE, (EventCallback)OnNewWorkspace);
+    session::Listen(session::NEW_WORKSPACE, (EventCallback)on_new_workspace);
     return cfmodule;
 }
 

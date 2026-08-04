@@ -6,6 +6,7 @@
 #include "datatypes/lsp.h"
 #include "Gui_if.h"
 
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
@@ -41,7 +42,14 @@ bool CompletionTool::IsCompletionTriggerChar(char c){
     }
     return true;
 }
-
+/*
+const std::string& CompletionTool::GetCompletionItemKindAsString(COMPLETION_ITEM_KIND kind){
+    static std::vector<std::string> item_kinds = {
+        //
+    };
+    return item_kinds[(int)kind];
+}
+*/
 
 // non static
 
@@ -86,6 +94,7 @@ void CompletionTool::ShowPopover(){
     if (!m_completionPopover) {
         gui::GetCurrentUI().TransferCompletionPopover(this);
     }
+    //printf("completion version %i\n",m_parent.GetFileVersion());
     m_completionPopover->Show(m_parent.GetCursorRectangle());
     m_isShowing = true;
 }

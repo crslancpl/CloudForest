@@ -15,6 +15,7 @@ class EditArea;
 
 class DiagnosticTool{
 public:
+    static const char* StringifySeverity(int severity);
     DiagnosticTool(EditArea& parent);
     ~DiagnosticTool();
 

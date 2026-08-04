@@ -49,7 +49,7 @@ public:
 
     void SetTarget(EditArea* ea);
 
-    void Show(const GdkRectangle *cursorrec);
+    void Show(const GdkRectangle &cursorrec);
     //void Show(const GdkRectangle *cursorrec, const std::vector<std::unique_ptr<Completion>>& completions);
 
 private:
@@ -60,6 +60,8 @@ private:
     GtkScrolledWindow* m_scrolledWindow;
     GtkAdjustment* m_vAdjustment;
     GtkBox* m_box;
+
+    bool m_isShowing = false;
 
     double m_visibleRangeTop;
     double m_visibleRangeBottom;

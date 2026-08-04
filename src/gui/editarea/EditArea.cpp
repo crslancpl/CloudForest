@@ -23,6 +23,7 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -118,7 +119,8 @@ EditArea::EditArea(FileData* file){
 
     m_diagnosticTool = std::make_unique<DiagnosticTool>(*this);
     m_diagnosticTool->OnCleared([=](){
-        bool r = m_mutex.try_lock();
+        m_mutex.lock();
+
         m_currentDiagnosticRange.start.line = 0;
         m_currentDiagnosticRange.start.column = 0;
         m_currentDiagnosticRange.end.line = 0;
@@ -132,7 +134,8 @@ EditArea::EditArea(FileData* file){
     });
 
     m_diagnosticTool->OnUpdated([=](int error, int warning, int info, int hint){
-        bool r = m_mutex.try_lock();
+        m_mutex.lock();
+
         std::string s =
             "<span color=\"red\">e" +
             std::to_string(error) +
@@ -266,8 +269,8 @@ GtkTextView* EditArea::GetTextView(){
     return m_textView;
 }
 
-GdkRectangle* EditArea::GetCursorRectangle(){
-    return &m_cursorRec;
+const GdkRectangle &EditArea::GetCursorRectangle(){
+    return m_cursorRec;
 }
 
 const FileData* EditArea::GetFileData() const{
@@ -403,7 +406,7 @@ GdkRectangle EditArea::CalculatePositionRectangle(const ZPosition& zpos){
     r.x = itrrec.x - hadj;
     r.y = itrrec.y - vadj;
     r.width = 0;
-    r.height = 40;
+    r.height = 23;
     return r;
 }
 
@@ -508,7 +511,6 @@ void EditArea::CursorMovedByKey(){
 }
 
 void EditArea::TextInserted(GtkTextIter* itr, char* text, long int length){
-    m_fileVersion += 1;
     this->LoadCursorPos();
 
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, itr);
@@ -517,7 +519,6 @@ void EditArea::TextInserted(GtkTextIter* itr, char* text, long int length){
 }
 
 void EditArea::TextDeleted(GtkTextIter* start, GtkTextIter* end){
-    m_fileVersion += 1;
     this->LoadCursorPos();
 
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, start);
@@ -526,6 +527,7 @@ void EditArea::TextDeleted(GtkTextIter* start, GtkTextIter* end){
 }
 
 void EditArea::TextChanged(){
+    m_fileVersion += 2;
     if(isSaved == true){
         isSaved = false;
         gtk_button_set_label(m_saveBut, "Save");

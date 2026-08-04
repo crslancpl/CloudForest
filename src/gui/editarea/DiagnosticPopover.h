@@ -25,7 +25,7 @@ private:
     GtkLabel* m_messageLabel;
     GtkTextIter m_iter;// for getting rectangle
 
-    const Diagnostic* m_showingDiagnostic;
+    const Diagnostic* m_showingDiagnostic = nullptr;
 
     //from parent
     EditArea* m_target = nullptr;

@@ -117,17 +117,31 @@ void ExecuteFile(const std::string &path){
 /*
  * Threading
  */
-PyThreadState* thread_state;
+static bool is_allow_restore_lock = true;
+static PyThreadState* thread_state;
 void ReleaseThreadLock(){
     //printf("> GIL release thread\n");
     thread_state = PyEval_SaveThread();
 }
 
-void RestoreThreadLock(){
+bool TryRestoreThreadLock(){
     //printf("> GIL restore thread\n");
+    if (!is_allow_restore_lock) {
+        return false;
+    }
+
     if(!PyGILState_Check()){
         PyEval_RestoreThread(thread_state);
     }
+    return true;
+}
+
+void BlockRestoringThreadLock(){
+    is_allow_restore_lock = false;
+}
+
+void AllowRestoringThreadLock(){
+    is_allow_restore_lock = true;
 }
 
 void PrintGILState(){

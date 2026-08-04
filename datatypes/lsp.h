@@ -38,6 +38,7 @@ typedef struct Completion{
     std::string label;// text to be shown on suggestion
     std::string insertText;
     std::string description;
+    std::string doc;
     short itemKind;
     ZRange range;// where to insert the text
 }Completion;

@@ -4,6 +4,7 @@
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
 #include "components/Flyout.h"
+#include "editarea/DiagnosticTool.h"
 #include "editarea/EditArea.h"
 #include "Gui_if.h"
 #include "windows/MainWindow.h"
@@ -42,21 +43,9 @@ DiagnosticPanelItem::DiagnosticPanelItem(const Diagnostic& diagnostic, Diagnosti
     gtk_button_set_child(m_button, GTK_WIDGET(m_box));
     g_signal_connect(m_button, "clicked", G_CALLBACK(on_diagnostic_panel_item_clicked), this);
 
-    switch (diagnostic.severity) {
-        case 1:
-            gtk_widget_add_css_class(GTK_WIDGET(m_button), "error");
-            break;
-        case 2:
-            gtk_widget_add_css_class(GTK_WIDGET(m_button), "warning");
-            break;
-        case 3:
-            gtk_widget_add_css_class(GTK_WIDGET(m_button), "info");
-            break;
-        case 4:
-            gtk_widget_add_css_class(GTK_WIDGET(m_button), "hint");
-            break;
-        default:
-            break;
+    const std::string& sev = DiagnosticTool::StringifySeverity(diagnostic.severity);
+    if (sev != "unknown") {
+        gtk_widget_add_css_class(GTK_WIDGET(m_button), sev.c_str());
     }
 }
 

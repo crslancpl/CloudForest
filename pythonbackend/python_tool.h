@@ -39,7 +39,9 @@ PyThreadState* GetMainThreadState();
  * GIL
  */
 void ReleaseThreadLock();
-void RestoreThreadLock();
+bool TryRestoreThreadLock();// true if success
+void BlockRestoringThreadLock();
+void AllowRestoringThreadLock();
 void PrintGILState();
 
 PyObject* GetPyDictFromZRange(const ZRange &range);

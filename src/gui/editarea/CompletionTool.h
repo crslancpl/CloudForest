@@ -17,6 +17,7 @@ class EditArea;
 class CompletionTool{
 public:
     static bool IsCompletionTriggerChar(char c);
+    //static const std::string& GetCompletionItemKindAsString(COMPLETION_ITEM_KIND kind);
     static std::unordered_set<char> default_skip_char;
 
     CompletionTool(EditArea& parent);

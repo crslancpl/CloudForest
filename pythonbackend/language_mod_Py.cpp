@@ -28,8 +28,10 @@
 static PythonEventPtrMap lang_new_ea_event_map;
 static PythonEventPtrMap lang_used_callbacks_dict;
 
-void OnLanguageUsed(const Language* lang){
-    RestoreThreadLock();
+void on_language_used(const Language* lang){
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     auto itr = lang_used_callbacks_dict.find(lang->name);
     if(itr == lang_used_callbacks_dict.end()){
         return;
@@ -40,8 +42,10 @@ void OnLanguageUsed(const Language* lang){
     ReleaseThreadLock();
 }
 
-void OnNewEditArea(EditArea* ea){
-    RestoreThreadLock();
+void on_new_edit_area(EditArea* ea){
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
     auto itr = lang_new_ea_event_map.find(ea->GetLanguage()->name);
 
     if(itr == lang_new_ea_event_map.end()){
@@ -138,7 +142,7 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){
-        langgroup->Listen(LanguageGroup::ADDED, (EventCallback)OnNewEditArea);
+        langgroup->Listen(LanguageGroup::ADDED, (EventCallback)on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -159,7 +163,7 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){
-        langgroup->StopListen(LanguageGroup::ADDED, (EventCallback)OnNewEditArea);
+        langgroup->StopListen(LanguageGroup::ADDED, (EventCallback)on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -185,6 +189,6 @@ static struct PyModuleDef language_module = {
 
 PyMODINIT_FUNC PyInit_language_module(){
     PyObject *langmodule = PyModule_Create(&language_module);
-    session::Listen(session::LANGUAGE_USED, (EventCallback) OnLanguageUsed);
+    session::Listen(session::LANGUAGE_USED, (EventCallback) on_language_used);
     return langmodule;
 }
