@@ -81,8 +81,8 @@ const Language *TextArea::GetLanguage() const{
     return m_language;
 }
 
-void TextArea::SetLanguage(Language *newlang){
-    Language* oldlang = m_language;
+void TextArea::SetLanguage(const Language *newlang){
+    const Language* oldlang = m_language;
     m_language = newlang;
     //call callbacks
     const SimpleEvent &event = m_eventMap.at(TEXTAREA_CLASS_LANG_CHANGED);

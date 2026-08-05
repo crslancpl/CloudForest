@@ -1,0 +1,12 @@
+@import url("../app-style/main.css");
+
+@import url("completion-popover.css");
+@import url("diagnostic-popover.css");
+@import url("diagnostic-panel.css");
+@import url("edit-area.css");
+@import url("file-panel.css");
+@import url("header-bar.css");
+@import url("main-window.css");
+@import url("setting-panel.css");
+@import url("lang-panel.css");
+@import url("misc.css");

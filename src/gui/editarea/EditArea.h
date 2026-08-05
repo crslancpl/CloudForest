@@ -39,7 +39,7 @@ public:
     bool isSaved = true;
 
     //override
-    void SetLanguage(Language* newlang) override;
+    void SetLanguage(const Language* newlang) override;
 
     GtkTextView* GetTextView();
     const GdkRectangle &GetCursorRectangle();

@@ -16,7 +16,7 @@
 static App* current_app;
 
 static void AppActivated (GtkApplication *gtkapp, App* app){
-    style::LoadCssFolder("data/styles/DefaultDarkTheme");
+    style::LoadCssFolder("data/styles/default-dark");
     session::InitEditAreaData();
 
     AppUI& appui = current_app->appUI;

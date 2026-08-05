@@ -304,12 +304,12 @@ DiagnosticTool &EditArea::GetDiagnosticTool(){
     return *m_diagnosticTool;
 }
 
-void EditArea::SetLanguage(Language* newlang){
+void EditArea::SetLanguage(const Language* newlang){
     if (newlang == m_language) {
         return;
     }
 
-    Language* oldlang = m_language;
+    const Language* oldlang = m_language;
     m_language = newlang;
     gtk_button_set_label(m_langBut, m_language->name);
     syntaxprovider::FastHighlight(this);
