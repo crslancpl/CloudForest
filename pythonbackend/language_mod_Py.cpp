@@ -138,7 +138,7 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
 
     event->Connect(callback);
 
-    Language* lang = langmanager::FindByName(langname);
+    const Language* lang = langmanager::FindByName(langname);
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){
@@ -159,7 +159,7 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
         Py_RETURN_NAN;
     }
 
-    Language* lang = langmanager::FindByName(langname);
+    const Language* lang = langmanager::FindByName(langname);
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){

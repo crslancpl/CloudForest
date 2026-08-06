@@ -4,6 +4,7 @@
 #include "editarea/DiagnosticPanel.h"
 #include "layouts/tab/CfTabLayout.h"
 
+#include <cstdio>
 #include <gtk/gtk.h>
 #include <memory>
 
@@ -42,6 +43,18 @@ void AppUI::Start(GtkApplication* gtkapp){
 
 void AppUI::Finalize(){
     //
+    this->TransferCompletionPopover(nullptr);
+    m_completionPopover.reset();
+
+    this->TransferDiagnosticPopover(nullptr);
+    m_diagnosticPopover.reset();
+
+    this->TransferCompletionPopover(nullptr);
+    m_completionPopover.reset();
+
+    m_settingPanel.reset();
+    m_langPanel.reset();
+    m_mainWindow.reset();
 }
 
 MainWindow* AppUI::GetMainWindow(){

@@ -11,22 +11,8 @@
 #include "editarea/DiagnosticPanel.h"
 #include "editarea/LangPanel.h"
 
-
 #include <gtk/gtk.h>
 #include <memory>
-
-typedef struct AppUI_{
-    GtkApplication *gtkApp;
-    GtkFileDialog *fileDialog;// for filemanager;
-    std::unique_ptr<MainWindow> mainWindow;
-    std::unique_ptr<DiagnosticPanel> diagnosticPanel;
-    std::unique_ptr<SettingPanel> settingPanel;
-    std::unique_ptr<LangPanel> langPanel;
-
-    //borrow reference
-    HeaderBar* headerBar;
-    FilePanel* filePanel;
-} AppUI_;
 
 
 class AppUI{

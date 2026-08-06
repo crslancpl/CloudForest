@@ -17,10 +17,10 @@ void Init();
 void AddToLanguageList(std::unique_ptr<Language> lang);
 void ClearLanguageList();
 
-Language* FindByName(const char* langname);
-Language* FindByFileExtension(const char* filename);
+const Language* FindByName(const char* langname);
+const Language* FindByFileExtension(const char* filename);
 
-const std::unordered_map<std::string, Language*>& GetLanguageMap();
+const std::unordered_map<std::string, const Language*>& GetLanguageMap();
 
 enum Signal{
     LANG_MANAGER_NEW_LANG,

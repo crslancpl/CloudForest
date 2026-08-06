@@ -19,5 +19,6 @@ int main (int argc,char *argv[]){
     int status = gui::RunApp(argc, argv, app);// this runs a loop for GTK and shows the gui
 
     pybackend::End();
+
     return status;
 }

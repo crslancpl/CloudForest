@@ -116,7 +116,7 @@ LangPanel::LangPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow(
 
     this->SetChild(GTK_WIDGET(m_scrolledWindow));
 
-    const std::unordered_map<std::string, Language*>& langmap = langmanager::GetLanguageMap();
+    const std::unordered_map<std::string, const Language*>& langmap = langmanager::GetLanguageMap();
 
     for(auto namelangpair : langmap){
         this->AddLanguage(namelangpair.second);
