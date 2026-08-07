@@ -10,8 +10,8 @@ class CfContent;
 class CfTabLayout;
 class CfTabSwitcher;
 
-typedef void (CfTabLayout::*TabSwitchedCallback)(CfTabSwitcher*);
-typedef void (CfTabLayout::*TabClosedCallback)(CfTabSwitcher*);
+typedef void (CfTabLayout::*TabSwitchedCallback)(CfTabSwitcher&);
+typedef void (CfTabLayout::*TabClosedCallback)(CfTabSwitcher&);
 
 enum class TabSwitcherTypes:char{
     NONE,
@@ -21,7 +21,7 @@ enum class TabSwitcherTypes:char{
     VERTICAL_RIGHT
 };
 
-class CfTabSwitcher:public CfContent{
+class CfTabSwitcher : public CfContent{
 public:
     CfTabSwitcher(std::unique_ptr<CfContent> content);
     ~CfTabSwitcher();
@@ -33,6 +33,7 @@ public:
 
     void SetParent(CfTabLayout* parent);
     void SetText(const char *text);
+    void SetActive(bool active);// only affect style
     void Switch();
     void Close();
 

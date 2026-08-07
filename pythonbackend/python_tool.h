@@ -42,6 +42,9 @@ void ReleaseThreadLock();
 bool TryRestoreThreadLock();// true if success
 void BlockRestoringThreadLock();
 void AllowRestoringThreadLock();
+void PauseExtensionCall();
+void ResumeExtensionCall();
+bool GetIsExtensionPausedCall();
 void PrintGILState();
 
 PyObject* GetPyDictFromZRange(const ZRange &range);

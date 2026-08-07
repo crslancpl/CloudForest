@@ -79,6 +79,8 @@ void CompletionPopover::Clear(){
     }
 
     m_items.clear();
+    m_selectedItem = nullptr;
+    m_selectedItr = -1;
 }
 
 void CompletionPopover::Hide(){
@@ -86,7 +88,10 @@ void CompletionPopover::Hide(){
     m_isShowing = false;
 }
 
-const Completion& CompletionPopover::SelectUp(){
+std::optional<const Completion*> CompletionPopover::SelectUp(){
+    if (m_items.empty()) {
+        return {};
+    }
     if (m_selectedItem) {
         m_selectedItem->SetSelected(false);
     }
@@ -99,10 +104,15 @@ const Completion& CompletionPopover::SelectUp(){
     m_selectedItem = m_items[m_selectedItr].get();
     m_selectedItem->SetSelected(true);
     this->ScrollToSelected();
-    return m_selectedItem->GetCompletion();
+
+    return &m_selectedItem->GetCompletion();
 }
 
-const Completion& CompletionPopover::SelectDown(){
+std::optional<const Completion*> CompletionPopover::SelectDown(){
+    if (m_items.empty()) {
+        return {};
+    }
+
     if (m_selectedItem) {
         m_selectedItem->SetSelected(false);
     }
@@ -115,7 +125,7 @@ const Completion& CompletionPopover::SelectDown(){
     m_selectedItem = m_items[m_selectedItr].get();
     m_selectedItem->SetSelected(true);
     this->ScrollToSelected();
-    return m_selectedItem->GetCompletion();
+    return &m_selectedItem->GetCompletion();
 }
 
 const Completion& CompletionPopover::Confirm(){

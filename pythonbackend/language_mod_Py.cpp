@@ -36,7 +36,7 @@ void on_language_used(const Language* lang){
     if(itr == lang_used_callbacks_dict.end()){
         return;
     }
-    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(lang->name));
+    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(lang->name.c_str()));
     itr->second->Invoke(args);
     Py_DECREF(args);
     ReleaseThreadLock();

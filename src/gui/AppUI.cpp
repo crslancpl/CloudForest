@@ -49,8 +49,8 @@ void AppUI::Finalize(){
     this->TransferDiagnosticPopover(nullptr);
     m_diagnosticPopover.reset();
 
-    this->TransferCompletionPopover(nullptr);
-    m_completionPopover.reset();
+    this->TransferDiagnosticPanel(nullptr);
+    m_diagnosticPanel.reset();
 
     m_settingPanel.reset();
     m_langPanel.reset();

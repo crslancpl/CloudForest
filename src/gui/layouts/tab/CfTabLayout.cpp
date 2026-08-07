@@ -4,6 +4,7 @@
 #include "CfTab_if.h"
 #include "src/session/TabData.h"
 
+#include <cstdio>
 #include <gtk/gtk.h>
 #include <memory>
 #include <utility>
@@ -27,25 +28,18 @@ CfTabLayout::~CfTabLayout(){
     //
 }
 
-void CfTabLayout::Add(std::unique_ptr<CfContent> content){
+CfTabSwitcher& CfTabLayout::Add(std::unique_ptr<CfContent> content){
     //
     std::unique_ptr<CfTabSwitcher> newswitcher = std::make_unique<CfTabSwitcher>(std::move(content));
+    CfTabSwitcher* raw = newswitcher.get();
     newswitcher->SetParent(this);
     newswitcher->OnClose(&CfTabLayout::ChildSwitcherClosed);
-    newswitcher->OnSwitch(&CfTabLayout::ChildSwitcherSwitched);
+    newswitcher->OnSwitch(&CfTabLayout::SwitchTo);
     gtk_box_append(m_switcherArea, GTK_WIDGET(newswitcher->GetBaseWidget()));
     gtk_stack_add_child(m_stack, newswitcher->GetContent()->GetBaseWidget());
     //content.SetParent(this);
     m_childList.emplace_back(std::move(newswitcher));
-}
-
-void CfTabLayout::Show(CfContent& content){
-    GtkStackPage* page = gtk_stack_get_page(m_stack, content.GetBaseWidget());
-    if (page == nullptr) {
-        return;
-    }
-
-    gtk_stack_set_visible_child(m_stack, content.GetBaseWidget());
+    return *raw;
 }
 
 void CfTabLayout::Remove(CfContent& content, CfTabSwitcher& switcher){
@@ -62,16 +56,34 @@ void CfTabLayout::Remove(CfContent& content, CfTabSwitcher& switcher){
     }
 }
 
+void CfTabLayout::Show(CfContent& content){
+    GtkStackPage* page = gtk_stack_get_page(m_stack, content.GetBaseWidget());
+    if (page == nullptr) {
+        return;
+    }
+
+    gtk_stack_set_visible_child(m_stack, content.GetBaseWidget());
+}
+
+void CfTabLayout::SwitchTo(CfTabSwitcher &switcher){
+    GtkStackPage* page = gtk_stack_get_page(m_stack, switcher.GetContent()->GetBaseWidget());
+    if (page == nullptr) {
+        return;
+    }
+
+    if (m_activeSwitcher) {
+        m_activeSwitcher->SetActive(false);
+    }
+    gtk_stack_set_visible_child(m_stack, switcher.GetContent()->GetBaseWidget());
+    switcher.SetActive(true);
+    m_activeSwitcher = &switcher;
+}
+
 /*
  * Private
  */
 
-void CfTabLayout::ChildSwitcherClosed(CfTabSwitcher* switcher){
+void CfTabLayout::ChildSwitcherClosed(CfTabSwitcher& switcher){
     //
-    this->Remove(*switcher->GetContent(), *switcher);
-}
-
-void CfTabLayout::ChildSwitcherSwitched(CfTabSwitcher* switcher){
-    //
-    this->Show(*switcher->GetContent());
+    this->Remove(*switcher.GetContent(), switcher);
 }

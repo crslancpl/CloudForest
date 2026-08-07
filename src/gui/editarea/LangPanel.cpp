@@ -40,11 +40,11 @@ LangPanelItem::LangPanelItem(const Language& lang):m_lang(lang){
     GtkBox *box2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     gtk_box_append(box1, GTK_WIDGET(box2));
 
-    m_nameLabel = GTK_LABEL(gtk_label_new(lang.name));
+    m_nameLabel = GTK_LABEL(gtk_label_new(lang.name.c_str()));
     gtk_widget_add_css_class(GTK_WIDGET(m_nameLabel), "name-label");
     gtk_box_append(box2, GTK_WIDGET(m_nameLabel));
 
-    m_idLabel = GTK_LABEL(gtk_label_new(lang.id));
+    m_idLabel = GTK_LABEL(gtk_label_new(lang.id.c_str()));
     gtk_widget_add_css_class(GTK_WIDGET(m_idLabel), "id-label");
     gtk_box_append(box2, GTK_WIDGET(m_idLabel));
 

@@ -47,7 +47,6 @@ public:
     const FileData* GetFileData() const;
     const char* GetFilePath() const;
     const unsigned int GetFileVersion() const;
-    const Difference &GetPendingDiff() const;
 
     py_EditArea *GetPyEditArea();
     CompletionTool &GetCompletionTool();
@@ -60,6 +59,7 @@ public:
     void ShowSearchDialog();
     void ShowReplaceDialog();
     void Goto(const ZPosition& zpos);
+    void NewLine();
 
     GdkRectangle CalculatePositionRectangle(const ZPosition& zpos);
 

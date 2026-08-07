@@ -39,7 +39,7 @@ typedef struct ORange{
 typedef struct Difference{
     ZRange before;
     ZRange after;
-    char* text;
+    std::string text;
 } Difference;
 
 
@@ -48,10 +48,10 @@ typedef struct Difference{
  */
 
 typedef struct Language {
-    const char* name;
-    const char* id;
+    std::string name;
+    std::string id;
     std::unordered_set<std::string> fileExtensions;
-    const char* syntaxTemplateFile;
+    std::string syntaxTemplateFile;
     bool used = false;
 } Language;
 

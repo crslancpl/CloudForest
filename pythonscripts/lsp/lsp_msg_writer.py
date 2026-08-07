@@ -156,7 +156,7 @@ def did_close_notification(ea: editarea.EditArea):
 
 
 def did_change_message(
-    path: str, range: dict, changed_text: str, version: int, langid: str
+    path: str, content_changes: list[dict], version: int, langid: str
 ) -> str:
     did_change = {
         "jsonrpc": "2.0",
@@ -167,7 +167,7 @@ def did_change_message(
                 "languageId": langid,
                 "version": version,
             },
-            "contentChanges": [{"range": range, "text": changed_text}],
+            "contentChanges": content_changes,
         },
     }
     return json.dumps(did_change)

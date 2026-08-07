@@ -29,9 +29,6 @@
  * Module
  */
 
-// lists
-static PyObject *registered_editareas = nullptr;
-
 static PythonEventMap event_map = {
     {EVENT_LANGUAGE_CHANGED, PythonEvent()},
     {EVENT_NEW_EDITAREA, PythonEvent()}
@@ -66,7 +63,9 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
     if(!ea){
         Py_RETURN_NONE;
     }
+    //printf("found edit area %s\n", ea->GetFilePath());
     PyObject* ea_py = (PyObject*)ea->GetPyEditArea();
+    //printf("ea_py ptr %p\n", ea_py);
     return  ea_py;
 }
 
@@ -127,26 +126,21 @@ void editarea_py_register(EditArea *ea){
      * manipulate the edit area
      */
     TryRestoreThreadLock();
-    py_EditArea *newEa = ea->GetPyEditArea();
+    py_EditArea *py_ea = ea->GetPyEditArea();
 
-    py_EditArea_connect_events(newEa);
+    py_EditArea_connect_events(py_ea);
     // we are trying to make filepath a variable
-    PyObject *filepath = PyUnicode_FromString(ea->GetFilePath());
-    PyObject *args = PyTuple_Pack(1, newEa);
-    PyList_Append(registered_editareas, (PyObject*)newEa);
+    PyObject *args = PyTuple_Pack(1, py_ea);
 
     PythonEvent &event = event_map.at(EVENT_NEW_EDITAREA);
     event.Invoke(args);
 
-    Py_DECREF(filepath);
     Py_DECREF(args);
 
     ReleaseThreadLock();
 }
 
 PyMODINIT_FUNC PyInit_editarea_module(){
-    registered_editareas = PyList_New(0);
-
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());

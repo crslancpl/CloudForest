@@ -28,7 +28,8 @@ CfTabSwitcher::CfTabSwitcher(std::unique_ptr<CfContent> content):
     gtk_widget_set_size_request(GTK_WIDGET(m_switchButton), 50, 15);
     gtk_widget_set_size_request(GTK_WIDGET(m_closeButton), 15, 15);
 
-    gtk_widget_add_css_class(GTK_WIDGET(m_baseBox), "switcher-base-box");
+    gtk_widget_add_css_class(GTK_WIDGET(m_baseBox), "tab-switcher");
+    gtk_widget_add_css_class(GTK_WIDGET(m_closeButton), "close-btn");
 
     gtk_box_append(m_baseBox, GTK_WIDGET(m_switchButton));
     gtk_box_append(m_baseBox, GTK_WIDGET(m_closeButton));
@@ -61,12 +62,20 @@ void CfTabSwitcher::SetText(const char *text){
     gtk_button_set_label(m_switchButton, text);
 }
 
+void CfTabSwitcher::SetActive(bool active){
+    if (active) {
+        gtk_widget_add_css_class(GTK_WIDGET(m_baseBox), "active");
+    } else {
+        gtk_widget_remove_css_class(GTK_WIDGET(m_baseBox), "active");
+    }
+}
+
 void CfTabSwitcher::Switch(){
-    (m_parent->*m_switchedCallback)(this);
+    (m_parent->*m_switchedCallback)(*this);
 }
 
 void CfTabSwitcher::Close(){
-    (m_parent->*m_closedCallback)(this);
+    (m_parent->*m_closedCallback)(*this);
 }
 
 void CfTabSwitcher::OnClose(TabClosedCallback callback){

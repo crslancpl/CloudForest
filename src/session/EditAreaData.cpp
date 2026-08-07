@@ -6,6 +6,7 @@
 #include "editarea/CompletionTool.h"
 #include "editarea/EditArea.h" // for EditArea
 #include "layouts/tab/CfTabLayout.h"
+#include "layouts/tab/CfTabSwitcher.h"
 #include "src/filemanagement/FileCallback.h"
 #include "src/filemanagement/FileOperation.h"
 #include "src/languages/LanguageGroup.h"
@@ -174,8 +175,8 @@ void EditNewFile(){
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
-        tablayout->Add(std::move(neweditarea));
-        tablayout->Show(*ea);
+        CfTabSwitcher& switcher = tablayout->Add(std::move(neweditarea));
+        tablayout->SwitchTo(switcher);
         session::SetFocusedEditArea(ea);
     }
 }
@@ -195,8 +196,8 @@ void EditFile(FileData *file){
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
     if(tablayout){
-        tablayout->Add(std::move(neweditarea));
-        tablayout->Show(*ea);
+        CfTabSwitcher& switcher = tablayout->Add(std::move(neweditarea));
+        tablayout->SwitchTo(switcher);
         session::SetFocusedEditArea(ea);
     }
 }

@@ -1,6 +1,7 @@
 import re
 import shutil
 import subprocess
+import sys
 
 import cloudforest
 from cloudforest import editarea, language
@@ -68,6 +69,7 @@ class LspClient:
                 f'lsp_client_class: Language server "{self.lsp_command[0]}" not found.'
             )
             return False
+
         self.LSP = subprocess.Popen(
             self.lsp_command,
             stdin=subprocess.PIPE,
@@ -101,6 +103,7 @@ class LspClient:
         self.send(lsp_msg_writer.new_workspace_notification(name, path))
 
     def listen_editarea(self, ea: editarea.EditArea):
+        # print(f"listen edit area ref count {sys.getrefcount(ea)}")
         path = ea.get_file_path()
         version = ea.get_file_version()
         message = lsp_msg_writer.did_open_message(ea, self.language_id)
@@ -130,6 +133,11 @@ class LspClient:
     def __editarea_closed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_close_notification(ea)
         self.send(message)
+        ea.rm_callback("text-changed", self.__editarea_text_changed)
+        ea.rm_callback("lang-changed", self.__editarea_lang_changed)
+        ea.rm_callback("file-saved", self.__editarea_file_saved)
+        ea.rm_callback("closed", self.__editarea_closed)
+        ea.rm_callback("completion-requested", self.__editarea_completion_requested)
 
     def __editarea_completion_requested(
         self, ea: editarea.EditArea, line: int, column: int
@@ -139,6 +147,7 @@ class LspClient:
         self.lsp_reader.add_request(id, LspRequestMethod.COMPLETION, req_data)
         message = lsp_msg_writer.completion_message(id, line, column)
         self.send(message)
+        print(f"completion requested {sys.getrefcount(ea)}")
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:
@@ -151,19 +160,19 @@ class LspClient:
         ea.rm_callback("closed", self.__editarea_closed)
 
     def __editarea_text_changed(
-        self, ea: editarea.EditArea, range, changed_text, version
+        self, ea: editarea.EditArea, content_changes: list[dict], version
     ):
         path = ea.get_file_path()
         self.file_version_dict[path] = version
         message = lsp_msg_writer.did_change_message(
             path,
-            range,
-            changed_text,
+            content_changes,
             version,
             self.language_id,
         )
 
         self.send(message)
+        print(f"text changed {sys.getrefcount(ea)}")
 
     def __editarea_file_saved(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_save_notification(ea)

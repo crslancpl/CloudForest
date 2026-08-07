@@ -1,4 +1,5 @@
 import json
+import sys
 from threading import Lock
 from typing import Callable
 
@@ -74,9 +75,12 @@ class LspReader:
                 ea.clear_completion()
                 ea.show_completion(result)
 
+        req_data = None
+
     def __as_completion_error(self, error: dict, req_data: dict | None):
         print("lsp: completion error")
         self.__as_error(error)
+        req_data = None
 
     def __as_error(self, params: dict):
         code: int | None = params.get("code")
@@ -93,6 +97,8 @@ class LspReader:
         path = str(uri).removeprefix("file://")
         # print(f"diagnostics: {path} version {version}")
         ea: editarea.EditArea | None = editarea.find_by_file_path(path)
+
+        print(f"publish diag ref count {sys.getrefcount(ea)}")
         if not ea or not isinstance(ea, editarea.EditArea):
             return
         ea.process_diagnostic(diagnostics, version)

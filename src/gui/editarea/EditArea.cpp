@@ -23,7 +23,6 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
-#include <cstdio>
 #include <cstring>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -38,6 +37,7 @@
  */
 
 typedef void (*EditAreaBasicCallback)(EditArea*);
+typedef void (*EditAreaTextChangedCallback)(EditArea*, const Difference&) ;
 typedef void (*EditAreaLangChangedCallback)(EditArea*,Language*,Language*);
 typedef void (*CompletionRequestedCallback)(EditArea*, const ZPosition&);
 
@@ -182,7 +182,7 @@ EditArea::~EditArea(){
     for (EventCallback callback : event.GetCallbackSet()) {
         ((EditAreaBasicCallback)callback)(this);
     }
-
+    m_py_EditArea = nullptr;
     m_editingFile->editArea = nullptr;
 }
 
@@ -288,10 +288,6 @@ const unsigned int EditArea::GetFileVersion() const{
     return m_fileVersion;
 }
 
-const Difference &EditArea::GetPendingDiff() const{
-    return m_pendingDif;
-}
-
 py_EditArea *EditArea::GetPyEditArea(){
     return m_py_EditArea;
 }
@@ -311,7 +307,7 @@ void EditArea::SetLanguage(const Language* newlang){
 
     const Language* oldlang = m_language;
     m_language = newlang;
-    gtk_button_set_label(m_langBut, m_language->name);
+    gtk_button_set_label(m_langBut, m_language->name.c_str());
     syntaxprovider::FastHighlight(this);
 
     //call callbacks
@@ -395,6 +391,32 @@ void EditArea::Goto(const ZPosition& zpos){
     gtk_adjustment_set_value(m_hAdjustment, rec.x);
 }
 
+void EditArea::NewLine(){
+    /*
+     * m_cursorItr should be the end of line
+     */
+    GtkTextIter* linestart = gtk_text_iter_copy(&m_cursorItr);
+    gtk_text_iter_set_line_offset(linestart, 0);
+    const char *text = gtk_text_iter_get_text(linestart, &m_cursorItr);
+    int i = -1;
+    char c;
+    do {
+        i ++;
+        c = text[i];
+    } while (c == ' ');
+
+    this->InsertAtCursor("\n");
+
+    if (i > 0) {
+        char indent[i];
+        for (char &space : indent) {
+            space = ' ';
+        }
+        indent[i] = '\0';
+        this->InsertAtCursor(indent);
+    }
+}
+
 GdkRectangle EditArea::CalculatePositionRectangle(const ZPosition& zpos){
     GdkRectangle r;
     GdkRectangle itrrec;
@@ -455,6 +477,9 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
         case GDK_KEY_Down:
             m_completionTool->SelectDown();
             return true;
+        case GDK_KEY_Left:
+        case GDK_KEY_Right:
+            m_completionTool->HidePopover();
         }
     }
 
@@ -466,6 +491,9 @@ bool EditArea::KeyInput(guint keyval, guint keycode, GdkModifierType state){
         switch (keyval) {
         case GDK_KEY_Tab:
             this->InsertAtCursor("    ");
+            return true;
+        case GDK_KEY_Return:
+            this->NewLine();
             return true;
         default:
             break;
@@ -512,22 +540,26 @@ void EditArea::CursorMovedByKey(){
 
 void EditArea::TextInserted(GtkTextIter* itr, char* text, long int length){
     this->LoadCursorPos();
+    //std::unique_ptr<Difference> dif = std::make_unique<Difference>();
 
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, itr);
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.end, itr);
     m_pendingDif.text = text;
+    //m_pendingDif.push_back(std::move(dif));
 }
 
 void EditArea::TextDeleted(GtkTextIter* start, GtkTextIter* end){
     this->LoadCursorPos();
+    //std::unique_ptr<Difference> dif = std::make_unique<Difference>();
 
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.start, start);
     tools::GetZPosFromGtkTextIter(m_pendingDif.before.end, end);
-    m_pendingDif.text = strdup("");
+    m_pendingDif.text = "";
+    //m_pendingDif.push_back(std::move(dif));
 }
 
 void EditArea::TextChanged(){
-    m_fileVersion += 2;
+    m_fileVersion += 1;
     if(isSaved == true){
         isSaved = false;
         gtk_button_set_label(m_saveBut, "Save");
@@ -539,7 +571,7 @@ void EditArea::TextChanged(){
     syntaxprovider::FastHighlight(this);
     SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
+        ((EditAreaTextChangedCallback)callback)(this, m_pendingDif);
     }
 
     this->LoadCursorPos();

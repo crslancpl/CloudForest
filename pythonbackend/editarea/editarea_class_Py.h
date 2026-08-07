@@ -19,7 +19,6 @@ class EditArea;
  */
 typedef struct py_EditArea{
     PyObject_HEAD;
-    char* filePath;
     EditArea *editarea;
     PythonEventMap *eventMap;
 }py_EditArea;

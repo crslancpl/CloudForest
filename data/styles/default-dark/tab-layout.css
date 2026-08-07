@@ -1,0 +1,43 @@
+.tab-switcher {
+    background-image: none;
+    background-color: black;
+}
+
+.tab-switcher:hover {
+    border: deepskyblue 2px solid;
+}
+
+.tab-switcher button {
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.tab-switcher.saved {
+    color: white;
+    border: none;
+}
+
+.tab-switcher.unsave {
+    color: red;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.tab-switcher.active {
+    border: white solid 2px;
+}
+
+.tab-switcher .close-btn {
+    color: white;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.tab-switcher .close-btn:hover {
+    color: red;
+    background-image: none;
+    background-color: transparent;
+}

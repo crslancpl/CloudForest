@@ -15,9 +15,11 @@ public:
     CfTabLayout();
     ~CfTabLayout();
 
-    void Add(std::unique_ptr<CfContent> content);
-    void Show(CfContent& content);
+    CfTabSwitcher& Add(std::unique_ptr<CfContent> content);
     void Remove(CfContent& content, CfTabSwitcher& switcher);
+
+    void Show(CfContent& content);
+    void SwitchTo(CfTabSwitcher& switcher);
 
 private:
     std::unordered_map<CfContent*, CfTabSwitcher*> m_switcherMap;
@@ -27,9 +29,9 @@ private:
     GtkStack *m_stack;
     GtkScrolledWindow *m_switcherScrolledWindow;
     GtkBox *m_switcherArea;
+    CfTabSwitcher* m_activeSwitcher = nullptr;
 
-    void ChildSwitcherClosed(CfTabSwitcher* switcher);
-    void ChildSwitcherSwitched(CfTabSwitcher* switcher);
+    void ChildSwitcherClosed(CfTabSwitcher& switcher);
 };
 
 #endif

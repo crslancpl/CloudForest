@@ -14,6 +14,7 @@
 #include <pystate.h>
 #include <pytypedefs.h>
 #include <string>
+#include <sys/stat.h>
 #include <unicodeobject.h>
 
 
@@ -118,6 +119,7 @@ void ExecuteFile(const std::string &path){
  * Threading
  */
 static bool is_allow_restore_lock = true;
+static bool is_extension_call_paused = false;
 static PyThreadState* thread_state;
 void ReleaseThreadLock(){
     //printf("> GIL release thread\n");
@@ -137,11 +139,27 @@ bool TryRestoreThreadLock(){
 }
 
 void BlockRestoringThreadLock(){
+    //printf("block thread lock\n");
     is_allow_restore_lock = false;
 }
 
 void AllowRestoringThreadLock(){
+    //printf("allow thread lock\n");
     is_allow_restore_lock = true;
+}
+
+void PauseExtensionCall(){
+    //printf("pause extension call\n");
+    is_extension_call_paused = true;
+}
+
+void ResumeExtensionCall(){
+    //printf("resume extension call\n");
+    is_extension_call_paused = false;
+}
+
+bool GetIsExtensionPausedCall(){
+    return is_extension_call_paused;
 }
 
 void PrintGILState(){
