@@ -12,6 +12,7 @@
 #include "toolset/tools/Tool.h"
 
 #include <abstract.h>
+#include <cstdio>
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
@@ -56,6 +57,7 @@ void on_new_edit_area(EditArea* ea){
     if (py_ea) {
         PyObject* args = PyTuple_Pack(1, py_ea);
         itr->second->Invoke(args);
+        Py_DECREF(args);
     }
     ReleaseThreadLock();
 }

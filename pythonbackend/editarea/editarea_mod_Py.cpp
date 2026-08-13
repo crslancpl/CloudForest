@@ -63,10 +63,9 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
     if(!ea){
         Py_RETURN_NONE;
     }
-    //printf("found edit area %s\n", ea->GetFilePath());
-    PyObject* ea_py = (PyObject*)ea->GetPyEditArea();
-    //printf("ea_py ptr %p\n", ea_py);
-    return  ea_py;
+
+    PyObject* py_ea = (PyObject*)ea->GetPyEditArea();
+    return  Py_NewRef(py_ea);//
 }
 
 static PyObject *editarea_module_get_by_language(PyObject *self, PyObject *args){

@@ -127,6 +127,7 @@ class LspClient:
         print(f"{self.server_data.name} running version {self.server_data.version}")
 
         ea_list: list[editarea.EditArea] = editarea.get_by_language(self.language)
+
         for ea in ea_list:
             self.listen_editarea(ea)
 
@@ -147,7 +148,6 @@ class LspClient:
         self.lsp_reader.add_request(id, LspRequestMethod.COMPLETION, req_data)
         message = lsp_msg_writer.completion_message(id, line, column)
         self.send(message)
-        print(f"completion requested {sys.getrefcount(ea)}")
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
         if ea.get_language() == self.language:
@@ -172,7 +172,6 @@ class LspClient:
         )
 
         self.send(message)
-        print(f"text changed {sys.getrefcount(ea)}")
 
     def __editarea_file_saved(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_save_notification(ea)

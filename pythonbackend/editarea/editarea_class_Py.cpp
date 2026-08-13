@@ -46,7 +46,10 @@ static void on_edit_area_closed(EditArea *ea){
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CLOSED);
     event.Invoke(args);
     Py_DECREF(args);
-    Py_DECREF(py_ea);
+    int refcount = Py_REFCNT(py_ea);
+    for (int i = 0; i < refcount; i++) {
+        Py_DECREF(py_ea);
+    }
 
     ReleaseThreadLock();
 }
@@ -437,7 +440,7 @@ static PyObject* py_EditArea_new(PyTypeObject *type, PyObject *args, PyObject *k
 }
 
 static void py_EditArea_dealloc(PyObject* self){
-    //printf("py_EditArea_dealloc called\n");
+    printf("py_EditArea_dealloc called\n");
     py_EditArea* py_ea = (py_EditArea*) self;
     delete py_ea->eventMap;
 }

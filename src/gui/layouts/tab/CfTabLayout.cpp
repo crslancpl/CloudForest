@@ -4,7 +4,6 @@
 #include "CfTab_if.h"
 #include "src/session/TabData.h"
 
-#include <cstdio>
 #include <gtk/gtk.h>
 #include <memory>
 #include <utility>
