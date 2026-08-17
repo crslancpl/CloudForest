@@ -18,7 +18,7 @@
 WorkspaceBox::WorkspaceBox(Workspace& ws): m_ws(ws){
     m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 1));
     gtk_widget_add_css_class(GTK_WIDGET(m_box), "ws-box");
-    m_label = GTK_LABEL(gtk_label_new(ws.GetName()));
+    m_label = GTK_LABEL(gtk_label_new(ws.GetName().c_str()));
     gtk_box_append(m_box, GTK_WIDGET(m_label));
     m_folderBtn = std::make_unique<FPFolderButton>(ws, 0);
     gtk_box_append(m_box, m_folderBtn->GetBaseWidget());

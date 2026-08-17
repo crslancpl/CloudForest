@@ -17,7 +17,7 @@
  * For FPFileButton and FPFolderButton. It will load the icon and the file name of
  * the GFile *file and place it into GtkButton *button.
  */
-static void ButtonLoadFileNameAndIcon(GtkButton *button,FileData *filedata, int level){
+static void button_load_file_name_and_icon(GtkButton *button,FileData *filedata, int level){
     GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
     GtkWidget *image = gtk_image_new_from_gicon(filedata->icon);
@@ -41,10 +41,13 @@ static void ButtonLoadFileNameAndIcon(GtkButton *button,FileData *filedata, int 
 
 static FPFolderButton* folder_button_to_enumerate;
 
-static void OnFolderClicked(GtkButton* self,FPFolderButton *filefolderbut){
-    filefolderbut->ToggleFolder();
+static void on_folder_button_clicked(GtkButton* self, FPFolderButton* parent){
+    parent->ToggleFolder();
 }
 
+static void on_folder_button_right_clicked(GtkGestureClick* self, int n_press, double x, double y, FPFolderButton* parent){
+    parent->ShowOptions();
+}
 
 FPFolderButton::FPFolderButton(FolderBranch &folderbranch, int level)
     : m_level(level),
@@ -52,17 +55,21 @@ FPFolderButton::FPFolderButton(FolderBranch &folderbranch, int level)
     /* binding */
     builder = gtk_builder_new_from_file("data/ui/FPFolderButton.ui");
     m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "folder-base-box"));
-    m_folderToggleBut = GTK_BUTTON(gtk_builder_get_object(builder, "folder-toggle-button"));
+    m_toggleButton = GTK_BUTTON(gtk_builder_get_object(builder, "folder-toggle-button"));
     m_childArea = GTK_BOX(gtk_builder_get_object(builder, "child-area"));
     m_folderArea = GTK_BOX(gtk_builder_get_object(builder, "child-folder-area"));
     m_fileArea = GTK_BOX(gtk_builder_get_object(builder, "child-file-area"));
+    m_rightClickGesture = GTK_GESTURE_CLICK(gtk_gesture_click_new());
 
-    ButtonLoadFileNameAndIcon(m_folderToggleBut, m_folderBranch.GetFileData(), level);
+    button_load_file_name_and_icon(m_toggleButton, m_folderBranch.GetFileData(), level);
 
-    gtk_widget_add_css_class(GTK_WIDGET(m_folderToggleBut), std::string("folder-button").c_str());
+    gtk_widget_add_css_class(GTK_WIDGET(m_toggleButton), std::string("folder-button").c_str());
     gtk_widget_set_visible(GTK_WIDGET(m_childArea), false);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(m_rightClickGesture), 3);
+    gtk_widget_add_controller(GTK_WIDGET(m_toggleButton), GTK_EVENT_CONTROLLER(m_rightClickGesture));
 
-    g_signal_connect(m_folderToggleBut, "clicked", G_CALLBACK(OnFolderClicked),this);// expand and collapse folder
+    g_signal_connect(m_toggleButton, "clicked", G_CALLBACK(on_folder_button_clicked), this);// expand and collapse folder
+    g_signal_connect(m_rightClickGesture, "pressed", G_CALLBACK(on_folder_button_right_clicked), this);
 }
 
 FPFolderButton::~FPFolderButton(){
@@ -71,12 +78,12 @@ FPFolderButton::~FPFolderButton(){
 
 
 void FPFolderButton::AddChildFolder(std::unique_ptr<FPFolderButton> child){
-    gtk_box_append(m_folderArea, child->GetBaseWidget());
+    gtk_box_prepend(m_folderArea, child->GetBaseWidget());
     m_childFolders.emplace_back(std::move(child));
 }
 
 void FPFolderButton::AddChildFile(std::unique_ptr<FPFileButton> child){
-    gtk_box_append(m_fileArea, child->GetBaseWidget());
+    gtk_box_prepend(m_fileArea, child->GetBaseWidget());
     m_childFiles.emplace_back(std::move(child));
 }
 
@@ -100,7 +107,9 @@ void FPFolderButton::ToggleFolder(){
     gtk_widget_set_visible(GTK_WIDGET(m_childArea) , m_isOpen);
 }
 
-
+void FPFolderButton::ShowOptions(){
+    //
+}
 
 void FPFolderButton::UnrefBuilder(){
     g_object_unref(G_OBJECT(builder));
@@ -119,22 +128,30 @@ GtkWidget* FPFolderButton::GetBaseWidget(){
  * FPFileButton class
  */
 
-static void FileButtonClick(GtkButton *self,FPFileButton &Parent){
-    Parent.Clicked();
+static void on_file_button_click(GtkButton *self, FPFileButton *parent){
+    parent->Clicked();
+}
+
+static void on_file_button_right_clicked(GtkGestureClick* self, int n_press, double x, double y, FPFileButton* parent){
+    parent->ShowOptions();
 }
 
 FPFileButton::FPFileButton(FileBranch &filebranch, int level):
     m_fileBranch(filebranch){
     m_button = GTK_BUTTON(gtk_button_new());
-    ButtonLoadFileNameAndIcon(m_button, m_fileBranch.GetFileData(), level);
+    button_load_file_name_and_icon(m_button, m_fileBranch.GetFileData(), level);
 
     gtk_widget_add_css_class(GTK_WIDGET(m_button), "file-button");
     gtk_widget_set_hexpand(GTK_WIDGET(m_button), true);
-    g_signal_connect(m_button, "clicked", G_CALLBACK(FileButtonClick), this);
+    g_signal_connect(m_button, "clicked", G_CALLBACK(on_file_button_click), this);
 }
 
 FPFileButton::~FPFileButton(){
     //g_object_unref(m_fileData->file);
+}
+
+void FPFileButton::ShowOptions(){
+    //
 }
 
 void FPFileButton::Clicked(){

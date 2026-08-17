@@ -17,6 +17,7 @@ DiagnosticPopover::DiagnosticPopover(){
     gtk_popover_set_has_arrow(m_popover, false);
     gtk_widget_remove_css_class(GTK_WIDGET(m_popover), "background");
     gtk_widget_add_css_class(GTK_WIDGET(m_popover), "diagnostic-popover");
+    gtk_label_set_wrap(m_messageLabel, true);
 }
 
 DiagnosticPopover::~DiagnosticPopover(){

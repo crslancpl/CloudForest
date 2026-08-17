@@ -85,4 +85,7 @@ void CfTabLayout::SwitchTo(CfTabSwitcher &switcher){
 void CfTabLayout::ChildSwitcherClosed(CfTabSwitcher& switcher){
     //
     this->Remove(*switcher.GetContent(), switcher);
+    if(m_activeSwitcher == &switcher){
+        m_activeSwitcher = nullptr;
+    }
 }

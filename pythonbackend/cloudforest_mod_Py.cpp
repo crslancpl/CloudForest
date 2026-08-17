@@ -39,7 +39,12 @@ static std::unordered_map<std::string, PythonEvent> event_map= {
 
 static void on_new_workspace(Workspace* ws){
     TryRestoreThreadLock();
-    PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(ws->GetName()), PyUnicode_FromString(ws->GetFileData()->absoPath));
+    PyObject* args = PyTuple_Pack(
+        2,
+        PyUnicode_FromString(ws->GetName().c_str()),
+        PyUnicode_FromString(ws->GetFileData()->absoPath)
+    );
+
     PythonEvent &event = event_map.at(EVENT_NEW_WORKSPACE);
     event.Invoke(args);
     Py_DECREF(args);
@@ -69,7 +74,7 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
     PyObject* wslist = PyList_New(0);
     for(const std::unique_ptr<Workspace>& ws : session::GetWorkspaceList()){
         PyObject* wsproperty = PyDict_New();
-        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetName()));
+        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetName().c_str()));
         std::string uri = "file://" + std::string(ws->GetFileData()->absoPath);
         PyDict_SetItemString(wsproperty, "uri", PyUnicode_FromString(uri.c_str()));
 

@@ -440,7 +440,6 @@ static PyObject* py_EditArea_new(PyTypeObject *type, PyObject *args, PyObject *k
 }
 
 static void py_EditArea_dealloc(PyObject* self){
-    printf("py_EditArea_dealloc called\n");
     py_EditArea* py_ea = (py_EditArea*) self;
     delete py_ea->eventMap;
 }

@@ -23,3 +23,23 @@ unsigned long int CalculateSortingCode(const char* str){
 
     return num;
 }
+
+CompareResult CompareString(const std::string& s1, const std::string& s2){
+    for (int i = 0; i < s1.length() && i < s2.length(); i++) {
+        char char1 = s1[i];
+        char char2 = s2[i];
+
+        if (char1 != char2) {
+            CompareResult r = CompareChar(char1, char2);
+            if (r != COMPARE_RESULT_EQUAL) {
+                return r;
+            }
+        }
+    }
+
+    if (s1.length() != s2.length()) {
+        return s1.length() < s2.length() ? COMPARE_RESULT_LESS : COMPARE_RESULT_GREATER;
+    }
+
+    return COMPARE_RESULT_EQUAL;
+}

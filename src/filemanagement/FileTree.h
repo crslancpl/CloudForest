@@ -5,6 +5,7 @@
 #include "src/filemanagement/FileReader.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 /*
@@ -19,14 +20,14 @@ class Branch{
 public:
     Branch(std::unique_ptr<FileData> file);
 
-    const char* GetName();
+    const std::string& GetName() const;
 
-    virtual FolderBranch* GetParent();
+    virtual FolderBranch* GetParent() const;
     virtual void SetParent(FolderBranch* parent) = 0;
-    virtual FileData* GetFileData();
+    virtual FileData* GetFileData() const;
 
 protected:
-    const char* m_name;
+    std::string m_name;
     std::unique_ptr<FileData> m_fileData;
     FolderBranch* m_parent;
 };
@@ -46,10 +47,10 @@ class FolderBranch : public Branch{
 public:
     FolderBranch(std::unique_ptr<FileData> folder);
 
-    bool GetIsChildLoaded();
+    bool GetIsChildLoaded() const;
     void SetIsChildLoaded(bool loaded);
-    const std::vector<std::unique_ptr<FileBranch>> &GetChildFiles();
-    const std::vector<std::unique_ptr<FolderBranch>> &GetChildFolders();
+    const std::vector<std::unique_ptr<FileBranch>> &GetChildFiles() const;
+    const std::vector<std::unique_ptr<FolderBranch>> &GetChildFolders() const;
 
     void AddChildFile(std::unique_ptr<FileBranch> child);
     std::unique_ptr<FileBranch> MoveChildFile(FileBranch* child);
@@ -77,7 +78,7 @@ public:
     Branch* FileChildBranchByPath(const char* path);
     void SetCustomName(const char* name);
 private:
-    char* m_customName;// can be named by user
+    std::string m_customName;// can be named by user
 };
 
 

@@ -1,13 +1,17 @@
+.lang-panel {
+    border-radius: 10px;
+    padding: 10px;
+}
+
 .lang-panel button {
-    background-image: none;
-    background-color: rgb(30, 30, 30);
-    border-color: transparent;
+    border-radius: 5px;
+    border: solid 3px;
+    margin: 1px;
 }
 
 .lang-panel .name-label {
     font-size: 15px;
     border-radius: 5px;
-    background-color: rgb(61, 0, 110);
     padding: 5px;
 }
 
@@ -20,5 +24,5 @@
 }
 
 .lang-panel .selected {
-    border: rgb(100, 50, 110) solid 3px;
+    border: solid 3px;
 }

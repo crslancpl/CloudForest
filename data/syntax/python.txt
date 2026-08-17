@@ -1,7 +1,7 @@
 #TrimSpecialCharacter
 
 #Keyword
-if else and or not is in True False None elif for while break
+if else and or not is in True False None elif for while break del
 continue pass try import from
 #Type
 def class

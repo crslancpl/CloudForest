@@ -23,11 +23,12 @@ public:
     FPFolderButton(FolderBranch &folderbranch, int level);
     ~FPFolderButton();
 
-
     void AddChildFolder(std::unique_ptr<FPFolderButton> child);
     void AddChildFile(std::unique_ptr<FPFileButton> child);
     void UnrefBuilder();
     void ToggleFolder();
+    void ShowOptions();
+
     unsigned int GetLevel();
 
     GtkWidget* GetBaseWidget() override;
@@ -39,10 +40,11 @@ private:
 
     GtkBuilder *builder;// unref by UnrefBuilder();
     GtkBox *m_baseBox;// Containing FolderToggleBut and Content
-    GtkButton *m_folderToggleBut;
+    GtkButton *m_toggleButton;
     GtkBox *m_childArea;// containing folderArea and fileArea. Hide this when toggle
     GtkBox *m_folderArea;// sub folder
     GtkBox *m_fileArea;// child file
+    GtkGestureClick *m_rightClickGesture;
 
     unsigned int m_level;// Root folder is 0
     bool m_isOpen=false;
@@ -57,12 +59,16 @@ public:
     FPFileButton(FileBranch &filebranch, int level);// the level of Root folder is 0
     ~FPFileButton();
 
+    void ShowOptions();
+
     void Clicked();
+
     GtkWidget* GetBaseWidget() override;
 
 private:
     FileBranch& m_fileBranch;
     GtkButton *m_button;
+    GtkGestureClick *m_mouseGesture;
 };
 
 #endif

@@ -2,8 +2,10 @@
 
 #include "datatypes/file.h"
 #include "src/filemanagement/FileReader.h"
+#include "toolset/tools/StringSorting.h"
 #include "toolset/tools/Tool.h"
 
+#include <cstring>
 #include <memory>
 #include <string>
 
@@ -11,15 +13,15 @@ Branch::Branch(std::unique_ptr<FileData> data) : m_fileData(std::move(data)){
     m_name = m_fileData->fileName;
 }
 
-const char* Branch::GetName(){
+const std::string& Branch::GetName() const{
     return m_name;
 }
 
-FolderBranch* Branch::GetParent(){
+FolderBranch* Branch::GetParent() const{
     return m_parent;
 }
 
-FileData* Branch::GetFileData(){
+FileData* Branch::GetFileData() const{
     return m_fileData.get();
 }
 
@@ -42,7 +44,7 @@ void FileBranch::SetParent(FolderBranch* parent){
  * FolderBranch
  */
 
-bool FolderBranch::GetIsChildLoaded(){
+bool FolderBranch::GetIsChildLoaded() const{
     return m_isChildLoaded;
 }
 
@@ -50,11 +52,11 @@ void FolderBranch::SetIsChildLoaded(bool loaded){
     m_isChildLoaded = loaded;
 }
 
-const std::vector<std::unique_ptr<FileBranch>> &FolderBranch::GetChildFiles(){
+const std::vector<std::unique_ptr<FileBranch>> &FolderBranch::GetChildFiles() const{
     return m_childFiles;
 }
 
-const std::vector<std::unique_ptr<FolderBranch>> &FolderBranch::GetChildFolders(){
+const std::vector<std::unique_ptr<FolderBranch>> &FolderBranch::GetChildFolders() const{
     return m_childFolders;
 }
 
@@ -67,11 +69,13 @@ void FolderBranch::AddChildFile(std::unique_ptr<FileBranch> child){
 
     int itr = 0;
     for (std::unique_ptr<FileBranch>& item : m_childFiles) {
-        if (item->GetFileData()->sortingCode1 > child->GetFileData()->sortingCode1) {
+        if (CompareString(child->GetName(), item->GetName()) == COMPARE_RESULT_LESS) {
             break;
         }
+
         itr++;
     }
+
     m_childFiles.insert(m_childFiles.begin() + itr, std::move(child));
 }
 
@@ -95,9 +99,10 @@ void FolderBranch::AddChildFolder(std::unique_ptr<FolderBranch> child){
 
     int itr = 0;
     for (std::unique_ptr<FolderBranch>& item : m_childFolders) {
-        if (item->GetFileData()->sortingCode1 > child->GetFileData()->sortingCode1) {
+        if (CompareString(child->GetName(), item->GetName()) == COMPARE_RESULT_LESS) {
             break;
         }
+
         itr++;
     }
 

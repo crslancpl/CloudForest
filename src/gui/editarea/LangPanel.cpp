@@ -107,11 +107,13 @@ LangPanel::LangPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow(
      * Create the language choosing window and set it as
      * the flyout of g_mainwindow's GtkWindow.
      */
-    this->SetSize(486, 300);
+    this->SetSize(510, 300);
+
     gtk_widget_add_css_class(GTK_WIDGET(m_flyoutWindow), "lang-panel");
     m_grid = GTK_GRID(gtk_grid_new());
-    m_scrolledWindow = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
+    gtk_widget_set_hexpand(GTK_WIDGET(m_grid), true);
 
+    m_scrolledWindow = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
     gtk_scrolled_window_set_child(m_scrolledWindow, GTK_WIDGET(m_grid));
 
     this->SetChild(GTK_WIDGET(m_scrolledWindow));

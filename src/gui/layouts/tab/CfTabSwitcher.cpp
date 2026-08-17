@@ -8,10 +8,10 @@
 
 
 
-static void SwitchButtonClicked(GtkButton *self, CfTabSwitcher *switchbutton){
+static void switch_button_clicked(GtkButton *self, CfTabSwitcher *switchbutton){
     switchbutton->Switch();
 }
-static void CloseButtonClicked(GtkButton *self, CfTabSwitcher *switchbutton){
+static void close_button_clicked(GtkButton *self, CfTabSwitcher *switchbutton){
     switchbutton->Close();
 }
 
@@ -34,8 +34,8 @@ CfTabSwitcher::CfTabSwitcher(std::unique_ptr<CfContent> content):
     gtk_box_append(m_baseBox, GTK_WIDGET(m_switchButton));
     gtk_box_append(m_baseBox, GTK_WIDGET(m_closeButton));
 
-    g_signal_connect(m_switchButton, "clicked", G_CALLBACK(SwitchButtonClicked), this);
-    g_signal_connect(m_closeButton, "clicked", G_CALLBACK(CloseButtonClicked), this);
+    g_signal_connect(m_switchButton, "clicked", G_CALLBACK(switch_button_clicked), this);
+    g_signal_connect(m_closeButton, "clicked", G_CALLBACK(close_button_clicked), this);
 }
 
 CfTabSwitcher::~CfTabSwitcher(){
