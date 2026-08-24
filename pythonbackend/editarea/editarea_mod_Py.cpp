@@ -96,7 +96,7 @@ static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* a
 
     Workspace* ws = session::FindWorkspaceByPath(ea->editarea->GetFilePath());
     if(ws){
-        return PyUnicode_FromString(ws->GetFileData()->absoPath);
+        return PyUnicode_FromString(ws->GetFileData()->absoPath.c_str());
     }else{
         Py_RETURN_NONE;
     }

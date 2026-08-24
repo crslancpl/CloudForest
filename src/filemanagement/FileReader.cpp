@@ -54,7 +54,7 @@ std::unique_ptr<FileData> LoadFileData(GFile *file, GFileInfo* info, bool issing
     newfile->fileInfo = info;
     newfile->absoPath = g_file_get_path(file);
     newfile->fileName = g_file_get_basename(file);
-    newfile->sortingCode1 = CalculateSortingCode(newfile->fileName);
+    newfile->sortingCode1 = CalculateSortingCode(newfile->fileName.c_str());
     newfile->icon = g_file_query_info(file,
         "standard::icon",
         G_FILE_QUERY_INFO_NONE,

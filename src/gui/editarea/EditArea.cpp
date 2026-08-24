@@ -212,7 +212,7 @@ void EditArea::LoadGui(){
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_saveBut), "Save");
     gtk_widget_set_has_tooltip(GTK_WIDGET(m_locationBut), TRUE);
     gtk_widget_set_tooltip_text(GTK_WIDGET(m_locationBut),
-        m_editingFile ? m_editingFile->absoPath : "New file");
+        m_editingFile ? m_editingFile->absoPath.c_str() : "New file");
 
     this->SetContentWidget(GTK_WIDGET(m_baseGrid));
     gtk_grid_attach(m_baseGrid, GTK_WIDGET(m_baseBox), 0, 2, 1, 1);
@@ -279,7 +279,7 @@ const FileData* EditArea::GetFileData() const{
 
 const char* EditArea::GetFilePath() const{
     if(m_editingFile){
-        return m_editingFile->absoPath;
+        return m_editingFile->absoPath.c_str();
     }
     return "";
 }
@@ -331,8 +331,8 @@ void EditArea::LoadFile(FileData* newfile){
         gtk_text_buffer_set_text(m_textViewBuffer, m_originalContent, m_originalLength);
     }
 
-    gtk_button_set_label(m_locationBut, m_editingFile->absoPath);
-    auto lang = langmanager::FindByFileExtension(m_editingFile->fileName);
+    gtk_button_set_label(m_locationBut, m_editingFile->absoPath.c_str());
+    auto lang = langmanager::FindByFileExtension(m_editingFile->fileName.c_str());
     this->SetLanguage(lang);
     this->SetContentName(m_editingFile->fileName);
 

@@ -60,6 +60,7 @@ void DiagnosticPopover::Show(const Diagnostic& diagnostic, const GdkRectangle& r
 void DiagnosticPopover::SetTarget(EditArea* target){
     m_target = target;
     g_object_ref(m_popover);
+    gtk_widget_unparent(GTK_WIDGET(m_popover));
     gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_target->GetTextView()));
     g_object_unref(m_popover);
 }

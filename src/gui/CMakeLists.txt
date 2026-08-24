@@ -21,6 +21,7 @@ set(EDITAREA
 set(FILEPANEL
     filepanel/FilePanel.cpp
     filepanel/FilePanelButtons.cpp
+    filepanel/FilePanelMenu.cpp
 )
 
 set(HEADERBAR

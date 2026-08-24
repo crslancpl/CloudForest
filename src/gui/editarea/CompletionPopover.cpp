@@ -136,7 +136,10 @@ void CompletionPopover::SetTarget(EditArea* ea){
     this->Clear();
     if (ea != m_target) {
         m_target = ea;
+        g_object_ref(m_popover);
+        gtk_widget_unparent(GTK_WIDGET(m_popover));
         gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(ea->GetTextView()));
+        g_object_unref(m_popover);
     }
 }
 
@@ -147,26 +150,6 @@ void CompletionPopover::Show(const GdkRectangle& cursorrec){
         m_isShowing = true;
     }
 }
-/*
-void CompletionPopover::Show(const GdkRectangle* cursorrec, const std::vector<std::unique_ptr<Completion>>& completions){
-    this->Clear();
-
-    if (m_target && completions.size() != 0) {
-
-        for (const std::unique_ptr<Completion>& comp : completions) {
-            //
-            std::unique_ptr<CompletionPopoverItem> item = std::make_unique<CompletionPopoverItem>(*comp.get());
-            gtk_box_append(m_box, item->GetBaseWidget());
-            m_items.emplace_back(std::move(item));
-        }
-
-        gtk_popover_set_pointing_to(m_popover, cursorrec);
-        gtk_popover_popup(m_popover);
-    } else {
-        gtk_popover_popdown(m_popover);
-    }
-}
-*/
 
 
 // private
@@ -176,7 +159,7 @@ inline void CompletionPopover::ScrollToSelected(){
     double upper = gtk_adjustment_get_value(m_vAdjustment);
     double lower = upper + 8 * CompletionPopoverItem::ITEM_HEIGHT;
     int selected = m_selectedItr * CompletionPopoverItem::ITEM_HEIGHT;
-    // printf("upper %f lower %f selected %i\n", upper, lower, selected);
+
     if (selected > lower) {
         //
         gtk_adjustment_set_value(m_vAdjustment, (m_selectedItr - 8) * CompletionPopoverItem::ITEM_HEIGHT);

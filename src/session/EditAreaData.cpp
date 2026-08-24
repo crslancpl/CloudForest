@@ -115,13 +115,13 @@ const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang
 }
 
 EditArea *FindEditAreaByFileData(const FileData* file){
-    Workspace* ws = FindWorkspaceByPath(file->absoPath);
+    Workspace* ws = FindWorkspaceByPath(file->absoPath.c_str());
     FileData* fd;
     if (ws) {
-        fd = ws->FindChildByPath(file->absoPath);
+        fd = ws->FindChildByPath(file->absoPath.c_str());
         return fd->editArea;
     } else {
-        fd = FindSingleFileByPath(file->absoPath);
+        fd = FindSingleFileByPath(file->absoPath.c_str());
         return fd->editArea;
     }
     return nullptr;

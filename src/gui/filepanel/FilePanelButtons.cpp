@@ -2,79 +2,158 @@
 
 
 #include "FilePanel.h"
+#include "FilePanelMenu.h"
 #include "datatypes/file.h"
 #include "Gui_if.h"
 #include "src/filemanagement/FileReader.h"
 #include "src/filemanagement/FileTree.h"
 #include "src/session/EditAreaData.h"
+#include "AppUI.h"
 
+#include <cstdio>
 #include <gio/gio.h>
+#include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
 
 /*
- * For FPFileButton and FPFolderButton. It will load the icon and the file name of
- * the GFile *file and place it into GtkButton *button.
+ * FilePanelButton base class
  */
-static void button_load_file_name_and_icon(GtkButton *button,FileData *filedata, int level){
-    GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
-    GtkWidget *image = gtk_image_new_from_gicon(filedata->icon);
-    gtk_image_set_pixel_size(GTK_IMAGE(image), 16);
-
-    GtkWidget *label = gtk_label_new(filedata->fileName);
-
-    gtk_box_append(box, image);
-    gtk_box_append(box, label);
-    gtk_button_set_child(button, GTK_WIDGET(box));
-
-    gtk_widget_set_margin_start(image, FilePanel::Offset * level);
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
+static void on_file_panel_button_right_clicked(GtkGestureClick* self, int n_press, double x, double y, FilePanelButton* parent){
+    parent->ShowMenu();
 }
 
+static void on_file_panel_button_renamed(GtkEditableLabel* label, GParamSpec *pspec G_GNUC_UNUSED, FilePanelButton* parent){
+    if (!parent->GetIsEditing()) {
+        parent->RenameEnded();
+    }
+}
+
+FilePanelButton::FilePanelButton(Branch& branch, unsigned int level)
+    : m_branch(branch),
+      m_level(level) {
+    m_icon = GTK_IMAGE(gtk_image_new());
+    gtk_image_set_pixel_size(GTK_IMAGE(m_icon), 16);
+    gtk_widget_set_margin_start(GTK_WIDGET(m_icon), FilePanel::Offset * m_level);
+
+    m_nameLabel = GTK_LABEL(gtk_label_new(""));
+    gtk_widget_set_halign(GTK_WIDGET(m_nameLabel), GTK_ALIGN_START);
+
+    m_nameEditLabel = GTK_EDITABLE_LABEL(gtk_editable_label_new(""));
+    gtk_widget_set_halign(GTK_WIDGET(m_nameEditLabel), GTK_ALIGN_START);
+    gtk_widget_set_visible(GTK_WIDGET(m_nameEditLabel), false);
+
+    m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+    gtk_box_append(m_box, GTK_WIDGET(m_icon));
+    gtk_box_append(m_box, GTK_WIDGET(m_nameLabel));
+    gtk_box_append(m_box, GTK_WIDGET(m_nameEditLabel));
+
+    m_button = GTK_BUTTON(gtk_button_new());
+    g_object_ref(m_button);
+    gtk_button_set_child(m_button, GTK_WIDGET(m_box));
+
+    // right click
+    m_rightClickGesture = GTK_GESTURE_CLICK(gtk_gesture_click_new());
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(m_rightClickGesture), 3);
+    g_signal_connect(m_rightClickGesture, "pressed", G_CALLBACK(on_file_panel_button_right_clicked), this);
+    gtk_widget_add_controller(GTK_WIDGET(m_button), GTK_EVENT_CONTROLLER(m_rightClickGesture));
+
+    // rename callback
+    g_signal_connect(m_nameEditLabel, "notify::editing", G_CALLBACK(on_file_panel_button_renamed), this);
+
+    this->LoadData();
+}
+
+FilePanelButton::~FilePanelButton(){
+    m_menu.reset();
+    g_object_unref(m_button);
+}
+
+void FilePanelButton::LoadData(){
+    FileData* data = m_branch.GetFileData();
+    gtk_label_set_text(m_nameLabel, data->fileName.c_str());
+    gtk_editable_set_text(GTK_EDITABLE(m_nameEditLabel), data->fileName.c_str());
+    gtk_image_set_from_gicon(m_icon, data->icon);
+    data->filePanelButton = this;
+}
+
+void FilePanelButton::ShowMenu(){
+    m_menu->Show();
+}
+
+bool FilePanelButton::GetIsEditing(){
+    return gtk_editable_label_get_editing(m_nameEditLabel);
+}
+
+GtkButton* FilePanelButton::GetButton(){
+    return m_button;
+}
+
+void FilePanelButton::Rename(){
+    gtk_widget_set_visible(GTK_WIDGET(m_nameLabel), false);
+    gtk_widget_set_visible(GTK_WIDGET(m_nameEditLabel), true);
+    gtk_editable_label_start_editing(m_nameEditLabel);
+}
+
+void FilePanelButton::RenameEnded(){
+    gtk_widget_set_visible(GTK_WIDGET(m_nameLabel), true);
+    gtk_widget_set_visible(GTK_WIDGET(m_nameEditLabel), false);
+    const char* name = gtk_editable_get_text(GTK_EDITABLE(m_nameEditLabel));
+    m_branch.Rename(name);
+    gtk_label_set_text(m_nameLabel, name);
+}
+
+void FilePanelButton::Delete(){
+    FolderBranch* parent = m_branch.GetParent();
+    FPFolderButton* parentFolderBtn = dynamic_cast<FPFolderButton*>(parent->GetFileData()->filePanelButton);
+
+    FileData* fd = m_branch.GetFileData();
+    if (fd->type == G_FILE_TYPE_REGULAR) {
+        FileBranch* b = dynamic_cast<FileBranch*>(&m_branch);
+        m_branch.Delete();
+        parent->RemoveChildFile(b);
+        parentFolderBtn->RemoveChildFile((FPFileButton*)fd->filePanelButton);
+    } else if (m_branch.GetFileData()->type == G_FILE_TYPE_DIRECTORY) {
+        FolderBranch* b = dynamic_cast<FolderBranch*>(&m_branch);
+        m_branch.Delete();
+        parent->RemoveChildFolder(b);
+        parentFolderBtn->RemoveChildFolder((FPFolderButton*)fd->filePanelButton);
+    }
+}
 
 
 /*
  * FPFolderButton class
  */
 
-static FPFolderButton* folder_button_to_enumerate;
-
 static void on_folder_button_clicked(GtkButton* self, FPFolderButton* parent){
     parent->ToggleFolder();
 }
 
-static void on_folder_button_right_clicked(GtkGestureClick* self, int n_press, double x, double y, FPFolderButton* parent){
-    parent->ShowOptions();
+FPFolderButton::FPFolderButton(FolderBranch &folderbranch, int level) : FilePanelButton(folderbranch, level)
+    , m_folderBranch(folderbranch){
+
+    m_baseBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+    gtk_box_append(m_baseBox, GTK_WIDGET(m_button));
+
+    m_folderArea = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+    gtk_widget_set_visible(GTK_WIDGET(m_folderArea), false);
+    gtk_box_append(m_baseBox, GTK_WIDGET(m_folderArea));
+
+    m_fileArea = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+    gtk_widget_set_visible(GTK_WIDGET(m_fileArea), false);
+    gtk_box_append(m_baseBox, GTK_WIDGET(m_fileArea));
+
+    m_menu = std::make_unique<FPFolderMenu>(*this);
+
+    gtk_widget_add_css_class(GTK_WIDGET(m_button), std::string("folder-button").c_str());
+
+    g_signal_connect(m_button, "clicked", G_CALLBACK(on_folder_button_clicked), this);// expand and collapse folder
 }
 
-FPFolderButton::FPFolderButton(FolderBranch &folderbranch, int level)
-    : m_level(level),
-    m_folderBranch(folderbranch){
-    /* binding */
-    builder = gtk_builder_new_from_file("data/ui/FPFolderButton.ui");
-    m_baseBox = GTK_BOX(gtk_builder_get_object(builder, "folder-base-box"));
-    m_toggleButton = GTK_BUTTON(gtk_builder_get_object(builder, "folder-toggle-button"));
-    m_childArea = GTK_BOX(gtk_builder_get_object(builder, "child-area"));
-    m_folderArea = GTK_BOX(gtk_builder_get_object(builder, "child-folder-area"));
-    m_fileArea = GTK_BOX(gtk_builder_get_object(builder, "child-file-area"));
-    m_rightClickGesture = GTK_GESTURE_CLICK(gtk_gesture_click_new());
-
-    button_load_file_name_and_icon(m_toggleButton, m_folderBranch.GetFileData(), level);
-
-    gtk_widget_add_css_class(GTK_WIDGET(m_toggleButton), std::string("folder-button").c_str());
-    gtk_widget_set_visible(GTK_WIDGET(m_childArea), false);
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(m_rightClickGesture), 3);
-    gtk_widget_add_controller(GTK_WIDGET(m_toggleButton), GTK_EVENT_CONTROLLER(m_rightClickGesture));
-
-    g_signal_connect(m_toggleButton, "clicked", G_CALLBACK(on_folder_button_clicked), this);// expand and collapse folder
-    g_signal_connect(m_rightClickGesture, "pressed", G_CALLBACK(on_folder_button_right_clicked), this);
-}
-
-FPFolderButton::~FPFolderButton(){
-    //g_object_unref(m_folderData->file);
-}
+FPFolderButton::~FPFolderButton(){}
 
 
 void FPFolderButton::AddChildFolder(std::unique_ptr<FPFolderButton> child){
@@ -82,14 +161,37 @@ void FPFolderButton::AddChildFolder(std::unique_ptr<FPFolderButton> child){
     m_childFolders.emplace_back(std::move(child));
 }
 
+void FPFolderButton::RemoveChildFolder(FPFolderButton* child){
+    int itr = 0;
+    for (std::unique_ptr<FPFolderButton>& item : m_childFolders) {
+        if (item.get() == child) {
+            gtk_box_remove(m_folderArea, child->GetBaseWidget());
+            m_childFolders.erase(m_childFolders.begin() + itr);
+            break;
+        }
+        itr ++;
+    }
+}
+
 void FPFolderButton::AddChildFile(std::unique_ptr<FPFileButton> child){
     gtk_box_prepend(m_fileArea, child->GetBaseWidget());
     m_childFiles.emplace_back(std::move(child));
 }
 
+void FPFolderButton::RemoveChildFile(FPFileButton* child){
+    int itr = 0;
+    for (std::unique_ptr<FPFileButton>& item : m_childFiles) {
+        if (item.get() == child) {
+            gtk_box_remove(m_fileArea, child->GetBaseWidget());
+            m_childFiles.erase(m_childFiles.begin() + itr);
+            break;
+        }
+        itr ++;
+    }
+}
+
 void FPFolderButton::ToggleFolder(){
     if(!m_folderBranch.GetIsChildLoaded()){
-        folder_button_to_enumerate = this;
         filemanager::ExpandFolderBranch(m_folderBranch);
 
         for(const std::unique_ptr<FileBranch>& b : m_folderBranch.GetChildFiles()){
@@ -104,15 +206,8 @@ void FPFolderButton::ToggleFolder(){
     }
 
     m_isOpen = !m_isOpen;
-    gtk_widget_set_visible(GTK_WIDGET(m_childArea) , m_isOpen);
-}
-
-void FPFolderButton::ShowOptions(){
-    //
-}
-
-void FPFolderButton::UnrefBuilder(){
-    g_object_unref(G_OBJECT(builder));
+    gtk_widget_set_visible(GTK_WIDGET(m_folderArea), m_isOpen);
+    gtk_widget_set_visible(GTK_WIDGET(m_fileArea), m_isOpen);
 }
 
 unsigned int FPFolderButton::GetLevel(){
@@ -123,7 +218,6 @@ GtkWidget* FPFolderButton::GetBaseWidget(){
     return GTK_WIDGET(m_baseBox);
 }
 
-
 /*
  * FPFileButton class
  */
@@ -132,27 +226,17 @@ static void on_file_button_click(GtkButton *self, FPFileButton *parent){
     parent->Clicked();
 }
 
-static void on_file_button_right_clicked(GtkGestureClick* self, int n_press, double x, double y, FPFileButton* parent){
-    parent->ShowOptions();
-}
-
-FPFileButton::FPFileButton(FileBranch &filebranch, int level):
-    m_fileBranch(filebranch){
-    m_button = GTK_BUTTON(gtk_button_new());
-    button_load_file_name_and_icon(m_button, m_fileBranch.GetFileData(), level);
+FPFileButton::FPFileButton(FileBranch &filebranch, int level) : FilePanelButton(filebranch, level)
+    , m_fileBranch(filebranch)
+    {
+    m_menu = std::make_unique<FPFileMenu>(*this);
 
     gtk_widget_add_css_class(GTK_WIDGET(m_button), "file-button");
     gtk_widget_set_hexpand(GTK_WIDGET(m_button), true);
     g_signal_connect(m_button, "clicked", G_CALLBACK(on_file_button_click), this);
 }
 
-FPFileButton::~FPFileButton(){
-    //g_object_unref(m_fileData->file);
-}
-
-void FPFileButton::ShowOptions(){
-    //
-}
+FPFileButton::~FPFileButton(){}
 
 void FPFileButton::Clicked(){
     session::EditFile(m_fileBranch.GetFileData());

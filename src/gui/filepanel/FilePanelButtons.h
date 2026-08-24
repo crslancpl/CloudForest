@@ -13,21 +13,62 @@
 
 class FPFolderButton;
 class FPFileButton;
+class FilePanelMenu;
+class FPFolderMenu;
+class FPFileMenu;
 
 typedef struct FileData FileData;
 
+/*
+ * FilePanelButton base class
+ */
+
+class FilePanelButton : public CfComponent {
+public:
+    FilePanelButton(Branch& branch, unsigned int level);
+    ~FilePanelButton();
+
+    void LoadData();
+    void ShowMenu();
+
+    bool GetIsEditing();
+    GtkButton* GetButton();
+
+    virtual void Rename();
+    virtual void RenameEnded();
+    virtual void Delete();
+
+protected:
+    GtkButton *m_button;
+
+    GtkEditableLabel *m_nameEditLabel;
+    GtkLabel *m_nameLabel;
+    GtkImage *m_icon;
+
+    GtkGestureClick *m_rightClickGesture;
+
+    std::unique_ptr<FilePanelMenu> m_menu;
+
+    unsigned int m_level;// Root folder is 0
+
+private:
+    GtkBox *m_box;
+
+    Branch& m_branch;
+};
 
 /* File panel folder button */
-class FPFolderButton : public CfComponent {
+class FPFolderButton : public FilePanelButton {
 public:
     FPFolderButton(FolderBranch &folderbranch, int level);
     ~FPFolderButton();
 
     void AddChildFolder(std::unique_ptr<FPFolderButton> child);
+    void RemoveChildFolder(FPFolderButton* child);
     void AddChildFile(std::unique_ptr<FPFileButton> child);
-    void UnrefBuilder();
+    void RemoveChildFile(FPFileButton* child);
+
     void ToggleFolder();
-    void ShowOptions();
 
     unsigned int GetLevel();
 
@@ -38,15 +79,11 @@ private:
     std::vector<std::unique_ptr<FPFileButton>> m_childFiles;
     std::vector<std::unique_ptr<FPFolderButton>> m_childFolders;
 
-    GtkBuilder *builder;// unref by UnrefBuilder();
     GtkBox *m_baseBox;// Containing FolderToggleBut and Content
-    GtkButton *m_toggleButton;
-    GtkBox *m_childArea;// containing folderArea and fileArea. Hide this when toggle
+
     GtkBox *m_folderArea;// sub folder
     GtkBox *m_fileArea;// child file
-    GtkGestureClick *m_rightClickGesture;
 
-    unsigned int m_level;// Root folder is 0
     bool m_isOpen=false;
     bool m_childLoaded = false;
 };
@@ -54,12 +91,10 @@ private:
 
 
 /* File panel file button */
-class FPFileButton : public CfComponent {
+class FPFileButton : public FilePanelButton {
 public:
     FPFileButton(FileBranch &filebranch, int level);// the level of Root folder is 0
     ~FPFileButton();
-
-    void ShowOptions();
 
     void Clicked();
 
@@ -67,8 +102,6 @@ public:
 
 private:
     FileBranch& m_fileBranch;
-    GtkButton *m_button;
-    GtkGestureClick *m_mouseGesture;
 };
 
 #endif

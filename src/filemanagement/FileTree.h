@@ -16,14 +16,19 @@ class FileBranch;
 class FolderBranch;
 class Workspace;
 
-class Branch{
+class Branch {
 public:
     Branch(std::unique_ptr<FileData> file);
 
+    void Rename(const std::string& name);
+    void Delete();
+
     const std::string& GetName() const;
 
+    // callbacks
+
     virtual FolderBranch* GetParent() const;
-    virtual void SetParent(FolderBranch* parent) = 0;
+    virtual void SetParent(FolderBranch* parent);
     virtual FileData* GetFileData() const;
 
 protected:
@@ -37,8 +42,6 @@ protected:
 class FileBranch : public Branch{
 public:
     FileBranch(std::unique_ptr<FileData> file);
-
-    void SetParent(FolderBranch* parent) override;
 };
 
 
@@ -59,8 +62,6 @@ public:
     void AddChildFolder(std::unique_ptr<FolderBranch> child);
     std::unique_ptr<FolderBranch> MoveChildFolder(FolderBranch* child);
     void RemoveChildFolder(FolderBranch* child);
-
-    void SetParent(FolderBranch* parent) override;
 
 protected:
     bool m_isChildLoaded = false;

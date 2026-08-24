@@ -1,16 +1,26 @@
 #include "FileTree.h"
 
 #include "datatypes/file.h"
+#include "src/filemanagement/FileOperation.h"
 #include "src/filemanagement/FileReader.h"
 #include "toolset/tools/StringSorting.h"
 #include "toolset/tools/Tool.h"
 
-#include <cstring>
+#include <cstdio>
 #include <memory>
 #include <string>
 
 Branch::Branch(std::unique_ptr<FileData> data) : m_fileData(std::move(data)){
     m_name = m_fileData->fileName;
+    m_fileData->branch = this;
+}
+
+void Branch::Rename(const std::string& name){
+    filemanager::Rename(m_fileData.get(), name);
+}
+
+void Branch::Delete(){
+    filemanager::Delete(m_fileData.get());
 }
 
 const std::string& Branch::GetName() const{
@@ -19,6 +29,10 @@ const std::string& Branch::GetName() const{
 
 FolderBranch* Branch::GetParent() const{
     return m_parent;
+}
+
+void Branch::SetParent(FolderBranch* parent){
+    m_parent = parent;
 }
 
 FileData* Branch::GetFileData() const{
@@ -31,12 +45,6 @@ FileData* Branch::GetFileData() const{
 
 FileBranch::FileBranch(std::unique_ptr<FileData> file) : Branch(std::move(file)){
     //
-}
-
-void FileBranch::SetParent(FolderBranch* parent){
-    std::unique_ptr<FileBranch> thisuniqueptr = m_parent->MoveChildFile(this);
-    parent->AddChildFile(std::move(thisuniqueptr));
-    m_parent = parent;
 }
 
 
@@ -76,6 +84,7 @@ void FolderBranch::AddChildFile(std::unique_ptr<FileBranch> child){
         itr++;
     }
 
+    child->SetParent(this);
     m_childFiles.insert(m_childFiles.begin() + itr, std::move(child));
 }
 
@@ -91,7 +100,13 @@ std::unique_ptr<FileBranch> FolderBranch::MoveChildFile(FileBranch* child){
 }
 
 void FolderBranch::RemoveChildFile(FileBranch* child){
-    //m_childFiles.erase(std::find(m_childFiles.begin(), m_childFiles.end(), child));
+    int itr = 0;
+    for (const std::unique_ptr<FileBranch>& item : m_childFiles) {
+        if (item.get() == child) {
+            m_childFiles.erase(m_childFiles.begin() + itr);
+        }
+        itr ++;
+    }
 }
 
 void FolderBranch::AddChildFolder(std::unique_ptr<FolderBranch> child){
@@ -106,6 +121,7 @@ void FolderBranch::AddChildFolder(std::unique_ptr<FolderBranch> child){
         itr++;
     }
 
+    child->SetParent(this);
     m_childFolders.insert(m_childFolders.begin() + itr, std::move(child));
 }
 
@@ -125,12 +141,6 @@ void FolderBranch::RemoveChildFolder(FolderBranch* child){
     //m_childFolders.erase(std::find(m_childFolders.begin(), m_childFolders.end(), child));
 }
 
-void FolderBranch::SetParent(FolderBranch* parent){
-    std::unique_ptr<FolderBranch> thisuniqueptr = m_parent->MoveChildFolder(this);
-    parent->AddChildFolder(std::move(thisuniqueptr));
-    m_parent = parent;
-}
-
 /*
  * Workspace
  */
@@ -143,7 +153,7 @@ FileData* Workspace::FindChildByPath(const char* path){
     // path = "/home/my/path/to/file.txt"
     // workspace path = "/home/my"
 
-    std::string relativepath = std::string(path).substr(strlen(m_fileData->absoPath));
+    std::string relativepath = std::string(path).substr(m_fileData->absoPath.length());
     // relative path = "/path/to/file.txt"
 
     auto trimmed = tools::TrimText(relativepath, "/");
@@ -177,7 +187,7 @@ Branch* Workspace::FileChildBranchByPath(const char* path){
     // path = "/home/my/path/to/file.txt"
     // workspace path = "/home/my"
 
-    std::string relativepath = std::string(path).substr(strlen(m_fileData->absoPath));
+    std::string relativepath = std::string(path).substr(m_fileData->absoPath.length());
     // relative path = "/path/to/file.txt"
 
     auto trimmed = tools::TrimText(relativepath, "/");

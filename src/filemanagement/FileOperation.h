@@ -4,6 +4,7 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <memory>
+#include <string>
 
 // forward declare
 typedef struct FileData FileData;
@@ -19,6 +20,9 @@ std::unique_ptr<FileData> CreateVirtualFile();
 std::unique_ptr<FileData> CreateVirtualFolder();
 
 void SaveFile(FileData* filedata, const char* content, void (*savedcallback)(FileData*));
+
+void Rename(FileData* filedata, const std::string& name);
+void Delete(FileData* filedata);
 
 void ChooseFile();
 void ChooseFolder();

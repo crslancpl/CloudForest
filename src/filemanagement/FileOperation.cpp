@@ -12,7 +12,10 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
+#include <cstdio>
 #include <gio/gio.h>
+#include <glib-object.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
@@ -167,7 +170,21 @@ void SaveFile(FileData* filedata, const char *content, void (*savedcallback)(Fil
     }
 }
 
+void Rename(FileData* filedata, const std::string& name){
+    filedata->fileName = name;
+    GError* error;
+    GFile* oldfile = filedata->file;
+    GFile* newfile = g_file_set_display_name(oldfile, name.c_str(), nullptr, &error);
+    if (newfile) {
+        filedata->file = newfile;
+        g_object_unref(oldfile);
+    }
+}
 
+void Delete(FileData *filedata){
+    GError* error;
+    g_file_delete(filedata->file, nullptr, &error);
+}
 
 void ChooseFile(){
     AppUI& ui = current_app->appUI;

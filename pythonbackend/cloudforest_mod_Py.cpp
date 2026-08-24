@@ -42,7 +42,7 @@ static void on_new_workspace(Workspace* ws){
     PyObject* args = PyTuple_Pack(
         2,
         PyUnicode_FromString(ws->GetName().c_str()),
-        PyUnicode_FromString(ws->GetFileData()->absoPath)
+        PyUnicode_FromString(ws->GetFileData()->absoPath.c_str())
     );
 
     PythonEvent &event = event_map.at(EVENT_NEW_WORKSPACE);

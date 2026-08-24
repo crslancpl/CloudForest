@@ -3,8 +3,12 @@
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>
+#include <string>
 
+class Branch;
 class EditArea;
+class FilePanelButton;
+
 
 typedef struct FileData{
     bool isVirtual;
@@ -15,10 +19,12 @@ typedef struct FileData{
     GFileType type;
     GFile *file;
     GFileInfo *fileInfo;
+    FilePanelButton *filePanelButton;
+    Branch *branch;
     EditArea *editArea;
-    const char *fileName;
-    const char *absoPath;
-    const char* *extension;
+    std::string fileName;
+    std::string absoPath;
+    std::string extension;
     GIcon *icon;
 }FileData;
 
