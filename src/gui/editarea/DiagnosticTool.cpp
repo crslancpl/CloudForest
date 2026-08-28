@@ -105,9 +105,11 @@ void DiagnosticTool::ShowPopover(const ZPosition& pos){
         if ( diag == m_showingDiagnositc) {
             return;
         }
+
         m_showingDiagnositc = diag;
-        GdkRectangle rec = m_parent.CalculatePositionRectangle(diag->range.start);
-        m_diagnosticPopover->Show(*diag, rec);
+
+        GdkRectangle rec = m_parent.CalculatePositionRectangle(m_showingDiagnositc->range.start);
+        m_diagnosticPopover->Show(*m_showingDiagnositc, rec);
     } else {
         this->HidePopover();
     }

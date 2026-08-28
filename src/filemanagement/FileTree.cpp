@@ -6,7 +6,6 @@
 #include "toolset/tools/StringSorting.h"
 #include "toolset/tools/Tool.h"
 
-#include <cstdio>
 #include <memory>
 #include <string>
 
@@ -40,24 +39,65 @@ FileData* Branch::GetFileData() const{
 }
 
 /*
- * FileBranch
+ * FileBranch class
  */
 
 FileBranch::FileBranch(std::unique_ptr<FileData> file) : Branch(std::move(file)){
     //
 }
 
+FileBranch::~FileBranch(){}
+
+const char* FileBranch::ReadContent(){
+    char* content;
+    filemanager::ReadFileText(m_fileData.get(), &content);
+    return content;
+}
 
 /*
- * FolderBranch
+ * FolderBranch class
  */
+
+FolderBranch::FolderBranch(std::unique_ptr<FileData> folder) : Branch(std::move(folder)){
+    //
+}
+
+FolderBranch::~FolderBranch(){}
+
+void FolderBranch::Load(){
+    if(m_isChildLoaded){
+        // already expanded
+        return;
+    }
+
+    if (m_fileData->isVirtual) {
+        m_isChildLoaded = true;
+        return;
+    }
+
+    GFileEnumerator *enumerator = g_file_enumerate_children(m_fileData->file, "*", G_FILE_QUERY_INFO_NONE,
+        nullptr, nullptr);
+
+    GFileInfo* info;
+
+    while ((info = g_file_enumerator_next_file(enumerator, nullptr, nullptr)) != nullptr) {
+        GFile *child = g_file_enumerator_get_child(enumerator, info);
+        std::unique_ptr<FileData> data = filemanager::LoadFileData(child, info, false);
+        if (child == nullptr|| data->fileInfo == nullptr) continue;
+
+        if (data->type == G_FILE_TYPE_REGULAR){
+            std::unique_ptr<FileBranch> b = std::make_unique<FileBranch>(std::move(data));
+            this->AddChildFile(std::move(b));
+        } else if (data->type == G_FILE_TYPE_DIRECTORY){
+            std::unique_ptr<FolderBranch> b = std::make_unique<FolderBranch>(std::move(data));
+            this->AddChildFolder(std::move(b));
+        }
+    }
+    m_isChildLoaded = true;
+}
 
 bool FolderBranch::GetIsChildLoaded() const{
     return m_isChildLoaded;
-}
-
-void FolderBranch::SetIsChildLoaded(bool loaded){
-    m_isChildLoaded = loaded;
 }
 
 const std::vector<std::unique_ptr<FileBranch>> &FolderBranch::GetChildFiles() const{
@@ -66,10 +106,6 @@ const std::vector<std::unique_ptr<FileBranch>> &FolderBranch::GetChildFiles() co
 
 const std::vector<std::unique_ptr<FolderBranch>> &FolderBranch::GetChildFolders() const{
     return m_childFolders;
-}
-
-FolderBranch::FolderBranch(std::unique_ptr<FileData> folder) : Branch(std::move(folder)){
-    //
 }
 
 void FolderBranch::AddChildFile(std::unique_ptr<FileBranch> child){
@@ -183,7 +219,7 @@ FileData* Workspace::FindChildByPath(const char* path){
     return nullptr;
 }
 
-Branch* Workspace::FileChildBranchByPath(const char* path){
+Branch* Workspace::FindChildBranchByPath(const char* path){
     // path = "/home/my/path/to/file.txt"
     // workspace path = "/home/my"
 

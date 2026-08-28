@@ -108,8 +108,13 @@ void CompletionTool::SelectDown(){
 }
 
 void CompletionTool::Confirm(){
-    const Completion& result = m_completionPopover->Confirm();
-    m_parent.Replace(result.range, result.insertText.c_str());
+    const Completion* result = m_completionPopover->Confirm();
+    if (result) {
+        m_parent.Replace(result->range, result->insertText.c_str());
+    }
+
+    m_completionPopover->Clear();
+    m_completionPopover->Hide();
 }
 
 bool CompletionTool::GetIsShowing(){

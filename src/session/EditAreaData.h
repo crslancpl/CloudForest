@@ -13,8 +13,8 @@ void InitEditAreaData();
 
 const std::unordered_set<EditArea*> &GetAllEditAreas();
 const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang);
-EditArea *FindEditAreaByFileData(const FileData* file);
-EditArea *FindEditAreaByPath(const char* absopath);
+EditArea* FindEditAreaByFileData(const FileData* file);
+EditArea* FindEditAreaByPath(const char* absopath);
 
 void EditNewFile();
 void EditFile(FileData* file);

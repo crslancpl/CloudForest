@@ -23,6 +23,7 @@
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
+#include <cstdio>
 #include <cstring>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -332,7 +333,7 @@ void EditArea::LoadFile(FileData* newfile){
     }
 
     gtk_button_set_label(m_locationBut, m_editingFile->absoPath.c_str());
-    auto lang = langmanager::FindByFileExtension(m_editingFile->fileName.c_str());
+    const Language* lang = langmanager::FindByFileExtension(m_editingFile->fileName.c_str());
     this->SetLanguage(lang);
     this->SetContentName(m_editingFile->fileName);
 

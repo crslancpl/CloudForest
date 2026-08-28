@@ -59,12 +59,12 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
         Py_RETURN_NAN;
     }
 
-    EditArea* ea = session::FindEditAreaByPath(filepath);
-    if(!ea){
+    EditArea* result = session::FindEditAreaByPath(filepath);
+    if(!result){
         Py_RETURN_NONE;
     }
 
-    PyObject* py_ea = (PyObject*)ea->GetPyEditArea();
+    PyObject* py_ea = (PyObject*)result->GetPyEditArea();
     return  Py_NewRef(py_ea);//
 }
 
@@ -94,9 +94,9 @@ static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* a
         Py_RETURN_NAN;
     }
 
-    Workspace* ws = session::FindWorkspaceByPath(ea->editarea->GetFilePath());
-    if(ws){
-        return PyUnicode_FromString(ws->GetFileData()->absoPath.c_str());
+    Workspace* result = session::FindWorkspaceByPath(ea->editarea->GetFilePath());
+    if(result){
+        return PyUnicode_FromString(result->GetFileData()->absoPath.c_str());
     }else{
         Py_RETURN_NONE;
     }

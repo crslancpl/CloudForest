@@ -9,7 +9,6 @@
 #include <gtk/gtkshortcut.h>
 #include <memory>
 #include <vector>
-#include <optional>
 
 // forward declare
 class EditArea;
@@ -44,11 +43,11 @@ public:
     void Clear();
     void Hide();
 
-    std::optional<const Completion*> SelectUp();
-    std::optional<const Completion*> SelectDown();
-    const Completion& Confirm();
+    const Completion* SelectUp();
+    const Completion* SelectDown();
+    const Completion* Confirm();
 
-    void SetTarget(EditArea* ea);
+    void SetTarget(EditArea* target);
 
     void Show(const GdkRectangle &cursorrec);
     //void Show(const GdkRectangle *cursorrec, const std::vector<std::unique_ptr<Completion>>& completions);

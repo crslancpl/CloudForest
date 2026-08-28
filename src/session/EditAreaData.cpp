@@ -14,6 +14,7 @@
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -44,13 +45,13 @@ SessionEditAreaData session_editarea_data;
 /*
  * Callbacks
  */
-static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const Language* newlang);
-static void OnEditAreaClosed(EditArea* ea);
+static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, const Language* newlang);
+static void on_editarea_closed(EditArea* ea);
 
-static void OnEditAreaCreated(EditArea* ea){
+static void on_editarea_created(EditArea* ea){
     //
-    ea->Listen(EditArea::LANG_CHANGED,(EventCallback)OnEditAreaLangChanged);
-    ea->Listen(EditArea::CLOSED, (EventCallback)OnEditAreaClosed);
+    ea->Listen(EditArea::LANG_CHANGED,(EventCallback)on_editarea_lang_changed);
+    ea->Listen(EditArea::CLOSED, (EventCallback)on_editarea_closed);
 
     const Language* lang = ea->GetLanguage();
     auto itr = session_editarea_data.languageGroupsMap.find(lang);
@@ -67,7 +68,7 @@ static void OnEditAreaCreated(EditArea* ea){
     }
 }
 
-static void OnEditAreaClosed(EditArea* ea){
+static void on_editarea_closed(EditArea* ea){
     auto itr = session_editarea_data.languageGroupsMap.find(ea->GetLanguage());
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Remove(ea);
@@ -75,12 +76,13 @@ static void OnEditAreaClosed(EditArea* ea){
     session_editarea_data.allEditAreaSet.erase(ea);
 }
 
-static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const Language* newlang){
+static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, const Language* newlang){
     auto itr = session_editarea_data.languageGroupsMap.find(oldlang);
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Remove(ea);
     }
     itr = session_editarea_data.languageGroupsMap.find(newlang);
+
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
@@ -98,7 +100,7 @@ static void OnEditAreaLangChanged(EditArea* ea, const Language* oldlang, const L
 namespace session {
 
 void InitEditAreaData(){
-    session::Listen(EDITAREA_CREATED, (EventCallback)OnEditAreaCreated);
+    session::Listen(EDITAREA_CREATED, (EventCallback)on_editarea_created);
 }
 
 const std::unordered_set<EditArea*> &GetAllEditAreas(){
@@ -114,31 +116,35 @@ const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang
     }
 }
 
-EditArea *FindEditAreaByFileData(const FileData* file){
+EditArea* FindEditAreaByFileData(const FileData* file){
     Workspace* ws = FindWorkspaceByPath(file->absoPath.c_str());
-    FileData* fd;
+
     if (ws) {
-        fd = ws->FindChildByPath(file->absoPath.c_str());
-        return fd->editArea;
+        FileData* result = ws->FindChildByPath(file->absoPath.c_str());
+        if (result) {
+            return result->editArea;
+        }
     } else {
-        fd = FindSingleFileByPath(file->absoPath.c_str());
-        return fd->editArea;
+        FileData* result = FindSingleFileByPath(file->absoPath.c_str());
+        if (result) {
+            return result->editArea;
+        }
     }
     return nullptr;
 };
 
 EditArea* FindEditAreaByPath(const char* absopath){
-    Workspace* ws = FindWorkspaceByPath(absopath);
-    FileData* fd;
-    if (ws) {
-        fd = ws->FindChildByPath(absopath);
-        if (fd) {
-            return fd->editArea;
+    Workspace* wsresult = FindWorkspaceByPath(absopath);
+
+    if (wsresult) {
+        FileData* result = wsresult->FindChildByPath(absopath);
+        if (result) {
+            return result->editArea;
         }
     } else {
-        fd = FindSingleFileByPath(absopath);
-        if (fd) {
-            return fd->editArea;
+        FileData* result = FindSingleFileByPath(absopath);
+        if (result) {
+            return result->editArea;
         }
     }
     return nullptr;
@@ -183,6 +189,7 @@ void EditNewFile(){
 
 void EditFile(FileData *file){
     EditArea* ea = FindEditAreaByFileData(file);
+
     if(ea){
         CfTabLayout* tablayout = session::GetFocusedTabLayout();
         if(tablayout){

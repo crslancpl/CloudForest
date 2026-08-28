@@ -2,6 +2,7 @@
 #define FILETREE_H_
 
 #include "datatypes/file.h"
+
 #include "src/filemanagement/FileReader.h"
 
 #include <memory>
@@ -42,6 +43,9 @@ protected:
 class FileBranch : public Branch{
 public:
     FileBranch(std::unique_ptr<FileData> file);
+    ~FileBranch();
+
+    const char* ReadContent();
 };
 
 
@@ -49,9 +53,12 @@ public:
 class FolderBranch : public Branch{
 public:
     FolderBranch(std::unique_ptr<FileData> folder);
+    ~FolderBranch();
+
+    void Load();
 
     bool GetIsChildLoaded() const;
-    void SetIsChildLoaded(bool loaded);
+
     const std::vector<std::unique_ptr<FileBranch>> &GetChildFiles() const;
     const std::vector<std::unique_ptr<FolderBranch>> &GetChildFolders() const;
 
@@ -65,6 +72,7 @@ public:
 
 protected:
     bool m_isChildLoaded = false;
+
     std::vector<std::unique_ptr<FileBranch>> m_childFiles;
     std::vector<std::unique_ptr<FolderBranch>> m_childFolders;
 };
@@ -76,7 +84,7 @@ public:
     Workspace(std::unique_ptr<FileData> root);
 
     FileData* FindChildByPath(const char* path);
-    Branch* FileChildBranchByPath(const char* path);
+    Branch* FindChildBranchByPath(const char* path);
     void SetCustomName(const char* name);
 private:
     std::string m_customName;// can be named by user

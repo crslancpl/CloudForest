@@ -12,7 +12,6 @@
 #include "windows/MainWindow.h"
 #include "toolset/tools/Tool.h"
 
-#include <cstdio>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>

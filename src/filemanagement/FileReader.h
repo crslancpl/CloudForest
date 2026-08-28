@@ -11,8 +11,6 @@ class FolderBranch;
 
 namespace filemanager{
 
-void ExpandFolderBranch(FolderBranch& branch);
-
 std::unique_ptr<FileData> LoadFileData(GFile* filedata, GFileInfo* info, bool issinglefile);
 void ReadFileText(FileData* filedata, char** output);
 

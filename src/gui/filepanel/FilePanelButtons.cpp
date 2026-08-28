@@ -10,7 +10,6 @@
 #include "src/session/EditAreaData.h"
 #include "AppUI.h"
 
-#include <cstdio>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -192,9 +191,9 @@ void FPFolderButton::RemoveChildFile(FPFileButton* child){
 
 void FPFolderButton::ToggleFolder(){
     if(!m_folderBranch.GetIsChildLoaded()){
-        filemanager::ExpandFolderBranch(m_folderBranch);
+        m_folderBranch.Load();
 
-        for(const std::unique_ptr<FileBranch>& b : m_folderBranch.GetChildFiles()){
+        for (const std::unique_ptr<FileBranch>& b : m_folderBranch.GetChildFiles()){
             std::unique_ptr<FPFileButton> childfilebtn = std::make_unique<FPFileButton>(*b, m_level + 1);
             this->AddChildFile(std::move(childfilebtn));
         }

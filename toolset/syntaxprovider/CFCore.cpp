@@ -24,15 +24,14 @@ static void RequestFile(cf_FileRequest_msg *freq){
         fresp.Content = strcat(strdup(std::string("data/").c_str()) , freq->FilePath);
         cf_Send_Message(FILERESP, &fresp);
     }else{
-        auto targetEditArea = session::FindEditAreaByPath(freq->FilePath);
+        EditArea* result = session::FindEditAreaByPath(freq->FilePath);
 
-        if(!targetEditArea){
-            return;
+        if(result){
+            auto text = result->GetContent();
+            fresp.Content = text;
+            fresp.IsPath = false;
+            cf_Send_Message(FILERESP, &fresp);
         }
-        auto text = targetEditArea->GetContent();
-        fresp.Content = text;
-        fresp.IsPath = false;
-        cf_Send_Message(FILERESP, &fresp);
     }
 }
 
@@ -44,12 +43,14 @@ static void Draw(cf_Highlight_msg* highlight){
         {CF_NEWLINE, "invisible"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
-    auto targetEditArea = session::FindEditAreaByPath(highlight->file);
-    auto tagname = tagnames.find(highlight->type)->second;
+    EditArea* result = session::FindEditAreaByPath(highlight->file);
+    const char* tagname = tagnames.find(highlight->type)->second;
 
-    targetEditArea->ApplyTagByLinePos(
-        highlight->startline, highlight->startlinepos, highlight->textlength, tagname
-    );
+    if (result) {
+        result->ApplyTagByLinePos(
+            highlight->startline, highlight->startlinepos, highlight->textlength, tagname
+        );
+    }
 }
 
 static void CfMessageReceiver(cf_MessageType type, void* data){

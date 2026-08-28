@@ -18,6 +18,7 @@ DiagnosticPopover::DiagnosticPopover(){
     gtk_widget_remove_css_class(GTK_WIDGET(m_popover), "background");
     gtk_widget_add_css_class(GTK_WIDGET(m_popover), "diagnostic-popover");
     gtk_label_set_wrap(m_messageLabel, true);
+    g_object_ref(m_popover);
 }
 
 DiagnosticPopover::~DiagnosticPopover(){
@@ -58,11 +59,20 @@ void DiagnosticPopover::Show(const Diagnostic& diagnostic, const GdkRectangle& r
 }
 
 void DiagnosticPopover::SetTarget(EditArea* target){
+    this->Hide();
+    // old m_target
+    if (m_target) {
+        g_object_ref(m_popover);
+        gtk_widget_unparent(GTK_WIDGET(m_popover));
+    }
+
     m_target = target;
-    g_object_ref(m_popover);
-    gtk_widget_unparent(GTK_WIDGET(m_popover));
-    gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_target->GetTextView()));
-    g_object_unref(m_popover);
+
+    // new m_target
+    if (m_target) {
+        gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(m_target->GetTextView()));
+        g_object_unref(m_popover);
+    }
 }
 
 const Diagnostic* DiagnosticPopover::GetShowingDiagnostic(){

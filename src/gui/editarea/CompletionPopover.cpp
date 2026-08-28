@@ -88,9 +88,9 @@ void CompletionPopover::Hide(){
     m_isShowing = false;
 }
 
-std::optional<const Completion*> CompletionPopover::SelectUp(){
+const Completion* CompletionPopover::SelectUp(){
     if (m_items.empty()) {
-        return {};
+        return nullptr;
     }
     if (m_selectedItem) {
         m_selectedItem->SetSelected(false);
@@ -108,9 +108,9 @@ std::optional<const Completion*> CompletionPopover::SelectUp(){
     return &m_selectedItem->GetCompletion();
 }
 
-std::optional<const Completion*> CompletionPopover::SelectDown(){
+const Completion* CompletionPopover::SelectDown(){
     if (m_items.empty()) {
-        return {};
+        return nullptr;
     }
 
     if (m_selectedItem) {
@@ -128,17 +128,26 @@ std::optional<const Completion*> CompletionPopover::SelectDown(){
     return &m_selectedItem->GetCompletion();
 }
 
-const Completion& CompletionPopover::Confirm(){
-    return m_selectedItem->GetCompletion();
+const Completion* CompletionPopover::Confirm(){
+    if (m_selectedItem) {
+        return &m_selectedItem->GetCompletion();
+    } else {
+        return nullptr;
+    }
 }
 
-void CompletionPopover::SetTarget(EditArea* ea){
+void CompletionPopover::SetTarget(EditArea* target){
     this->Clear();
-    if (ea != m_target) {
-        m_target = ea;
+
+    if (m_target) {
         g_object_ref(m_popover);
         gtk_widget_unparent(GTK_WIDGET(m_popover));
-        gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(ea->GetTextView()));
+    }
+
+    m_target = target;
+
+    if (m_target) {
+        gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(target->GetTextView()));
         g_object_unref(m_popover);
     }
 }
