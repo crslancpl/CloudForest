@@ -1,13 +1,8 @@
 project(FILEMANAGLIB)
 
-set(FILEMANAGEMENT
-    FileManagement_if.cpp
-)
-
 add_library( ${PROJECT_NAME}
     FileCallback.cpp
-    FileManagement_if.cpp
-    FileOperation.cpp
+    FileManager.cpp
     FileReader.cpp
     FileTree.cpp
 )

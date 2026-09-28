@@ -9,7 +9,6 @@
 #include <gtk/gtk.h>
 #include <memory>
 
-#include "Gui_if.h"
 #include "AppUI.h"
 #include "layouts/layout/CfLayout.h"
 #include "windows/Window.h"

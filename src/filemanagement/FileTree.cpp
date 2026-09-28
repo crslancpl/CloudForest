@@ -1,29 +1,42 @@
 #include "FileTree.h"
 
+#include "AppUI.h"
+#include "editarea/CompletionTool.h"
+#include "editarea/EditArea.h"
+#include "src/AppContext.h"
 #include "datatypes/file.h"
-#include "src/filemanagement/FileOperation.h"
+#include "src/filemanagement/FileManager.h"
 #include "src/filemanagement/FileReader.h"
 #include "toolset/tools/StringSorting.h"
 #include "toolset/tools/Tool.h"
+#include "windows/MainWindow.h"
 
+#include <gio/gio.h>
+#include <glib-object.h>
 #include <memory>
 #include <string>
 
+/*
+ * Branch class
+ */
+
 Branch::Branch(std::unique_ptr<FileData> data) : m_fileData(std::move(data)){
-    m_name = m_fileData->fileName;
-    m_fileData->branch = this;
 }
 
 void Branch::Rename(const std::string& name){
-    filemanager::Rename(m_fileData.get(), name);
+    m_fileData->fileName = name;
+    GError* error;
+    GFile* oldfile = m_fileData->file;
+    GFile* newfile = g_file_set_display_name(oldfile, name.c_str(), nullptr, &error);
+    if (newfile) {
+        m_fileData->file = newfile;
+        g_object_unref(oldfile);
+    }
 }
 
 void Branch::Delete(){
-    filemanager::Delete(m_fileData.get());
-}
-
-const std::string& Branch::GetName() const{
-    return m_name;
+    GError* error;
+    g_file_delete(m_fileData->file, nullptr, &error);
 }
 
 FolderBranch* Branch::GetParent() const{
@@ -34,13 +47,53 @@ void Branch::SetParent(FolderBranch* parent){
     m_parent = parent;
 }
 
-FileData* Branch::GetFileData() const{
+const FileData* Branch::GetFileData() const{
     return m_fileData.get();
 }
+
+FilePanelButton* Branch::GetFilePanelButton(){
+    return m_button;
+}
+void Branch::SetFilePanelButton(FilePanelButton& button){
+    m_button = &button;
+}
+
 
 /*
  * FileBranch class
  */
+
+typedef struct {
+    FileData* oldFileData;
+    const char* content;
+    FileBranch* parent;
+} FileSaved_Args;
+
+static void on_new_file_saved(GObject *source, GAsyncResult *result, void* userdata){
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), result, nullptr);
+    FileSaved_Args* args = (FileSaved_Args*)userdata;
+
+    if(file != nullptr){
+        GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+        std::unique_ptr<FileData> filedata = filemanager::LoadFileData(file, info, true);
+
+        FileData* filedataraw = filedata.get();
+        g_file_replace_contents(
+            filedata->file,
+            args->content,
+            strlen(args->content),
+            nullptr,
+            false,
+            G_FILE_CREATE_REPLACE_DESTINATION,
+            nullptr,
+            nullptr,
+            nullptr
+        );
+
+        ((FileBranch*)args->parent)->OnSaved(std::move(filedata));
+    }
+    delete args;
+}
 
 FileBranch::FileBranch(std::unique_ptr<FileData> file) : Branch(std::move(file)){
     //
@@ -48,11 +101,118 @@ FileBranch::FileBranch(std::unique_ptr<FileData> file) : Branch(std::move(file))
 
 FileBranch::~FileBranch(){}
 
+EditArea* FileBranch::GetEditArea() const{
+    return m_editarea;
+}
+
+void FileBranch::SetEditArea(EditArea* ea){
+    m_editarea = ea;
+}
+
+void FileBranch::Save(const char* content, AppContext& context){
+    if(m_fileData->isVirtual){
+        /*
+         * Create a new file or write the content into a existing file.
+         */
+        FileSaved_Args* args = new FileSaved_Args{
+            m_fileData.get(),
+            content,
+            this
+        };// free by on_file_saved()
+
+        gtk_file_dialog_set_title(context.appUI->GetFileDialog(), "Save file");
+        MainWindow* parentwindow = context.appUI->GetMainWindow();
+        gtk_file_dialog_save(
+            context.appUI->GetFileDialog(),
+            parentwindow->GetGtkWindow(),
+            nullptr,
+            on_new_file_saved,
+            args
+        );
+    } else {
+        /*
+         * Replace content.
+         */
+        g_file_replace_contents(
+            m_fileData->file,
+            content,
+            strlen(content),
+            nullptr,
+            false,
+            G_FILE_CREATE_REPLACE_DESTINATION,
+            nullptr,
+            nullptr,
+            nullptr);
+
+        m_latestContent = content;
+
+        for (cb_FileBranchBasic* callback : m_savedCallbacks) {
+            auto f = callback->funtion;
+            auto r = callback->receiver;
+            (r->*f)(this);
+        }
+    }
+}
+
 const char* FileBranch::ReadContent(){
     char* content;
     filemanager::ReadFileText(m_fileData.get(), &content);
     return content;
 }
+
+void FileBranch::ConnectFocused(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
+    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
+    callbackdata->receiver = receiver;
+    callbackdata->funtion = callback;
+    m_focusedCallbacks.emplace_back(callbackdata);
+}
+
+void FileBranch::ConnectOpened(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
+    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
+    callbackdata->receiver = receiver;
+    callbackdata->funtion = callback;
+    m_openedCallbacks.emplace_back(callbackdata);
+}
+
+void FileBranch::ConnectSaved(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
+    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
+    callbackdata->receiver = receiver;
+    callbackdata->funtion = callback;
+    m_savedCallbacks.emplace_back(callbackdata);
+}
+
+void FileBranch::ConnectClosed(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
+    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
+    callbackdata->receiver = receiver;
+    callbackdata->funtion = callback;
+    m_closedCallbacks.emplace_back(callbackdata);
+}
+
+void FileBranch::ConnectDataChanged(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
+    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
+    callbackdata->receiver = receiver;
+    callbackdata->funtion = callback;
+    m_dataChangedCallbacks.emplace_back(callbackdata);
+}
+
+void FileBranch::OnSaved(std::unique_ptr<FileData> filedata){
+    if (filedata->fileName != m_fileData->fileName) {
+        //this->Rename(fileName);
+    }
+
+    if (filedata.get() != m_fileData.get()) {
+        // new file saved
+        m_fileData = std::move(filedata);
+    }
+
+    for (cb_FileBranchBasic* callbackdata : m_dataChangedCallbacks) {
+        auto r = callbackdata->receiver;
+        auto f = callbackdata->funtion;
+        (r->*f)(this);
+    }
+}
+
+
 
 /*
  * FolderBranch class
@@ -113,7 +273,7 @@ void FolderBranch::AddChildFile(std::unique_ptr<FileBranch> child){
 
     int itr = 0;
     for (std::unique_ptr<FileBranch>& item : m_childFiles) {
-        if (CompareString(child->GetName(), item->GetName()) == COMPARE_RESULT_LESS) {
+        if (CompareString(child->GetFileData()->fileName, item->GetFileData()->fileName) == COMPARE_RESULT_LESS) {
             break;
         }
 
@@ -150,7 +310,7 @@ void FolderBranch::AddChildFolder(std::unique_ptr<FolderBranch> child){
 
     int itr = 0;
     for (std::unique_ptr<FolderBranch>& item : m_childFolders) {
-        if (CompareString(child->GetName(), item->GetName()) == COMPARE_RESULT_LESS) {
+        if (CompareString(child->GetFileData()->fileName, item->GetFileData()->fileName) == COMPARE_RESULT_LESS) {
             break;
         }
 
@@ -185,41 +345,7 @@ Workspace::Workspace(std::unique_ptr<FileData> root) : FolderBranch(std::move(ro
     //
 }
 
-FileData* Workspace::FindChildByPath(const char* path){
-    // path = "/home/my/path/to/file.txt"
-    // workspace path = "/home/my"
-
-    std::string relativepath = std::string(path).substr(m_fileData->absoPath.length());
-    // relative path = "/path/to/file.txt"
-
-    auto trimmed = tools::TrimText(relativepath, "/");
-    // trimmed = ["path", "to", "file.txt"]
-
-    FolderBranch* parent = this;
-    for (int i = 0; i < trimmed.size(); i++) {
-        std::string& str = trimmed[i];
-        for (const std::unique_ptr<FolderBranch>& b : parent->GetChildFolders()) {
-            if(b->GetName() == str){
-                if (i == trimmed.size() - 1) {
-                    // target
-                    return b->GetFileData();
-                }
-                parent = b.get();
-                break;
-            }
-        }
-
-        for (const std::unique_ptr<FileBranch>& b : parent->GetChildFiles()) {
-            if (b->GetName() == str) {
-                return b->GetFileData();
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-Branch* Workspace::FindChildBranchByPath(const char* path){
+Branch* Workspace::FindChildBranchByPath(const std::string& path){
     // path = "/home/my/path/to/file.txt"
     // workspace path = "/home/my"
 
@@ -233,7 +359,7 @@ Branch* Workspace::FindChildBranchByPath(const char* path){
     for (int i = 0; i < trimmed.size(); i++) {
         std::string &str = trimmed[i];
         for (const std::unique_ptr<FolderBranch>& b : parent->GetChildFolders()) {
-            if(b->GetName() == str){
+            if(b->GetFileData()->fileName == str){
                 //printf("found folder %s\n", b->GetName());
                 if (i == trimmed.size() - 1) {
                     // target
@@ -245,7 +371,7 @@ Branch* Workspace::FindChildBranchByPath(const char* path){
         }
 
         for (const std::unique_ptr<FileBranch>& b : parent->GetChildFiles()) {
-            if (b->GetName() == str) {
+            if (b->GetFileData()->fileName == str) {
                 return b.get();
             }
         }
@@ -253,6 +379,6 @@ Branch* Workspace::FindChildBranchByPath(const char* path){
     return nullptr;
 }
 
-void Workspace::SetCustomName(const char* name){
-    m_customName = strdup(name);
+void Workspace::SetCustomName(const std::string& name){
+    m_customName = name;
 }

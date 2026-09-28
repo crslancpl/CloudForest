@@ -3,6 +3,8 @@
 
 #include <Python.h>
 
+typedef struct AppContext AppContext;
+
 PyMODINIT_FUNC PyInit_cloudforest_module();
 void cloudforest_module_invoke_app_closed();
 

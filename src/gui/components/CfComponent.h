@@ -1,9 +1,11 @@
 #ifndef CFCOMPONENT_H_
 #define CFCOMPONENT_H_
 
+#include "toolset/event/Event.h"
+
 #include <gtk/gtk.h>
 
-class CfComponent{
+class CfComponent {
 public:
     virtual GtkWidget* GetBaseWidget() = 0;
 };

@@ -2,12 +2,13 @@
 
 #include "python_tool.h"
 #include "language_mod_Py.h"
+#include "pythonbackend/python_if.h"
 #include "setting_mod_Py.h"
 #include "editarea/editarea_mod_Py.h"
+#include "src/AppContext.h"
 #include "src/filemanagement/FileCallback.h"
-#include "src/filemanagement/FileOperation.h"
+#include "src/filemanagement/FileManager.h"
 #include "src/session/SessionEvent.h"
-#include "src/session/FileData.h"
 
 #include <cstdio>
 #include <abstract.h>
@@ -41,7 +42,7 @@ static void on_new_workspace(Workspace* ws){
     TryRestoreThreadLock();
     PyObject* args = PyTuple_Pack(
         2,
-        PyUnicode_FromString(ws->GetName().c_str()),
+        PyUnicode_FromString(ws->GetFileData()->fileName.c_str()),
         PyUnicode_FromString(ws->GetFileData()->absoPath.c_str())
     );
 
@@ -72,9 +73,9 @@ static PyObject *cloudforest_module_get_workspaces(PyObject *self, PyObject *arg
      */
 
     PyObject* wslist = PyList_New(0);
-    for(const std::unique_ptr<Workspace>& ws : session::GetWorkspaceList()){
+    for(const std::unique_ptr<Workspace>& ws : pybackend::GetAppContext().fileManager->GetWorkspaces()){
         PyObject* wsproperty = PyDict_New();
-        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetName().c_str()));
+        PyDict_SetItemString(wsproperty, "name", PyUnicode_FromString(ws->GetFileData()->fileName.c_str()));
         std::string uri = "file://" + std::string(ws->GetFileData()->absoPath);
         PyDict_SetItemString(wsproperty, "uri", PyUnicode_FromString(uri.c_str()));
 

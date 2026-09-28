@@ -17,10 +17,10 @@
 
 class AppUI{
 public:
-    AppUI();
+    AppUI(AppContext& context);
     ~AppUI();
 
-    void Start(GtkApplication* gtkapp);
+    int Run(int argc, char* argv[]);
     void Finalize();
 
     MainWindow* GetMainWindow();
@@ -36,7 +36,11 @@ public:
     void TransferDiagnosticPopover(DiagnosticTool* newowner);
     void TransferCompletionPopover(CompletionTool* newowner);
 
+    void OnActivated();
+
 private:
+    AppContext& m_context;
+
     std::unique_ptr<MainWindow> m_mainWindow;
 
     std::unique_ptr<CompletionPopover> m_completionPopover;

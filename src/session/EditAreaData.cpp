@@ -7,14 +7,12 @@
 #include "editarea/EditArea.h" // for EditArea
 #include "layouts/tab/CfTabLayout.h"
 #include "layouts/tab/CfTabSwitcher.h"
-#include "src/filemanagement/FileCallback.h"
-#include "src/filemanagement/FileOperation.h"
+#include "src/AppContext.h"
+#include "src/filemanagement/FileManager.h"
 #include "src/languages/LanguageGroup.h"
-#include "src/session/FileData.h"
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
-#include <cstdio>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -96,10 +94,12 @@ static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, cons
     }
 }
 
+static AppContext* current_context;
 
 namespace session {
 
-void InitEditAreaData(){
+void InitEditAreaData(AppContext& context){
+    current_context = &context;
     session::Listen(EDITAREA_CREATED, (EventCallback)on_editarea_created);
 }
 
@@ -116,37 +116,12 @@ const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang
     }
 }
 
-EditArea* FindEditAreaByFileData(const FileData* file){
-    Workspace* ws = FindWorkspaceByPath(file->absoPath.c_str());
-
-    if (ws) {
-        FileData* result = ws->FindChildByPath(file->absoPath.c_str());
-        if (result) {
-            return result->editArea;
-        }
-    } else {
-        FileData* result = FindSingleFileByPath(file->absoPath.c_str());
-        if (result) {
-            return result->editArea;
-        }
-    }
-    return nullptr;
-};
-
 EditArea* FindEditAreaByPath(const char* absopath){
-    Workspace* wsresult = FindWorkspaceByPath(absopath);
-
-    if (wsresult) {
-        FileData* result = wsresult->FindChildByPath(absopath);
-        if (result) {
-            return result->editArea;
-        }
-    } else {
-        FileData* result = FindSingleFileByPath(absopath);
-        if (result) {
-            return result->editArea;
-        }
+    FileBranch* result = current_context->fileManager->FindOpenedFileByPath(absopath);
+    if (result) {
+        return result->GetEditArea();
     }
+
     return nullptr;
 }
 
@@ -172,11 +147,11 @@ LanguageGroup* FindLanguageGroup(const Language* lang){
  */
 
 void EditNewFile(){
-    std::unique_ptr<FileData> filedata = filemanager::CreateNewFile();
-    FileData* filedataraw = filedata.get();
-    session::AddSingleFile(std::move(filedata));
+    FileBranch* filebranch = current_context->fileManager->CreateNewFile();
 
-    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(filedataraw);
+    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(*filebranch, *current_context);
+    //session::AddSingleFile(std::move(filebranch));
+
     EditArea* ea = neweditarea.get();
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
@@ -187,8 +162,8 @@ void EditNewFile(){
     }
 }
 
-void EditFile(FileData *file){
-    EditArea* ea = FindEditAreaByFileData(file);
+void EditFile(FileBranch& file){
+    EditArea* ea = file.GetEditArea();
 
     if(ea){
         CfTabLayout* tablayout = session::GetFocusedTabLayout();
@@ -198,10 +173,11 @@ void EditFile(FileData *file){
         return;
     }
 
-    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(file);
+    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(file, *current_context);
     ea = neweditarea.get();
 
     CfTabLayout* tablayout = session::GetFocusedTabLayout();
+
     if(tablayout){
         CfTabSwitcher& switcher = tablayout->Add(std::move(neweditarea));
         tablayout->SwitchTo(switcher);

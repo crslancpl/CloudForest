@@ -2,12 +2,13 @@
 
 #include "datatypes/common.h"
 #include "editarea_class_Py.h"
+#include "pythonbackend/python_if.h"
 #include "pythonbackend/python_tool.h"
-#include "src/filemanagement/FileOperation.h"
+#include "src/AppContext.h"
+#include "src/filemanagement/FileManager.h"
 #include "src/gui/editarea/EditArea.h"
-#include "src/languages/LanguageManager_if.h"
+#include "src/languages/LanguageManager.h"
 #include "src/session/EditAreaData.h"
-#include "src/session/FileData.h"
 #include "src/session/SessionEvent.h"
 #include "datatypes/file.h"
 #include "toolset/event/Event.h"
@@ -75,7 +76,7 @@ static PyObject *editarea_module_get_by_language(PyObject *self, PyObject *args)
         Py_RETURN_NAN;
     }
 
-    const Language *lang = langmanager::FindByName(langname);
+    const Language *lang = pybackend::GetAppContext().langManager->FindByName(langname);
     const std::unordered_set<EditArea*>& set = session::GetEditAreasByLanguage(lang);
     PyObject* editarealist = PyList_New(0);
     for (EditArea* ea : set){
@@ -94,7 +95,7 @@ static PyObject* editarea_module_find_workspace_path(PyObject* self, PyObject* a
         Py_RETURN_NAN;
     }
 
-    Workspace* result = session::FindWorkspaceByPath(ea->editarea->GetFilePath());
+    Workspace* result = pybackend::GetAppContext().fileManager->FindWorkspaceByPath(ea->editarea->GetFilePath());
     if(result){
         return PyUnicode_FromString(result->GetFileData()->absoPath.c_str());
     }else{

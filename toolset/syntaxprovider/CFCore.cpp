@@ -2,7 +2,6 @@
 
 #include <glib.h>
 #include <string>
-#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <unordered_map>
 
@@ -44,9 +43,10 @@ static void Draw(cf_Highlight_msg* highlight){
     };
 
     EditArea* result = session::FindEditAreaByPath(highlight->file);
-    const char* tagname = tagnames.find(highlight->type)->second;
 
     if (result) {
+        const char* tagname = tagnames.find(highlight->type)->second;
+
         result->ApplyTagByLinePos(
             highlight->startline, highlight->startlinepos, highlight->textlength, tagname
         );

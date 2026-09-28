@@ -5,17 +5,20 @@
 
 #include "components/CfComponent.h"
 
-typedef struct AppUI AppUI;
+typedef struct AppContext AppContext;
 
 class HeaderBar : public CfComponent{
 public:
-    HeaderBar(AppUI& appui);
-
-    void IdeButtonClicked();
+    HeaderBar(AppContext& appui);
 
     GtkWidget * GetBaseWidget() override;
+
+    void OnLoadFileClicked();
+    void OnLoadFolderClicked();
+    void OnIdeButtonClicked();
+
 private:
-    AppUI& m_appUI;
+    AppContext& m_context;
     GtkHeaderBar *m_headerBarWidget;
     GtkMenuButton *m_fileBut;
     GtkButton *m_compileBut;

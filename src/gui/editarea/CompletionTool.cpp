@@ -4,7 +4,8 @@
 #include "EditArea.h"
 #include "CompletionPopover.h"
 #include "datatypes/lsp.h"
-#include "Gui_if.h"
+#include "editarea/DiagnosticPanel.h"
+#include "src/AppContext.h"
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
@@ -53,7 +54,8 @@ const std::string& CompletionTool::GetCompletionItemKindAsString(COMPLETION_ITEM
 
 // non static
 
-CompletionTool::CompletionTool(EditArea& parent):
+CompletionTool::CompletionTool(EditArea& parent, AppContext& context):
+    m_context(context),
     m_parent(parent)
     {
     //
@@ -61,13 +63,13 @@ CompletionTool::CompletionTool(EditArea& parent):
 
 CompletionTool::~CompletionTool(){
     if (m_completionPopover) {
-        gui::GetCurrentUI().TransferCompletionPopover(nullptr);
+        m_context.appUI->TransferCompletionPopover(nullptr);
     }
 }
 
 void CompletionTool::Add(std::unique_ptr<Completion> completion){
     if (!m_completionPopover) {
-        gui::GetCurrentUI().TransferCompletionPopover(this);
+        m_context.appUI->TransferCompletionPopover(this);
     }
     m_completionPopover->Add(std::move(completion));
 }
@@ -92,7 +94,7 @@ void CompletionTool::Request(unsigned int line, unsigned int column){
 void CompletionTool::ShowPopover(){
     //
     if (!m_completionPopover) {
-        gui::GetCurrentUI().TransferCompletionPopover(this);
+        m_context.appUI->TransferCompletionPopover(this);
     }
     //printf("completion version %i\n",m_parent.GetFileVersion());
     m_completionPopover->Show(m_parent.GetCursorRectangle());

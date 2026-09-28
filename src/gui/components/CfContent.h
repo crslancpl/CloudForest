@@ -14,7 +14,7 @@ class CfContent;
 
 typedef void(*NameChangedCallback)(const std::string&, CfContent*);
 
-class CfContent : public CfComponent{
+class CfContent : public CfComponent {
 public:
     CfContent();
     virtual ~CfContent();

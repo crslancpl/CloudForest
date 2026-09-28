@@ -9,16 +9,16 @@
 
 namespace session{
 
-void InitEditAreaData();
+void InitEditAreaData(AppContext& context);
 
 const std::unordered_set<EditArea*> &GetAllEditAreas();
 const std::unordered_set<EditArea*> &GetEditAreasByLanguage(const Language* lang);
-EditArea* FindEditAreaByFileData(const FileData* file);
+
 EditArea* FindEditAreaByPath(const char* absopath);
 
 void EditNewFile();
-void EditFile(FileData* file);
-void CloseFile(FileData* file);
+void EditFile(FileBranch& filebranch);
+void CloseFile(FileBranch& filebranch);
 
 EditArea* GetFocusedEditArea();
 void SetFocusedEditArea(EditArea* editarea);

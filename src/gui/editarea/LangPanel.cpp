@@ -3,11 +3,10 @@
 #include "datatypes/common.h"
 #include "EditArea.h"
 #include "AppUI.h"
-#include "Gui_if.h"
 #include "components/Flyout.h"
 #include "headerbar/Headerbar.h"
+#include "src/AppContext.h"
 #include "windows/MainWindow.h"
-#include "src/languages/LanguageManager_if.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -30,7 +29,9 @@ static void on_focus_lost(GtkEventControllerFocus* self, LangPanel* langpanel){
  * LangPanelItem class
  */
 
-LangPanelItem::LangPanelItem(const Language& lang):m_lang(lang){
+LangPanelItem::LangPanelItem(const Language& lang) :
+    m_lang(lang)
+    {
     m_button = GTK_BUTTON(gtk_button_new());
     gtk_widget_set_size_request(GTK_WIDGET(m_button), 160, 60);
 
@@ -100,8 +101,8 @@ GtkWidget* LangPanelItem::GetBaseWidget(){
  * LangPanel class
  */
 
-LangPanel::LangPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow())
-    , m_appUI(appui)
+LangPanel::LangPanel(AppContext& context) : Flyout(context.appUI->GetMainWindow()->GetGtkWindow())
+    , m_context(context)
     {
     /*
      * Create the language choosing window and set it as
@@ -118,7 +119,7 @@ LangPanel::LangPanel(AppUI& appui) : Flyout(appui.GetMainWindow()->GetGtkWindow(
 
     this->SetChild(GTK_WIDGET(m_scrolledWindow));
 
-    const std::unordered_map<std::string, const Language*>& langmap = langmanager::GetLanguageMap();
+    const std::unordered_map<std::string, const Language*>& langmap = m_context.langManager->GetLanguageMap();
 
     for(auto namelangpair : langmap){
         this->AddLanguage(namelangpair.second);

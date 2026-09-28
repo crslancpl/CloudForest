@@ -61,7 +61,6 @@ add_library(${PROJECT_NAME} STATIC
     ${STYLE}
 
     AppUI.cpp
-    Gui_if.cpp
 )
 
 

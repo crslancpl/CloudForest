@@ -1,12 +1,13 @@
 #include "DiagnosticTool.h"
 
 #include "AppUI.h"
-#include "Gui_if.h"
 #include "datatypes/common.h"
 #include "datatypes/lsp.h"
+#include "editarea/DiagnosticPanel.h"
 #include "editarea/DiagnosticPopover.h"
 #include "editarea/EditArea.h"
 #include "toolset/tools/Tool.h"
+#include "src/AppContext.h"
 
 #include <gdk/gdk.h>
 #include <memory>
@@ -26,21 +27,22 @@ const char* DiagnosticTool::StringifySeverity(int severity){
     }
 }
 
-DiagnosticTool::DiagnosticTool(EditArea& parent):
-    m_parent(parent){
+DiagnosticTool::DiagnosticTool(EditArea& parent, AppContext& context):
+    m_parent(parent),
+    m_context(context){
     //
 }
 
 DiagnosticTool::~DiagnosticTool(){
     //
     this->Clear();
-    AppUI &ui = gui::GetCurrentUI();
+
     if (m_diagnosticPanel) {
-        ui.TransferDiagnosticPanel(nullptr);
+        m_context.appUI->TransferDiagnosticPanel(nullptr);
     }
 
     if (m_diagnosticPopover) {
-        ui.TransferDiagnosticPopover(nullptr);
+        m_context.appUI->TransferDiagnosticPopover(nullptr);
     }
 }
 
@@ -84,7 +86,7 @@ void DiagnosticTool::Process(int version){
 
 void DiagnosticTool::ShowPanel(){
     if (!m_diagnosticPanel) {
-        gui::GetCurrentUI().TransferDiagnosticPanel(this);
+        m_context.appUI->TransferDiagnosticPanel(this);
     }
 
     m_diagnosticPanel->ShowFor(&m_parent);
@@ -100,7 +102,7 @@ void DiagnosticTool::ShowPopover(const ZPosition& pos){
     const Diagnostic* diag = this->Find(pos);
     if (diag) {
         if (!m_diagnosticPopover) {
-            gui::GetCurrentUI().TransferDiagnosticPopover(this);
+            m_context.appUI->TransferDiagnosticPopover(this);
         }
         if ( diag == m_showingDiagnositc) {
             return;

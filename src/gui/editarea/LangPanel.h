@@ -46,7 +46,7 @@ private:
 
 class LangPanel : public Flyout{
 public:
-    LangPanel(AppUI& appui);
+    LangPanel(AppContext& context);
 
     void AddLanguage(const Language* lang);
     void ChooseFor(EditArea* target);
@@ -54,8 +54,10 @@ public:
 private:
     int m_nextItemCol = 0;
     int m_nextItemRow = 0;
-    AppUI& m_appUI;
+
+    AppContext& m_context;
     EditArea *m_target;
+
     GtkScrolledWindow *m_scrolledWindow;
     GtkGrid *m_grid;
     LangPanelItem *m_selectedItem = nullptr;

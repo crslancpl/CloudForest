@@ -3,6 +3,7 @@
 
 #include "components/CfComponent.h"
 #include "components/CfContent.h"
+#include "toolset/event/Event.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
@@ -11,14 +12,14 @@
 
 typedef struct FileData FileData;
 typedef struct Workspace Workspace;
-typedef struct AppUI AppUI;
+typedef struct AppContext AppContext;
 
 class FPFileButton;
 class FPFolderButton;
 
 class WorkspaceBox: public CfComponent{
 public:
-    WorkspaceBox(Workspace& ws);
+    WorkspaceBox(Workspace& ws, AppContext& context);
     ~WorkspaceBox();
 
     void SetName(const char* name);
@@ -33,18 +34,18 @@ private:
     GtkLabel *m_label;
 };
 
-class FilePanel : public CfContent{
+class FilePanel : public CfContent, public EventReceiver{
 public:
-    FilePanel(AppUI& appui);
+    FilePanel(AppContext& appui);
     ~FilePanel();
 
     static unsigned short Offset;
     // Space in front of the buttons in FilePanel. OffSet * level is the total space
-    void NewWorkspace(Workspace* ws);
 
 private:
-    void AddWorkspace(Workspace* ws);
+    void OnWorkspaceCreated(Workspace* ws);
 
+    AppContext& m_context;
     GtkBox *m_workspaceArea;
     std::vector<std::unique_ptr<WorkspaceBox>> m_workspaceList;
 };

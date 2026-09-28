@@ -1,9 +1,12 @@
 #include "language_mod_Py.h"
 
 #include "datatypes/common.h"
+#include "pythonbackend/python_if.h"
+#include "src/AppContext.h"
+#include "src/languages/LanguageManager.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/languages/LanguageGroup.h"
-#include "src/languages/LanguageManager_if.h"
+#include "src/languages/LanguageManager.h"
 #include "src/session/EditAreaData.h"
 #include "python_tool.h"
 #include "editarea/editarea_mod_Py.h"
@@ -12,11 +15,9 @@
 #include "toolset/tools/Tool.h"
 
 #include <abstract.h>
-#include <cstdio>
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
-
 #include <memory>
 #include <methodobject.h>
 #include <modsupport.h>
@@ -86,7 +87,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
         lang->fileExtensions.emplace(ext);
     }
 
-    langmanager::AddToLanguageList(std::move(lang));
+    pybackend::GetAppContext().langManager->AddToLanguageList(std::move(lang));
 
     Py_RETURN_NONE;
 }
@@ -140,7 +141,7 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
 
     event->Connect(callback);
 
-    const Language* lang = langmanager::FindByName(langname);
+    const Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){
@@ -161,7 +162,7 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
         Py_RETURN_NAN;
     }
 
-    const Language* lang = langmanager::FindByName(langname);
+    const Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
     LanguageGroup* langgroup = session::FindLanguageGroup(lang);
 
     if(langgroup != nullptr){

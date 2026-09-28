@@ -5,6 +5,7 @@
 #include "datatypes/extension.h"
 #include "python_tool.h"
 #include "src/Setting.h"
+#include "src/AppContext.h"
 
 #include <Python.h>
 #include <ceval.h>
@@ -17,9 +18,12 @@
 
 #define PY_SSIZE_T_CLEAN
 
+static AppContext* current_context;
+
 namespace pybackend{
 
-void Start(){
+void Start(AppContext& context){
+    current_context = &context;
     PyImport_AppendInittab("cloudforest", PyInit_cloudforest_module);
 
     PyStatus status;
@@ -58,6 +62,10 @@ void End(){
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
+}
+
+AppContext& GetAppContext(){
+    return *current_context;
 }
 
 void RunEnabledExtensions(){

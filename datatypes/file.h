@@ -19,9 +19,6 @@ typedef struct FileData{
     GFileType type;
     GFile *file;
     GFileInfo *fileInfo;
-    FilePanelButton *filePanelButton;
-    Branch *branch;
-    EditArea *editArea;
     std::string fileName;
     std::string absoPath;
     std::string extension;

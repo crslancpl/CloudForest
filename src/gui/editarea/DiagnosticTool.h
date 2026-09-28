@@ -12,11 +12,12 @@
 
 // Forward declare
 class EditArea;
+typedef struct AppContext AppContext;
 
 class DiagnosticTool{
 public:
     static const char* StringifySeverity(int severity);
-    DiagnosticTool(EditArea& parent);
+    DiagnosticTool(EditArea& parent, AppContext& context);
     ~DiagnosticTool();
 
     void Add(std::unique_ptr<Diagnostic> diagnostic);
@@ -41,6 +42,7 @@ public:
     void OnUpdated(std::function<void(int,int,int,int)> callback);
 
 private:
+    AppContext& m_context;
     EditArea& m_parent;
     const Diagnostic* m_showingDiagnositc;
     std::function<void()> m_clearedCallback;

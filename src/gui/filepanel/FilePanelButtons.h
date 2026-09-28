@@ -18,6 +18,7 @@ class FPFolderMenu;
 class FPFileMenu;
 
 typedef struct FileData FileData;
+typedef struct AppContext AppContext;
 
 /*
  * FilePanelButton base class
@@ -25,7 +26,7 @@ typedef struct FileData FileData;
 
 class FilePanelButton : public CfComponent {
 public:
-    FilePanelButton(Branch& branch, unsigned int level);
+    FilePanelButton(Branch& branch, unsigned int level, AppContext& context);
     ~FilePanelButton();
 
     void LoadData();
@@ -39,12 +40,12 @@ public:
     virtual void Delete();
 
 protected:
-    GtkButton *m_button;
+    AppContext& m_context;
 
+    GtkButton *m_button;
     GtkEditableLabel *m_nameEditLabel;
     GtkLabel *m_nameLabel;
     GtkImage *m_icon;
-
     GtkGestureClick *m_rightClickGesture;
 
     std::unique_ptr<FilePanelMenu> m_menu;
@@ -60,7 +61,7 @@ private:
 /* File panel folder button */
 class FPFolderButton : public FilePanelButton {
 public:
-    FPFolderButton(FolderBranch &folderbranch, int level);
+    FPFolderButton(FolderBranch &folderbranch, int level, AppContext& context);
     ~FPFolderButton();
 
     void AddChildFolder(std::unique_ptr<FPFolderButton> child);
@@ -93,7 +94,7 @@ private:
 /* File panel file button */
 class FPFileButton : public FilePanelButton {
 public:
-    FPFileButton(FileBranch &filebranch, int level);// the level of Root folder is 0
+    FPFileButton(FileBranch &filebranch, int level, AppContext& context);// the level of Root folder is 0
     ~FPFileButton();
 
     void Clicked();

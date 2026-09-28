@@ -1,9 +1,9 @@
 #include "FilePanelMenu.h"
 
-#include "Gui_if.h"
 #include "filepanel/FilePanel.h"
 #include "filepanel/FilePanelButtons.h"
 #include "AppUI.h"
+#include "src/AppContext.h"
 
 #include <gio/gio.h>
 #include <gio/gmenu.h>
@@ -33,14 +33,15 @@ static GActionEntry file_panel_menu_entries[] = {
     {"fp.button.delete", file_panel_menu_delete, nullptr, nullptr, nullptr},
 };
 
-FilePanelMenu::FilePanelMenu(FilePanelButton& button)
+FilePanelMenu::FilePanelMenu(FilePanelButton& button, AppContext& context)
     : m_button(button){
     m_gMenu = g_menu_new();
+
     g_menu_append(m_gMenu, "Rename", "app.fp.button.rename");
     g_menu_append(m_gMenu, "Delete", "app.fp.button.delete");
     gtk_popover_menu_new_from_model(G_MENU_MODEL(m_gMenu));
 
-    GtkApplication* app = gui::GetCurrentUI().GetGtkApp();
+    GtkApplication* app = context.appUI->GetGtkApp();
     g_action_map_add_action_entries(G_ACTION_MAP(app), file_panel_menu_entries, G_N_ELEMENTS(file_panel_menu_entries), &m_button);
 
     m_popover = GTK_POPOVER_MENU(gtk_popover_menu_new_from_model(G_MENU_MODEL(m_gMenu)));
@@ -67,7 +68,7 @@ void FilePanelMenu::Hide(){
  * FPFolderMenu class
  */
 
-FPFolderMenu::FPFolderMenu(FPFolderButton& button) : FilePanelMenu(button){
+FPFolderMenu::FPFolderMenu(FPFolderButton& button, AppContext& context) : FilePanelMenu(button, context){
     gtk_widget_set_parent(GTK_WIDGET(m_popover), GTK_WIDGET(button.GetButton()));
     m_folderGMenu = g_menu_new();
     g_menu_append_section(m_gMenu, nullptr, G_MENU_MODEL(m_folderGMenu));
@@ -84,7 +85,7 @@ FPFolderMenu::~FPFolderMenu(){}
  * FPFileMenu class
  */
 
-FPFileMenu::FPFileMenu(FPFileButton& button) : FilePanelMenu(button){
+FPFileMenu::FPFileMenu(FPFileButton& button, AppContext& context) : FilePanelMenu(button, context){
     gtk_widget_set_parent(GTK_WIDGET(m_popover), button.GetBaseWidget());
 }
 

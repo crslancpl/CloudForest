@@ -12,7 +12,7 @@ class FolderBranch;
 namespace filemanager{
 
 std::unique_ptr<FileData> LoadFileData(GFile* filedata, GFileInfo* info, bool issinglefile);
-void ReadFileText(FileData* filedata, char** output);
+void ReadFileText(const FileData* filedata, char** output);
 
 }// namespace filemanager
 

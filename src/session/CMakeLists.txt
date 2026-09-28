@@ -2,7 +2,6 @@ project(SESSIONLIB)
 
 add_library(${PROJECT_NAME}
   EditAreaData.cpp
-  FileData.cpp
   SessionEvent.cpp
   TabData.cpp
 )

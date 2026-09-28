@@ -6,7 +6,6 @@
 #include "components/Flyout.h"
 #include "editarea/DiagnosticTool.h"
 #include "editarea/EditArea.h"
-#include "Gui_if.h"
 #include "windows/MainWindow.h"
 
 #include <glib-object.h>

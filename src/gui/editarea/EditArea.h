@@ -15,15 +15,16 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <vector>
 
 // Forward declaration
 class SearchReplaceDialog;
-typedef struct FileData FileData;
-typedef struct AppUI AppUI;
+class FileBranch;
+typedef struct AppContext AppContext;
 
-class EditArea : public TextArea{
+class EditArea : public TextArea, public EventReceiver {
 public:
-    EditArea(FileData* file);
+    EditArea(FileBranch& file, AppContext& context);
     ~EditArea();
 
     enum Signal{
@@ -44,7 +45,7 @@ public:
     GtkTextView* GetTextView();
     const GdkRectangle &GetCursorRectangle();
 
-    const FileData* GetFileData() const;
+    const FileBranch& GetFileBranch() const;
     const char* GetFilePath() const;
     const unsigned int GetFileVersion() const;
 
@@ -53,7 +54,7 @@ public:
     DiagnosticTool &GetDiagnosticTool();
 
     void LoadCursorPos();
-    void LoadFile(FileData *filedata);
+    void LoadFile(FileBranch* filebranch);
     void Save();
     void Close();
     void ShowSearchDialog();
@@ -75,7 +76,6 @@ public:
     void CursorPosChanged();
     void SaveButtonClicked();
     void LangButtonClicked();
-    void FileSaved(FileData *file);
     void RangeSelected(ZRange* range);
     void DiagnosticButtonClicked();
 
@@ -83,10 +83,19 @@ public:
     void StopListen(Signal signal, EventCallback callback);
 
 private:
+    void OnSaved(FileBranch *filebranch);
+    void OnFileDataChanged(FileBranch *filebranch);
+
+    // dependencies
+    AppContext& m_context;
+    FileBranch* m_fileBranch = nullptr;
+
+    std::vector<std::pair<EventReceiver*, void (EventReceiver::*)(EditArea*)>> m_closedCallback;
+
     std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
-    py_EditArea* m_py_EditArea;
+    py_EditArea *m_py_EditArea;
     std::unique_ptr<DiagnosticTool> m_diagnosticTool;
     std::unique_ptr<CompletionTool> m_completionTool;
 
@@ -99,7 +108,6 @@ private:
     unsigned int m_originalLength = 0;
     unsigned int m_fileVersion = 0;
 
-    FileData *m_editingFile = nullptr;
     GtkGrid *m_baseGrid;
     GtkButton *m_locationBut;// showing path
     GtkButton *m_saveBut;

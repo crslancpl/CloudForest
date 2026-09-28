@@ -1,7 +1,6 @@
 #include "CompletionPopover.h"
 
 #include "EditArea.h"
-#include "Gui_if.h"
 #include "datatypes/lsp.h"
 
 #include <gdk/gdk.h>

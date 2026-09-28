@@ -1,7 +1,6 @@
 #include "FileCallback.h"
 #include "datatypes/file.h"
-#include "src/filemanagement/FileManagement_if.h"
-#include "src/filemanagement/FileOperation.h"
+#include "src/filemanagement/FileManager.h"
 #include "toolset/event/Event.h"
 
 #include <gio/gio.h>

@@ -37,7 +37,7 @@ std::unique_ptr<FileData> LoadFileData(GFile *file, GFileInfo* info, bool issing
     return newfile;
 }
 
-void ReadFileText(FileData *file, char **output){
+void ReadFileText(const FileData *file, char **output){
     g_file_load_contents(file->file, nullptr, output, nullptr, nullptr, nullptr);
 }
 

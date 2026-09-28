@@ -2,10 +2,11 @@
 
 #include "editarea/CompletionTool.h"
 #include "editarea_mod_Py.h"
+#include "pythonbackend/python_if.h"
 #include "pythonbackend/python_tool.h"
 #include "editarea/DiagnosticTool.h"
 #include "editarea/EditArea.h"
-#include "src/languages/LanguageManager_if.h"
+#include "src/AppContext.h"
 #include "datatypes/lsp.h"
 #include "datatypes/common.h"
 #include "toolset/event/Event.h"
@@ -213,7 +214,7 @@ static PyObject *py_EditArea_set_lang(py_EditArea *self, PyObject *args){
         Py_RETURN_NAN;
     }
 
-    self->editarea->SetLanguage(langmanager::FindByName(lang));
+    self->editarea->SetLanguage(pybackend::GetAppContext().langManager->FindByName(lang));
 
     Py_RETURN_NONE;
 }

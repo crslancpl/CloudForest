@@ -2,8 +2,9 @@
 #define FILETREE_H_
 
 #include "datatypes/file.h"
-
+#include "editarea/EditArea.h"
 #include "src/filemanagement/FileReader.h"
+#include "toolset/event/Event.h"
 
 #include <memory>
 #include <string>
@@ -16,6 +17,15 @@ class Branch;
 class FileBranch;
 class FolderBranch;
 class Workspace;
+class FPFileButton;
+class FPFolderButton;
+typedef struct AppContext AppContext;
+
+typedef struct {
+    EventReceiver* receiver;
+    void (EventReceiver::*funtion)(FileBranch*);
+} cb_FileBranchBasic;
+
 
 class Branch {
 public:
@@ -24,18 +34,19 @@ public:
     void Rename(const std::string& name);
     void Delete();
 
-    const std::string& GetName() const;
-
     // callbacks
 
     virtual FolderBranch* GetParent() const;
     virtual void SetParent(FolderBranch* parent);
-    virtual FileData* GetFileData() const;
+    virtual const FileData* GetFileData() const;
+
+    FilePanelButton* GetFilePanelButton();
+    void SetFilePanelButton(FilePanelButton& button);
 
 protected:
-    std::string m_name;
     std::unique_ptr<FileData> m_fileData;
     FolderBranch* m_parent;
+    FilePanelButton* m_button;
 };
 
 
@@ -45,7 +56,31 @@ public:
     FileBranch(std::unique_ptr<FileData> file);
     ~FileBranch();
 
+    void Save(const char* content, AppContext& context);
     const char* ReadContent();
+
+    EditArea* GetEditArea() const;
+    void SetEditArea(EditArea* editarea);
+
+    void ConnectFocused(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+    void ConnectOpened(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+    void ConnectSaved(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+    void ConnectClosed(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+    void ConnectDataChanged(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+
+    void OnSaved(std::unique_ptr<FileData> filedata);
+
+private:
+    EditArea* m_editarea = nullptr;
+
+    const char* m_latestContent;
+    FPFileButton* m_filePanelButton = nullptr;
+
+    std::vector<cb_FileBranchBasic*> m_focusedCallbacks;
+    std::vector<cb_FileBranchBasic*> m_openedCallbacks;
+    std::vector<cb_FileBranchBasic*> m_closedCallbacks;
+    std::vector<cb_FileBranchBasic*> m_savedCallbacks;
+    std::vector<cb_FileBranchBasic*> m_dataChangedCallbacks;
 };
 
 
@@ -83,9 +118,8 @@ class Workspace : public FolderBranch{
 public:
     Workspace(std::unique_ptr<FileData> root);
 
-    FileData* FindChildByPath(const char* path);
-    Branch* FindChildBranchByPath(const char* path);
-    void SetCustomName(const char* name);
+    Branch* FindChildBranchByPath(const std::string& path);
+    void SetCustomName(const std::string& name);
 private:
     std::string m_customName;// can be named by user
 };

@@ -11,6 +11,7 @@
 
 // forward declare
 class EditArea;
+typedef struct AppContext AppContext;
 
 
 
@@ -20,7 +21,7 @@ public:
     //static const std::string& GetCompletionItemKindAsString(COMPLETION_ITEM_KIND kind);
     static std::unordered_set<char> default_skip_char;
 
-    CompletionTool(EditArea& parent);
+    CompletionTool(EditArea& parent, AppContext& context);
     ~CompletionTool();
 
     void Add(std::unique_ptr<Completion> completion);
@@ -39,6 +40,7 @@ public:
     void SetPopoverOwnership(std::unique_ptr<CompletionPopover> popover);
 
 private:
+    AppContext& m_context;
     EditArea& m_parent;
     bool m_isShowing;
     std::unique_ptr<CompletionPopover> m_completionPopover;

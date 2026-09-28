@@ -1,22 +1,25 @@
-#include "App.h"
-#include "filemanagement/FileManagement_if.h"
-#include "src/languages/LanguageManager_if.h"
+#include "AppContext.h"
+#include "src/filemanagement/FileManager.h"
+#include "src/languages/LanguageManager.h"
 #include "toolset/syntaxprovider/syntax_provider.h"
-#include "gui/Gui_if.h"
 #include "pythonbackend/python_if.h"
 
 #include <gtk/gtk.h>
+#include <memory>
 
 int main (int argc,char *argv[]){
-    App app;
-    filemanager::Init(app);// does not depend on other parts of the app
-    syntaxprovider::Init();// does not depend on other parts of the app
-    langmanager::Init();// connects only static events
+    AppContext app;
+    app.langManager = std::make_unique<LanguageManager>(app);
+    app.fileManager = std::make_unique<FileManager>(app);
+    app.appUI = std::make_unique<AppUI>(app);
 
-    pybackend::Start();
+    syntaxprovider::Init();// does not depend on other parts of the app
+
+    pybackend::Start(app);
+
     pybackend::RunEnabledExtensions();
 
-    int status = gui::RunApp(argc, argv, app);// this runs a loop for GTK and shows the gui
+    int status = app.appUI->Run(argc, argv);// this runs a loop for GTK and shows the gui
 
     pybackend::End();
 

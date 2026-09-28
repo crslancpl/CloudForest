@@ -2,11 +2,13 @@
 #define FILEPANELMENU_H_
 
 #include "filepanel/FilePanelButtons.h"
+#include "src/AppContext.h"
+
 #include <gtk/gtk.h>
 
 class FilePanelMenu {
 public:
-    FilePanelMenu(FilePanelButton& button);
+    FilePanelMenu(FilePanelButton& button, AppContext& context);
     ~FilePanelMenu();
 
     void Show();
@@ -22,13 +24,13 @@ protected:
 
 class FPFileMenu : public FilePanelMenu {
 public:
-    FPFileMenu(FPFileButton& button);
+    FPFileMenu(FPFileButton& button, AppContext& context);
     ~FPFileMenu();
 };
 
 class FPFolderMenu : public FilePanelMenu {
 public:
-    FPFolderMenu(FPFolderButton& button);
+    FPFolderMenu(FPFolderButton& button, AppContext& context);
     ~FPFolderMenu();
 
 private:

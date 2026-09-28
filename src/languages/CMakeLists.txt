@@ -2,7 +2,7 @@ project(LANGMANAGLIB)
 
 add_library( ${PROJECT_NAME}
     LanguageGroup.cpp
-    LanguageManager_if.cpp
+    LanguageManager.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
