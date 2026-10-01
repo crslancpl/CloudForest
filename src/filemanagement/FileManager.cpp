@@ -60,7 +60,7 @@ FileManager::FileManager(AppContext &context) :
 
 FileManager::~FileManager(){}
 
-FileBranch* FileManager::CreateNewFile(){
+FileBranch& FileManager::CreateNewFile(){
     std::unique_ptr<FileData> data = std::make_unique<FileData>();
     std::string name = "untitled" + tools::GenerateId();
     data->fileName = strdup(name.c_str());
@@ -70,9 +70,9 @@ FileBranch* FileManager::CreateNewFile(){
     data->type = G_FILE_TYPE_REGULAR;
 
     std::unique_ptr<FileBranch> filebranch = std::make_unique<FileBranch>(std::move(data));
-    FileBranch* raw = filebranch.get();
+    FileBranch& ref = *filebranch;
     m_singleFiles.emplace_back(std::move(filebranch));
-    return raw;
+    return ref;
 }
 
 std::unique_ptr<FileBranch> FileManager::CreateVirtualFile(){
@@ -182,7 +182,7 @@ void FileManager::OnNewFileSelected(GFile* file){
 
     m_singleFiles.emplace_back(std::move(branch));
 
-    session::EditFile(b);
+    m_context.sessionManager->GetEditorsManager().EditFile(b);
 }
 
 void FileManager::OnNewFolderSelected(GFile* file){

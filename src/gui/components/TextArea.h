@@ -11,8 +11,8 @@
 
 //forward declaration
 class TextArea;
+class Language;
 typedef struct ZRange ZRange;
-typedef struct Language Language;
 typedef void(*LangChangedCallback)(TextArea*, const Language*, const Language*);
 
 
@@ -26,8 +26,8 @@ public:
     void SetContent(char *content);
     void SetEditable(bool editable);
     void SetFirstLineNumber(int number);
-    const Language* GetLanguage() const;
-    virtual void SetLanguage(const Language *newlang);
+    Language* GetLanguage() const;
+    virtual void SetLanguage(Language *newlang);
 
     void Insert(const ZPosition& pos, const char* text);
     void InsertAtCursor(const char* text);
@@ -50,7 +50,7 @@ public:
 protected:
     std::unordered_map<TextAreaSignal, SimpleEvent> m_eventMap;
 
-    const Language* m_language = nullptr;
+    Language* m_language = nullptr;
     int m_firstLineNumber = 1;
     unsigned int m_totalLines = 0;
     unsigned int m_totalChars = 0;

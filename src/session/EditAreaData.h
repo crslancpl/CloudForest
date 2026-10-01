@@ -1,12 +1,11 @@
 #ifndef EDITAREADATA_H_
 #define EDITAREADATA_H_
 
-#include "datatypes/common.h" // for Language
 #include "editarea/EditArea.h" // for EditArea
-#include "src/languages/LanguageGroup.h"
+#include "src/languages/Language.h"
 
 #include <unordered_set>
-
+/*
 namespace session{
 
 void InitEditAreaData(AppContext& context);
@@ -22,8 +21,9 @@ void CloseFile(FileBranch& filebranch);
 
 EditArea* GetFocusedEditArea();
 void SetFocusedEditArea(EditArea* editarea);
-LanguageGroup* FindLanguageGroup(const Language* lang);
+Language* FindLanguageGroup(const Language* lang);
 
 }// namespace session
+*/
 
 #endif

@@ -9,6 +9,7 @@
 
 #include <Python.h>
 #include <ceval.h>
+#include <cstdio>
 #include <import.h>
 #include <memory>
 #include <pystate.h>

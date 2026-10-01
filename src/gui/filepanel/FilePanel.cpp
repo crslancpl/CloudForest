@@ -16,7 +16,9 @@
 
 
 
-WorkspaceBox::WorkspaceBox(Workspace& ws, AppContext& context): m_ws(ws){
+WorkspaceBox::WorkspaceBox(Workspace& ws, AppContext& context) :
+    m_ws(ws)
+{
     m_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 1));
     gtk_widget_add_css_class(GTK_WIDGET(m_box), "ws-box");
     m_label = GTK_LABEL(gtk_label_new(ws.GetFileData()->fileName.c_str()));

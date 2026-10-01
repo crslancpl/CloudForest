@@ -2,6 +2,7 @@
 
 #include "components/CfContent.h"
 
+#include <cstdio>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
@@ -86,9 +87,7 @@ CfLayout::CfLayout(GtkOrientation orientation){
     SetContentWidget(GTK_WIDGET(m_baseBox));
 }
 
-CfLayout::~CfLayout(){
-    //
-}
+CfLayout::~CfLayout(){}
 
 LayoutNeighbor CfLayout::GetNeighbors(CfContent *child){
     /*

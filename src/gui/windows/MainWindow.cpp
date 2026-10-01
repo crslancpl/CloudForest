@@ -27,9 +27,7 @@ MainWindow::MainWindow(AppUI& appui) : Window(true){
     gtk_application_add_window(appui.GetGtkApp(), m_window);
 }
 
-MainWindow::~MainWindow(){
-    //
-}
+MainWindow::~MainWindow(){}
 
 void MainWindow::SetHeaderBar(std::unique_ptr<HeaderBar> headerbar){
     gtk_window_set_titlebar(m_window, headerbar->GetBaseWidget());

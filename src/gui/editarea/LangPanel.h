@@ -3,7 +3,7 @@
 
 #include "components/CfComponent.h"
 #include "components/Flyout.h"
-#include "datatypes/common.h"
+#include "src/languages/Language.h"
 #include "headerbar/Headerbar.h"
 
 #include <functional>
@@ -18,20 +18,20 @@ class EditArea;
 
 class LangPanelItem : CfComponent{
 public:
-    LangPanelItem(const Language& lang);
+    LangPanelItem(Language& lang);
     ~LangPanelItem();
 
     // called by g_signal
     void Select();
 
     void SetState(bool selected);// only affect the style. does not set the language of the target
-    const Language& GetLanguage() const;
+    Language& GetLanguage() const;
     void OnSelected(std::function<void(LangPanelItem&)> callback);
 
     GtkWidget* GetBaseWidget() override;
 
 private:
-    const Language& m_lang;
+    Language& m_lang;
     std::function<void(LangPanelItem&)> m_selectedCallback;
     GtkButton* m_button;
     //
@@ -48,7 +48,7 @@ class LangPanel : public Flyout{
 public:
     LangPanel(AppContext& context);
 
-    void AddLanguage(const Language* lang);
+    void AddLanguage(Language* lang);
     void ChooseFor(EditArea* target);
 
 private:

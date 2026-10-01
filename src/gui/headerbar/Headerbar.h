@@ -10,11 +10,13 @@ typedef struct AppContext AppContext;
 class HeaderBar : public CfComponent{
 public:
     HeaderBar(AppContext& appui);
+    ~HeaderBar();
 
     GtkWidget * GetBaseWidget() override;
 
     void OnLoadFileClicked();
     void OnLoadFolderClicked();
+    void OnNewFileClicked();
     void OnIdeButtonClicked();
 
 private:

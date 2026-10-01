@@ -188,7 +188,7 @@ static void on_edit_area_text_changed(EditArea *ea, const Difference& diff){
  */
 
 static PyObject *py_EditArea_get_file_path(py_EditArea *self, PyObject *args){
-    PyObject* path = PyUnicode_FromString(self->editarea->GetFilePath());
+    PyObject* path = PyUnicode_FromString(self->editarea->GetFileBranch().GetFileData()->absoPath.c_str());
     return path;
 }
 
@@ -198,7 +198,7 @@ static PyObject *py_EditArea_get_file_version(py_EditArea *self, PyObject *args)
 }
 
 static PyObject *py_EditArea_get_lang(py_EditArea *self, PyObject *args){
-    std::string text = self->editarea->GetLanguage()->name;
+    std::string text = self->editarea->GetLanguage()->GetInfo()->name;
 
     if(text.empty()){
         Py_RETURN_NAN;

@@ -1,16 +1,13 @@
 #include "language_mod_Py.h"
 
-#include "datatypes/common.h"
 #include "pythonbackend/python_if.h"
 #include "src/AppContext.h"
 #include "src/languages/LanguageManager.h"
 #include "src/gui/editarea/EditArea.h"
-#include "src/languages/LanguageGroup.h"
+#include "src/languages/Language.h"
 #include "src/languages/LanguageManager.h"
-#include "src/session/EditAreaData.h"
 #include "python_tool.h"
 #include "editarea/editarea_mod_Py.h"
-#include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
 #include "toolset/tools/Tool.h"
 
@@ -30,15 +27,15 @@
 static PythonEventPtrMap lang_new_ea_event_map;
 static PythonEventPtrMap lang_used_callbacks_dict;
 
-void on_language_used(const Language* lang){
+void on_language_used(Language* lang){
     if (!TryRestoreThreadLock()) {
         return;
     }
-    auto itr = lang_used_callbacks_dict.find(lang->name);
+    auto itr = lang_used_callbacks_dict.find(lang->GetInfo()->name);
     if(itr == lang_used_callbacks_dict.end()){
         return;
     }
-    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(lang->name.c_str()));
+    PyObject* args = PyTuple_Pack(1, PyUnicode_FromString(lang->GetInfo()->name.c_str()));
     itr->second->Invoke(args);
     Py_DECREF(args);
     ReleaseThreadLock();
@@ -48,7 +45,7 @@ void on_new_edit_area(EditArea* ea){
     if (!TryRestoreThreadLock()) {
         return;
     }
-    auto itr = lang_new_ea_event_map.find(ea->GetLanguage()->name);
+    auto itr = lang_new_ea_event_map.find(ea->GetLanguage()->GetInfo()->name);
 
     if(itr == lang_new_ea_event_map.end()){
         return;
@@ -77,17 +74,18 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
         Py_RETURN_NAN;
     }
 
-    std::unique_ptr<Language> lang = std::make_unique<Language>();// Free by lang manager
-    lang->name = strdup(langname);
-    lang->id = strdup(id);
-    lang->syntaxTemplateFile = syntaxfile;
+    std::unique_ptr<LanguageInfo> info = std::make_unique<LanguageInfo>();// Free by lang manager
+    info->name = strdup(langname);
+    info->id = strdup(id);
+    info->syntaxTemplateFile = syntaxfile;
 
     auto extlist = tools::TrimText(fileextension, "[],' ");
     for(auto ext : extlist){
-        lang->fileExtensions.emplace(ext);
+        info->fileExtensions.emplace(ext);
     }
 
-    pybackend::GetAppContext().langManager->AddToLanguageList(std::move(lang));
+    Language& lang = pybackend::GetAppContext().langManager->CreateLanguage(std::move(info));
+    lang.Listen(Language::FIRST_EDITAREA_ADDED, (EventCallback)on_language_used);
 
     Py_RETURN_NONE;
 }
@@ -141,11 +139,10 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
 
     event->Connect(callback);
 
-    const Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
-    LanguageGroup* langgroup = session::FindLanguageGroup(lang);
+    Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
 
-    if(langgroup != nullptr){
-        langgroup->Listen(LanguageGroup::ADDED, (EventCallback)on_new_edit_area);
+    if(lang != nullptr){
+        lang->Listen(Language::EDITAREA_ADDED, (EventCallback)on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -162,11 +159,10 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
         Py_RETURN_NAN;
     }
 
-    const Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
-    LanguageGroup* langgroup = session::FindLanguageGroup(lang);
+    Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
 
-    if(langgroup != nullptr){
-        langgroup->StopListen(LanguageGroup::ADDED, (EventCallback)on_new_edit_area);
+    if(lang != nullptr){
+        lang->StopListen(Language::EDITAREA_ADDED, (EventCallback)on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -192,6 +188,6 @@ static struct PyModuleDef language_module = {
 
 PyMODINIT_FUNC PyInit_language_module(){
     PyObject *langmodule = PyModule_Create(&language_module);
-    session::Listen(session::LANGUAGE_USED, (EventCallback) on_language_used);
+    pybackend::GetAppContext().langManager->Listen(LanguageManager::LANG_MANAGER_NEW_LANG, (EventCallback) on_language_used);
     return langmodule;
 }

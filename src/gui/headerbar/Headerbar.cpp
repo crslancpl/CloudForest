@@ -10,7 +10,6 @@
 
 #include "src/AppContext.h"
 #include "src/filemanagement/FileManager.h"
-#include "src/session/EditAreaData.h"
 #include "AppUI.h"
 #include "settingpanel/SettingPanel.h"
 
@@ -29,7 +28,7 @@ static void on_ide_button_clicked(GtkButton *self, void* parent){
 }
 
 static void on_new_file_clicked(GSimpleAction *action, GVariant *parameter, void* parent) {
-    session::EditNewFile();
+    ((HeaderBar*)parent)->OnNewFileClicked();
 }
 
 static void on_search_clicked(GSimpleAction *action, GVariant *parameter, void* parent) {
@@ -43,9 +42,6 @@ static void on_replace_clicked(GSimpleAction *action, GVariant *parameter, void*
     //    gui::FocusedEAHolder->GetCurrentEditArea()->ShowReplaceDialog();
     //}
 }
-
-
-
 
 HeaderBar::HeaderBar(AppContext& context) :
     m_context(context)
@@ -72,12 +68,18 @@ HeaderBar::HeaderBar(AppContext& context) :
     );
 }
 
+HeaderBar::~HeaderBar(){}
+
 void HeaderBar::OnLoadFileClicked(){
     m_context.fileManager->ChooseFile();
 }
 
 void HeaderBar::OnLoadFolderClicked(){
     m_context.fileManager->ChooseFolder();
+}
+
+void HeaderBar::OnNewFileClicked(){
+    m_context.sessionManager->GetEditorsManager().EditNewFile();
 }
 
 void HeaderBar::OnIdeButtonClicked(){

@@ -12,6 +12,7 @@
 #include <gtk/gtk.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 /*
@@ -29,7 +30,7 @@ static void on_focus_lost(GtkEventControllerFocus* self, LangPanel* langpanel){
  * LangPanelItem class
  */
 
-LangPanelItem::LangPanelItem(const Language& lang) :
+LangPanelItem::LangPanelItem(Language& lang) :
     m_lang(lang)
     {
     m_button = GTK_BUTTON(gtk_button_new());
@@ -41,16 +42,16 @@ LangPanelItem::LangPanelItem(const Language& lang) :
     GtkBox *box2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     gtk_box_append(box1, GTK_WIDGET(box2));
 
-    m_nameLabel = GTK_LABEL(gtk_label_new(lang.name.c_str()));
+    m_nameLabel = GTK_LABEL(gtk_label_new(lang.GetInfo()->name.c_str()));
     gtk_widget_add_css_class(GTK_WIDGET(m_nameLabel), "name-label");
     gtk_box_append(box2, GTK_WIDGET(m_nameLabel));
 
-    m_idLabel = GTK_LABEL(gtk_label_new(lang.id.c_str()));
+    m_idLabel = GTK_LABEL(gtk_label_new(lang.GetInfo()->id.c_str()));
     gtk_widget_add_css_class(GTK_WIDGET(m_idLabel), "id-label");
     gtk_box_append(box2, GTK_WIDGET(m_idLabel));
 
     std::string fileextensions;
-    for (const std::string& ext : m_lang.fileExtensions) {
+    for (const std::string& ext : m_lang.GetInfo()->fileExtensions) {
         fileextensions.append(".");
         fileextensions.append(ext);
         fileextensions.append(" ");
@@ -85,7 +86,7 @@ void LangPanelItem::SetState(bool selected){
     }
 }
 
-const Language& LangPanelItem::GetLanguage() const{
+Language& LangPanelItem::GetLanguage() const{
     return m_lang;
 }
 
@@ -119,16 +120,16 @@ LangPanel::LangPanel(AppContext& context) : Flyout(context.appUI->GetMainWindow(
 
     this->SetChild(GTK_WIDGET(m_scrolledWindow));
 
-    const std::unordered_map<std::string, const Language*>& langmap = m_context.langManager->GetLanguageMap();
+    const std::vector<std::unique_ptr<Language>>& languages = m_context.langManager->GetLanguages();
 
-    for(auto namelangpair : langmap){
-        this->AddLanguage(namelangpair.second);
+    for(const std::unique_ptr<Language>& lang : languages){
+        this->AddLanguage(lang.get());
     }
 }
 
 
 
-void LangPanel::AddLanguage(const Language* lang){
+void LangPanel::AddLanguage(Language* lang){
     std::unique_ptr<LangPanelItem> item = std::make_unique<LangPanelItem>(*lang);
 
     item->OnSelected([&](LangPanelItem& langitem){

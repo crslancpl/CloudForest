@@ -47,12 +47,12 @@ typedef struct Difference{
  * Be careful. The "language" here is programming language.
  */
 
-typedef struct Language {
+typedef struct LanguageInfo {
     std::string name;
     std::string id;
     std::unordered_set<std::string> fileExtensions;
     std::string syntaxTemplateFile;
     bool used = false;
-} Language;
+} LanguageInfo;
 
 #endif

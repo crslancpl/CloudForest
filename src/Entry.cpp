@@ -1,27 +1,30 @@
 #include "AppContext.h"
 #include "src/filemanagement/FileManager.h"
 #include "src/languages/LanguageManager.h"
-#include "toolset/syntaxprovider/syntax_provider.h"
+#include "src/session/SessionManager.h"
+#include "toolset/syntaxprovider/CFCore.h"
 #include "pythonbackend/python_if.h"
 
+#include <cstdio>
 #include <gtk/gtk.h>
 #include <memory>
 
 int main (int argc,char *argv[]){
     AppContext app;
+    app.sessionManager = std::make_unique<SessionManager>(app);
     app.langManager = std::make_unique<LanguageManager>(app);
     app.fileManager = std::make_unique<FileManager>(app);
     app.appUI = std::make_unique<AppUI>(app);
 
-    syntaxprovider::Init();// does not depend on other parts of the app
+    cf::Init(app);// does not depend on other parts of the app
 
     pybackend::Start(app);
-
     pybackend::RunEnabledExtensions();
 
     int status = app.appUI->Run(argc, argv);// this runs a loop for GTK and shows the gui
-
+printf("h\n");
     pybackend::End();
+    printf("h\n");
 
     return status;
 }

@@ -29,8 +29,8 @@ public:
     FileManager(AppContext &context);
     ~FileManager();
 
-    FileBranch* CreateFile(const char* name, FolderBranch* parent);
-    FileBranch* CreateNewFile();
+    FileBranch& CreateFile(const char* name, FolderBranch* parent);
+    FileBranch& CreateNewFile();
     std::unique_ptr<FileBranch> CreateVirtualFile();
     std::unique_ptr<FileBranch> CreateVirtualFolder();
 

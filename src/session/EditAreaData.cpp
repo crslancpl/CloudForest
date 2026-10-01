@@ -1,7 +1,6 @@
 #include "EditAreaData.h"
 
 #include "SessionEvent.h"
-#include "datatypes/common.h" // for Language
 #include "editarea/CompletionPopover.h"
 #include "editarea/CompletionTool.h"
 #include "editarea/EditArea.h" // for EditArea
@@ -9,12 +8,12 @@
 #include "layouts/tab/CfTabSwitcher.h"
 #include "src/AppContext.h"
 #include "src/filemanagement/FileManager.h"
-#include "src/languages/LanguageGroup.h"
+#include "src/languages/LanguageManager.h"
 #include "src/session/TabData.h"
 #include "toolset/event/Event.h"
 
+#include <cstdio>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 
 /*
@@ -34,9 +33,11 @@ typedef struct {
     const std::unordered_set<EditArea*> EMPTY_EDITAREA_SET;
 
     std::unordered_set<EditArea*> allEditAreaSet;
-    std::unordered_map<const Language*, std::unique_ptr<LanguageGroup>> languageGroupsMap;
+    std::unordered_map<const Language*, std::unique_ptr<Language>> languageGroupsMap;
     EditArea* focusedEditArea;
 } SessionEditAreaData;
+
+static AppContext* current_context;
 
 SessionEditAreaData session_editarea_data;
 
@@ -47,16 +48,17 @@ static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, cons
 static void on_editarea_closed(EditArea* ea);
 
 static void on_editarea_created(EditArea* ea){
-    //
     ea->Listen(EditArea::LANG_CHANGED,(EventCallback)on_editarea_lang_changed);
     ea->Listen(EditArea::CLOSED, (EventCallback)on_editarea_closed);
 
-    const Language* lang = ea->GetLanguage();
+    Language* lang = ea->GetLanguage();
     auto itr = session_editarea_data.languageGroupsMap.find(lang);
+    /*/
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
-        std::unique_ptr<LanguageGroup> newlanggroup = std::make_unique<LanguageGroup>(lang);
+        current_context->langManager->CreateLanguage(std::unique_ptr<LanguageInfo> info)
+        std::unique_ptr<Language> newlanggroup = std::make_unique<Language>(lang);
         newlanggroup->Add(ea);
         session_editarea_data.languageGroupsMap.emplace(lang, std::move(newlanggroup));
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
@@ -64,6 +66,7 @@ static void on_editarea_created(EditArea* ea){
             ((LanguageUsedCallback)callback)(lang);
         }
     }
+    */
 }
 
 static void on_editarea_closed(EditArea* ea){
@@ -74,7 +77,7 @@ static void on_editarea_closed(EditArea* ea){
     session_editarea_data.allEditAreaSet.erase(ea);
 }
 
-static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, const Language* newlang){
+static void on_editarea_lang_changed(EditArea* ea, Language* oldlang, Language* newlang){
     auto itr = session_editarea_data.languageGroupsMap.find(oldlang);
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Remove(ea);
@@ -84,17 +87,15 @@ static void on_editarea_lang_changed(EditArea* ea, const Language* oldlang, cons
     if (itr != session_editarea_data.languageGroupsMap.end()) {
         itr->second->Add(ea);
     } else {
-        std::unique_ptr<LanguageGroup> newlanggroup = std::make_unique<LanguageGroup>(newlang);// free on app closed
-        newlanggroup->Add(ea);
-        session_editarea_data.languageGroupsMap.emplace(newlang, std::move(newlanggroup));
+        //std::unique_ptr<Language> newlanggroup = std::make_unique<Language>(newlang);// free on app closed
+        //newlanggroup->Add(ea);
+        //session_editarea_data.languageGroupsMap.emplace(newlang, std::move(newlanggroup));
         SimpleEvent& event = session::GetEvent(session::LANGUAGE_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
             ((LanguageUsedCallback)callback)(newlang);
         }
     }
 }
-
-static AppContext* current_context;
 
 namespace session {
 
@@ -147,9 +148,9 @@ LanguageGroup* FindLanguageGroup(const Language* lang){
  */
 
 void EditNewFile(){
-    FileBranch* filebranch = current_context->fileManager->CreateNewFile();
+    FileBranch& filebranch = current_context->fileManager->CreateNewFile();
 
-    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(*filebranch, *current_context);
+    std::unique_ptr<EditArea> neweditarea = std::make_unique<EditArea>(filebranch, *current_context);
     //session::AddSingleFile(std::move(filebranch));
 
     EditArea* ea = neweditarea.get();

@@ -18,7 +18,7 @@
 #include "style/Style.h"
 #include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
-#include "toolset/syntaxprovider/syntax_provider.h"
+#include "toolset/syntaxprovider/CFCore.h"
 #include "toolset/tools/Tool.h"
 #include "pythonbackend/editarea/editarea_mod_Py.h"
 
@@ -161,7 +161,7 @@ EditArea::EditArea(FileBranch& filebranch, AppContext& context) :
     this->ConnectSignals();
 
     if(m_language == nullptr){
-        SetLanguage(m_context.langManager->FindByName("Unknown"));
+        this->SetLanguage(m_context.langManager->FindByName("Unknown"));
     }
 
     m_py_EditArea = py_EditArea_create_object(this);
@@ -270,7 +270,7 @@ GtkTextView* EditArea::GetTextView(){
     return m_textView;
 }
 
-const GdkRectangle &EditArea::GetCursorRectangle(){
+const GdkRectangle &EditArea::GetCursorRectangle() const{
     return m_cursorRec;
 }
 
@@ -278,38 +278,32 @@ const FileBranch& EditArea::GetFileBranch() const{
     return *m_fileBranch;
 }
 
-const char* EditArea::GetFilePath() const{
-    if(m_fileBranch){
-        return m_fileBranch->GetFileData()->absoPath.c_str();
-    }
-    return "";
-}
-
 const unsigned int EditArea::GetFileVersion() const{
     return m_fileVersion;
 }
 
-py_EditArea *EditArea::GetPyEditArea(){
+py_EditArea *EditArea::GetPyEditArea() const{
     return m_py_EditArea;
 }
 
-CompletionTool &EditArea::GetCompletionTool(){
+CompletionTool &EditArea::GetCompletionTool() const{
     return *m_completionTool;
 }
 
-DiagnosticTool &EditArea::GetDiagnosticTool(){
+DiagnosticTool &EditArea::GetDiagnosticTool() const{
     return *m_diagnosticTool;
 }
 
-void EditArea::SetLanguage(const Language* newlang){
-    if (newlang == m_language) {
-        return;
+void EditArea::SetLanguage(Language* newlang){
+    if (m_language) {
+        m_language->Remove(this);
     }
 
-    const Language* oldlang = m_language;
+    Language* oldlang = m_language;
     m_language = newlang;
-    gtk_button_set_label(m_langBut, m_language->name.c_str());
-    syntaxprovider::FastHighlight(this);
+    gtk_button_set_label(m_langBut, m_language->GetInfo()->name.c_str());
+    cf::FastHighlight(this);
+    m_language->Add(this);
 
     //call callbacks
     const SimpleEvent &event =  m_eventMap.at(EditArea::LANG_CHANGED);
@@ -337,8 +331,13 @@ void EditArea::LoadFile(FileBranch* filebranch){
     }
 
     gtk_button_set_label(m_locationBut, filedata->absoPath.c_str());
-    const Language* lang = m_context.langManager->FindByFileExtension(filedata->fileName.c_str());
-    this->SetLanguage(lang);
+
+    Language* lang = m_context.langManager->FindByFileExtension(filedata->fileName.c_str());
+
+    if (lang != m_language) {
+        this->SetLanguage(lang);
+    }
+
     this->SetContentName(filedata->fileName);
 
     if(m_parent){
@@ -581,7 +580,7 @@ void EditArea::TextChanged(){
     m_isCurMovedByKey =true;
     m_isTextChanged = true;
 
-    syntaxprovider::FastHighlight(this);
+    cf::FastHighlight(this);
     SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
     for (EventCallback callback : event.GetCallbackSet()){
         ((EditAreaTextChangedCallback)callback)(this, m_pendingDif);

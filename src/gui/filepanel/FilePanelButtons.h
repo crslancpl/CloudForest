@@ -53,9 +53,9 @@ protected:
     unsigned int m_level;// Root folder is 0
 
 private:
-    GtkBox *m_box;
-
     Branch& m_branch;
+
+    GtkBox *m_box;
 };
 
 /* File panel folder button */
@@ -77,6 +77,7 @@ public:
 
 private:
     FolderBranch& m_folderBranch;
+
     std::vector<std::unique_ptr<FPFileButton>> m_childFiles;
     std::vector<std::unique_ptr<FPFolderButton>> m_childFolders;
 
@@ -85,7 +86,7 @@ private:
     GtkBox *m_folderArea;// sub folder
     GtkBox *m_fileArea;// child file
 
-    bool m_isOpen=false;
+    bool m_isOpen = false;
     bool m_childLoaded = false;
 };
 

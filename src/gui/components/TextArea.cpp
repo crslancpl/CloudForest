@@ -3,6 +3,7 @@
 #include "datatypes/common.h"
 #include "style/Style.h"
 #include "toolset/event/Event.h"
+#include "src/languages/Language.h"
 
 #include <glib-object.h>
 #include <glib.h>
@@ -77,12 +78,12 @@ void TextArea::SetFirstLineNumber(int number){
     this->CountLines();
 }
 
-const Language *TextArea::GetLanguage() const{
+Language *TextArea::GetLanguage() const{
     return m_language;
 }
 
-void TextArea::SetLanguage(const Language *newlang){
-    const Language* oldlang = m_language;
+void TextArea::SetLanguage(Language *newlang){
+    Language* oldlang = m_language;
     m_language = newlang;
     //call callbacks
     const SimpleEvent &event = m_eventMap.at(TEXTAREA_CLASS_LANG_CHANGED);

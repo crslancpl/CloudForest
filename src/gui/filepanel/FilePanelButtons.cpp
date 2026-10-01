@@ -228,9 +228,9 @@ static void on_file_button_click(GtkButton *self, FPFileButton *parent){
     parent->Clicked();
 }
 
-FPFileButton::FPFileButton(FileBranch &filebranch, int level, AppContext& context) : FilePanelButton(filebranch, level, context)
-    , m_fileBranch(filebranch)
-    {
+FPFileButton::FPFileButton(FileBranch &filebranch, int level, AppContext& context) : FilePanelButton(filebranch, level, context),
+    m_fileBranch(filebranch)
+{
     m_menu = std::make_unique<FPFileMenu>(*this, context);
 
     gtk_widget_add_css_class(GTK_WIDGET(m_button), "file-button");
@@ -244,7 +244,7 @@ FPFileButton::FPFileButton(FileBranch &filebranch, int level, AppContext& contex
 FPFileButton::~FPFileButton(){}
 
 void FPFileButton::Clicked(){
-    session::EditFile(m_fileBranch);
+    m_context.sessionManager->GetEditorsManager().EditFile(m_fileBranch);
 }
 
 GtkWidget* FPFileButton::GetBaseWidget(){

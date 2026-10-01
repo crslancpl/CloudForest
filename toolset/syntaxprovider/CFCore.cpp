@@ -6,11 +6,14 @@
 #include <unordered_map>
 
 
+#include "src/AppContext.h"
+#include "src/filemanagement/FileTree.h"
 #include "toolset/tools/Tool.h"
-#include "src/session/EditAreaData.h"
 #include "src/gui/editarea/EditArea.h"
 #include "CFEmbed.h"
 
+
+static AppContext* current_context;
 
 static cf_FileResponse_msg fresp;
 static cf_Entry_msg ent;
@@ -23,10 +26,10 @@ static void RequestFile(cf_FileRequest_msg *freq){
         fresp.Content = strcat(strdup(std::string("data/").c_str()) , freq->FilePath);
         cf_Send_Message(FILERESP, &fresp);
     }else{
-        EditArea* result = session::FindEditAreaByPath(freq->FilePath);
+        FileBranch* result = current_context->fileManager->FindOpenedFileByPath(freq->FilePath);
 
         if(result){
-            auto text = result->GetContent();
+            auto text = result->GetEditArea()->GetContent();
             fresp.Content = text;
             fresp.IsPath = false;
             cf_Send_Message(FILERESP, &fresp);
@@ -42,12 +45,12 @@ static void Draw(cf_Highlight_msg* highlight){
         {CF_NEWLINE, "invisible"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
-    EditArea* result = session::FindEditAreaByPath(highlight->file);
+    FileBranch* result = current_context->fileManager->FindOpenedFileByPath(highlight->file);
 
     if (result) {
         const char* tagname = tagnames.find(highlight->type)->second;
 
-        result->ApplyTagByLinePos(
+        result->GetEditArea()->ApplyTagByLinePos(
             highlight->startline, highlight->startlinepos, highlight->textlength, tagname
         );
     }
@@ -68,7 +71,8 @@ static void CfMessageReceiver(cf_MessageType type, void* data){
 }
 
 
-void cf::Init(){
+void cf::Init(AppContext& context){
+    current_context = &context;
     cf_Connect_msg m;
     m.bridge = CfMessageReceiver;
     cf_Send_Message(cf_MessageType::CONNECT, &m);
@@ -86,4 +90,9 @@ void cf::ReadFile(const char *filepath, const char *lang){
     ent.FileName = strdup(filepath);
     ent.Language = strdup(lang);
     cf_Send_Message(cf_MessageType::ENTRYFILE, &ent);
+}
+
+void cf::FastHighlight(EditArea* ea){
+    ea->ClearHighlight();
+    cf::ReadFile(ea->GetFileBranch().GetFileData()->absoPath.c_str(), ea->GetLanguage()->GetInfo()->id.c_str());
 }

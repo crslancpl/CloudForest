@@ -1,11 +1,11 @@
 #include "AppUI.h"
 
+#include "src/AppContext.h"
 #include "editarea/CompletionPopover.h"
 #include "editarea/DiagnosticPanel.h"
 #include "filepanel/FilePanelButtons.h"
 #include "layouts/tab/CfTabLayout.h"
 #include "style/Style.h"
-#include "src/session/EditAreaData.h"
 
 #include <cstdio>
 #include <gtk/gtk.h>
@@ -132,7 +132,6 @@ void AppUI::TransferCompletionPopover(CompletionTool* newowner){
 
 void AppUI::OnActivated(){
     style::LoadCssFolder("data/styles/default-dark");
-    session::InitEditAreaData(m_context);
 
     m_mainWindow = std::make_unique<MainWindow>(*this);
 
@@ -153,7 +152,7 @@ void AppUI::OnActivated(){
     std::unique_ptr<CfTabLayout> tab = std::make_unique<CfTabLayout>();// freed on app closed
     m_mainWindow->Insert(std::move(tab));
 
-    session::EditNewFile();
+    m_context.sessionManager->GetEditorsManager().EditNewFile();
 
     m_mainWindow->Show();
 }

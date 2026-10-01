@@ -13,7 +13,6 @@ elseif(WIN32)
 endif()
 
 add_library( ${PROJECT_NAME}
-    syntaxprovider/syntax_provider.cpp
     syntaxprovider/CFCore.cpp
     tools/Tool.cpp
     tools/StringSorting.cpp

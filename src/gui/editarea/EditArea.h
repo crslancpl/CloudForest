@@ -40,18 +40,17 @@ public:
     bool isSaved = true;
 
     //override
-    void SetLanguage(const Language* newlang) override;
+    void SetLanguage(Language* newlang) override;
 
     GtkTextView* GetTextView();
-    const GdkRectangle &GetCursorRectangle();
+    const GdkRectangle &GetCursorRectangle() const;
 
     const FileBranch& GetFileBranch() const;
-    const char* GetFilePath() const;
     const unsigned int GetFileVersion() const;
 
-    py_EditArea *GetPyEditArea();
-    CompletionTool &GetCompletionTool();
-    DiagnosticTool &GetDiagnosticTool();
+    py_EditArea *GetPyEditArea() const;
+    CompletionTool &GetCompletionTool() const;
+    DiagnosticTool &GetDiagnosticTool() const;
 
     void LoadCursorPos();
     void LoadFile(FileBranch* filebranch);
