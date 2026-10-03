@@ -6,7 +6,6 @@
 #include "FileTree.h"
 #include "filepanel/FilePanel.h"
 #include "src/AppContext.h"
-#include "src/session/EditAreaData.h"
 #include "editarea/EditArea.h"
 #include "toolset/event/Event.h"
 #include "windows/MainWindow.h"
@@ -114,7 +113,7 @@ void FileManager::ChooseFolder(){
     gtk_file_dialog_select_folder(m_context.appUI->GetFileDialog(), parentGtkWindow, nullptr, on_file_dialog_folder_selected, this);
 }
 
-FileBranch* FileManager::FindOpenedFileByPath(const std::string& path){
+FileBranch* FileManager::FindFileByPath(const std::string& path){
     Workspace* ws = this->FindWorkspaceByPath(path);
 
     if (ws) {

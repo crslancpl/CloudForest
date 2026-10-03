@@ -19,7 +19,7 @@ typedef void (*LanguageUsedCallback)(Language*);
 class Language {
 public:
     enum Signal{
-        FIRST_EDITAREA_ADDED,
+        LANG_FIRST_USED,
         EDITAREA_ADDED,
         EDITAREA_REMOVED
     };
@@ -42,7 +42,7 @@ private:
     std::unique_ptr<LanguageInfo> m_langInfo;
     std::unordered_set<EditArea*> m_editareas;
     std::unordered_map<Signal, SimpleEvent> m_eventMap = {
-        {FIRST_EDITAREA_ADDED, SimpleEvent()},
+        {LANG_FIRST_USED, SimpleEvent()},
         {EDITAREA_ADDED, SimpleEvent()},
         {EDITAREA_REMOVED, SimpleEvent()}
     };

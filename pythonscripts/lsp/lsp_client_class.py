@@ -90,7 +90,7 @@ class LspClient:
         cloudforest.add_callback("app-closed", self.exit)
         self.send(lsp_msg_writer.initialize_message())
         self.send(lsp_msg_writer.initialized_notification())
-        language.listen_for_editarea(self.language, self.listen_editarea)
+
         return True
 
     def exit(self):
@@ -103,18 +103,20 @@ class LspClient:
         self.send(lsp_msg_writer.new_workspace_notification(name, path))
 
     def listen_editarea(self, ea: editarea.EditArea):
-        # print(f"listen edit area ref count {sys.getrefcount(ea)}")
         path = ea.get_file_path()
         version = ea.get_file_version()
         message = lsp_msg_writer.did_open_message(ea, self.language_id)
         self.file_version_dict[path] = version
+
         # print(f"listening editarea {ea.get_file_path()}")
-        self.send(message)
+
         ea.add_callback("text-changed", self.__editarea_text_changed)
         ea.add_callback("lang-changed", self.__editarea_lang_changed)
         ea.add_callback("file-saved", self.__editarea_file_saved)
         ea.add_callback("closed", self.__editarea_closed)
         ea.add_callback("completion-requested", self.__editarea_completion_requested)
+
+        self.send(message)
 
     # callbacks
 
@@ -130,6 +132,8 @@ class LspClient:
 
         for ea in ea_list:
             self.listen_editarea(ea)
+
+        language.listen_for_editarea(self.language, self.listen_editarea)
 
     def __editarea_closed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_close_notification(ea)

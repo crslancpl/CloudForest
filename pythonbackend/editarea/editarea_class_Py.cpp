@@ -468,10 +468,15 @@ void py_EditArea_connect_events(py_EditArea* py_ea){
 }
 
 py_EditArea* py_EditArea_create_object(EditArea* ea){
-    TryRestoreThreadLock();
+    if(!TryRestoreThreadLock()){
+        return nullptr;
+    }
+
     py_EditArea* py_ea = (py_EditArea*)PyObject_CallObject((PyObject*)&py_EditArea_class, nullptr);
-    py_ea->editarea = ea;
+
     ReleaseThreadLock();
+    py_ea->editarea = ea;
+
     return py_ea;
 }
 

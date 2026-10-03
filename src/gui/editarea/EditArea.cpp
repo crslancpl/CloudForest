@@ -16,7 +16,6 @@
 #include "components/TextArea.h"
 #include "src/filemanagement/FileTree.h"
 #include "style/Style.h"
-#include "src/session/SessionEvent.h"
 #include "toolset/event/Event.h"
 #include "toolset/syntaxprovider/CFCore.h"
 #include "toolset/tools/Tool.h"
@@ -111,6 +110,8 @@ EditArea::EditArea(FileBranch& filebranch, AppContext& context) :
         {EditArea::TEXT_CHANGED, SimpleEvent()}
     };
 
+    m_py_EditArea = py_EditArea_create_object(this);
+
     this->LoadGui();
     this->LoadFile(&filebranch);
 
@@ -163,13 +164,6 @@ EditArea::EditArea(FileBranch& filebranch, AppContext& context) :
     if(m_language == nullptr){
         this->SetLanguage(m_context.langManager->FindByName("Unknown"));
     }
-
-    m_py_EditArea = py_EditArea_create_object(this);
-
-    const SimpleEvent &event = GetEvent(session::EDITAREA_CREATED);
-    for(EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
-    }
 }
 
 EditArea::~EditArea(){
@@ -183,6 +177,10 @@ EditArea::~EditArea(){
     }
 
     m_py_EditArea = nullptr;
+    if (m_language) {
+        m_language->Remove(this);
+    }
+
     m_fileBranch->SetEditArea(nullptr);
 }
 
@@ -365,15 +363,12 @@ void EditArea::Save(){
 }
 
 void EditArea::Close(){
-    /*
+
     SimpleEvent &event = m_eventMap.at(EditArea::CLOSED);
     for (EventCallback callback : event.GetCallbackSet()){
         ((EditAreaBasicCallback)callback)(this);
     }
-    */
 
-
-    //
     for (auto cb : m_closedCallback) {
         EventReceiver* receiver = cb.first;
         void (EventReceiver::*callback)(EditArea*) = cb.second;

@@ -6,7 +6,6 @@
 #include "datatypes/file.h"
 #include "src/filemanagement/FileReader.h"
 #include "src/filemanagement/FileTree.h"
-#include "src/session/EditAreaData.h"
 
 #include <gio/gio.h>
 #include <glib-object.h>

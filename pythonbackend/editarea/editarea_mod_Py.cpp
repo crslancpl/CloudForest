@@ -8,7 +8,7 @@
 #include "src/filemanagement/FileTree.h"
 #include "src/gui/editarea/EditArea.h"
 #include "src/languages/LanguageManager.h"
-#include "src/session/SessionEvent.h"
+#include "src/session/EditorsManager.h"
 #include "datatypes/file.h"
 #include "toolset/event/Event.h"
 
@@ -59,12 +59,12 @@ static PyObject *editarea_module_find_by_file_path(PyObject *self, PyObject *arg
         Py_RETURN_NAN;
     }
 
-    FileBranch* result = pybackend::GetAppContext().fileManager->FindOpenedFileByPath(filepath);
+    EditArea* result = pybackend::GetAppContext().sessionManager->GetEditorsManager().FindEditAreaByPath(filepath);
     if(!result){
         Py_RETURN_NONE;
     }
 
-    PyObject* py_ea = (PyObject*)result->GetEditArea()->GetPyEditArea();
+    PyObject* py_ea = (PyObject*)result->GetPyEditArea();
     return  Py_NewRef(py_ea);//
 }
 
@@ -128,7 +128,10 @@ void editarea_py_register(EditArea *ea){
      * instance of the cf_EditArea, so the python extension can
      * manipulate the edit area
      */
-    TryRestoreThreadLock();
+    if(!TryRestoreThreadLock()){
+        return;
+    }
+
     py_EditArea *py_ea = ea->GetPyEditArea();
 
     py_EditArea_connect_events(py_ea);
@@ -147,6 +150,6 @@ PyMODINIT_FUNC PyInit_editarea_module(){
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());
-    session::Listen(session::EDITAREA_CREATED, (EventCallback)editarea_py_register);
+    pybackend::GetAppContext().sessionManager->GetEditorsManager().Listen(EditorsManager::EDITAREA_CREATED, (EventCallback)editarea_py_register);
     return eamodule;
 }

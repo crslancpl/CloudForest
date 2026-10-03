@@ -15,10 +15,12 @@
 #include <dictobject.h>
 #include <floatobject.h>
 #include <listobject.h>
+#include <longobject.h>
 #include <memory>
 #include <methodobject.h>
 #include <modsupport.h>
 #include <object.h>
+#include <pythonrun.h>
 #include <pytypedefs.h>
 #include <setobject.h>
 #include <tupleobject.h>
@@ -26,6 +28,10 @@
 
 static PythonEventPtrMap lang_new_ea_event_map;
 static PythonEventPtrMap lang_used_callbacks_dict;
+
+void on_new_language_added(Language* lang){
+    //
+}
 
 void on_language_used(Language* lang){
     if (!TryRestoreThreadLock()) {
@@ -42,21 +48,23 @@ void on_language_used(Language* lang){
 }
 
 void on_new_edit_area(EditArea* ea){
-    if (!TryRestoreThreadLock()) {
-        return;
-    }
     auto itr = lang_new_ea_event_map.find(ea->GetLanguage()->GetInfo()->name);
-
     if(itr == lang_new_ea_event_map.end()){
         return;
     }
 
+    if (!TryRestoreThreadLock()) {
+        return;
+    }
+
     py_EditArea *py_ea = ea->GetPyEditArea();
+
     if (py_ea) {
         PyObject* args = PyTuple_Pack(1, py_ea);
         itr->second->Invoke(args);
         Py_DECREF(args);
     }
+
     ReleaseThreadLock();
 }
 
@@ -85,7 +93,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
     }
 
     Language& lang = pybackend::GetAppContext().langManager->CreateLanguage(std::move(info));
-    lang.Listen(Language::FIRST_EDITAREA_ADDED, (EventCallback)on_language_used);
+    lang.Listen(Language::LANG_FIRST_USED, (EventCallback)on_language_used);
 
     Py_RETURN_NONE;
 }
@@ -188,6 +196,6 @@ static struct PyModuleDef language_module = {
 
 PyMODINIT_FUNC PyInit_language_module(){
     PyObject *langmodule = PyModule_Create(&language_module);
-    pybackend::GetAppContext().langManager->Listen(LanguageManager::LANG_MANAGER_NEW_LANG, (EventCallback) on_language_used);
+    pybackend::GetAppContext().langManager->Listen(LanguageManager::LANG_MANAGER_NEW_LANG, (EventCallback) on_new_language_added);
     return langmodule;
 }

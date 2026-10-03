@@ -15,7 +15,7 @@ Language::~Language(){}
 void Language::Add(EditArea* ea){
     m_editareas.emplace(ea);
     if (!m_used) {
-        SimpleEvent& event = m_eventMap.at(FIRST_EDITAREA_ADDED);
+        SimpleEvent& event = m_eventMap.at(LANG_FIRST_USED);
         for (EventCallback callback : event.GetCallbackSet()) {
             ((LanguageUsedCallback)callback)(this);
         }

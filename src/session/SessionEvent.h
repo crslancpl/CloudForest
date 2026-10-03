@@ -7,10 +7,8 @@ namespace session {
 
 //
 enum Signal{
-    EDITAREA_CREATED,
     EDITAREA_FOCUSED_CHANGED,
     EDITAREA_LANG_CHANGED,
-    //LANGUAGE_USED,
     NEW_WORKSPACE
 };
 

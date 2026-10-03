@@ -37,7 +37,7 @@ public:
     void ChooseFile();
     void ChooseFolder();
 
-    FileBranch* FindOpenedFileByPath(const std::string& name);
+    FileBranch* FindFileByPath(const std::string& name);
     Workspace* FindWorkspace(const FileBranch& filebranch);
     Workspace* FindWorkspaceByPath(const std::string& path);
 

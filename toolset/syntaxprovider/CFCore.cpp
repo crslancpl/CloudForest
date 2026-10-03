@@ -26,10 +26,10 @@ static void RequestFile(cf_FileRequest_msg *freq){
         fresp.Content = strcat(strdup(std::string("data/").c_str()) , freq->FilePath);
         cf_Send_Message(FILERESP, &fresp);
     }else{
-        FileBranch* result = current_context->fileManager->FindOpenedFileByPath(freq->FilePath);
+        EditArea* result = current_context->sessionManager->GetEditorsManager().FindEditAreaByPath(freq->FilePath);
 
         if(result){
-            auto text = result->GetEditArea()->GetContent();
+            auto text = result->GetContent();
             fresp.Content = text;
             fresp.IsPath = false;
             cf_Send_Message(FILERESP, &fresp);
@@ -45,12 +45,12 @@ static void Draw(cf_Highlight_msg* highlight){
         {CF_NEWLINE, "invisible"}, {CF_CHAR, "char"},{CF_NONE, "none"}, {CF_MODIFIER, "tag"}
     };
 
-    FileBranch* result = current_context->fileManager->FindOpenedFileByPath(highlight->file);
+    EditArea* result = current_context->sessionManager->GetEditorsManager().FindEditAreaByPath(highlight->file);
 
     if (result) {
         const char* tagname = tagnames.find(highlight->type)->second;
 
-        result->GetEditArea()->ApplyTagByLinePos(
+        result->ApplyTagByLinePos(
             highlight->startline, highlight->startlinepos, highlight->textlength, tagname
         );
     }

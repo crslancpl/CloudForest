@@ -38,6 +38,7 @@ CfTabSwitcher& CfTabLayout::Add(std::unique_ptr<CfContent> content){
     gtk_stack_add_child(m_stack, newswitcher->GetContent()->GetBaseWidget());
     //content.SetParent(this);
     m_childList.emplace_back(std::move(newswitcher));
+    this->SwitchTo(*raw);
     return *raw;
 }
 

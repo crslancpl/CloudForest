@@ -5,7 +5,6 @@
 #include "toolset/syntaxprovider/CFCore.h"
 #include "pythonbackend/python_if.h"
 
-#include <cstdio>
 #include <gtk/gtk.h>
 #include <memory>
 
@@ -22,9 +21,7 @@ int main (int argc,char *argv[]){
     pybackend::RunEnabledExtensions();
 
     int status = app.appUI->Run(argc, argv);// this runs a loop for GTK and shows the gui
-printf("h\n");
     pybackend::End();
-    printf("h\n");
 
     return status;
 }
