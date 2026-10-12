@@ -149,7 +149,7 @@ void AppUI::OnActivated(){
 
     m_fileDialog = GTK_FILE_DIALOG(gtk_file_dialog_new());
 
-    std::unique_ptr<CfTabLayout> tab = std::make_unique<CfTabLayout>();// freed on app closed
+    std::unique_ptr<CfTabLayout> tab = std::make_unique<CfTabLayout>(m_context);// freed on app closed
     m_mainWindow->Insert(std::move(tab));
 
     m_context.sessionManager->GetEditorsManager().EditNewFile();

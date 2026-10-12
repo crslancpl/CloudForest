@@ -4,7 +4,7 @@ add_library(${PROJECT_NAME}
   SessionManager.cpp
   EditorsManager.cpp
   SessionEvent.cpp
-  TabData.cpp
+  TabManager.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

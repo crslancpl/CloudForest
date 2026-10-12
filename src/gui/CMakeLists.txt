@@ -31,7 +31,6 @@ set(HEADERBAR
 set(LAYOUTS
     layouts/layout/CfLayout.cpp
     layouts/tab/CfTabLayout.cpp
-    layouts/tab/CfTab_if.cpp
     layouts/tab/CfTabSwitcher.cpp
 )
 

@@ -160,6 +160,20 @@ void FileManager::ConnectWorkspaceCreated(EventReceiver* receiver, void (EventRe
     m_workspaceCreatedCbs.emplace_back(newcallback);
 }
 
+void FileManager::Listen(Signal signal, EventCallback callback){
+    auto itr = eventMap.find(signal);
+    if(itr != eventMap.end()){
+        itr->second.Connect(callback);
+    }
+}
+
+void FileManager::StopListen(Signal signal, EventCallback callback){
+    auto itr = eventMap.find(signal);
+    if(itr != eventMap.end()){
+        itr->second.Disconnect(callback);
+    }
+}
+
 void FileManager::OnNewFileSelected(GFile* file){
     GError *err;
     GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);

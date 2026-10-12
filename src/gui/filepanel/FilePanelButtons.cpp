@@ -235,8 +235,6 @@ FPFileButton::FPFileButton(FileBranch &filebranch, int level, AppContext& contex
     gtk_widget_add_css_class(GTK_WIDGET(m_button), "file-button");
     gtk_widget_set_hexpand(GTK_WIDGET(m_button), true);
 
-    //m_fileBranch.ConnectOpened(EventReceiver *receiver, void (EventReceiver::*callback)(FileBranch *))
-
     g_signal_connect(m_button, "clicked", G_CALLBACK(on_file_button_click), this);
 }
 

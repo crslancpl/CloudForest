@@ -29,6 +29,11 @@ public:
     FileManager(AppContext &context);
     ~FileManager();
 
+    enum Signal{
+        NEW_WORKSPACE
+    };
+
+
     FileBranch& CreateFile(const char* name, FolderBranch* parent);
     FileBranch& CreateNewFile();
     std::unique_ptr<FileBranch> CreateVirtualFile();
@@ -45,6 +50,9 @@ public:
 
     void ConnectWorkspaceCreated(EventReceiver* receiver, void (EventReceiver::*callback)(Workspace*));
 
+    void Listen(Signal signal, EventCallback callback);
+    void StopListen(Signal signal, EventCallback callback);
+
     //callbacks for GTK events
     void OnNewFileSelected(GFile* file);
     void OnNewFolderSelected(GFile* file);
@@ -57,6 +65,10 @@ private:
 
     std::vector<cb_SingleFileOpened*> m_singleFileOpenedCbs;
     std::vector<cb_WorkspaceCreated*> m_workspaceCreatedCbs;
+
+    std::unordered_map<Signal, SimpleEvent> eventMap = {
+        {NEW_WORKSPACE, SimpleEvent()}
+    };
 };
 
 #endif

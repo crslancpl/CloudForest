@@ -1,15 +1,15 @@
 #include "CfTabLayout.h"
 
 #include "CfTabSwitcher.h"
-#include "CfTab_if.h"
-#include "src/session/TabData.h"
+#include "src/AppContext.h"
+#include "src/session/TabManager.h"
 
 #include <gtk/gtk.h>
 #include <memory>
 #include <utility>
 
 
-CfTabLayout::CfTabLayout(){
+CfTabLayout::CfTabLayout(AppContext& context){
     m_base = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
     m_stack = GTK_STACK(gtk_stack_new());
     m_switcherArea = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
@@ -20,7 +20,7 @@ CfTabLayout::CfTabLayout(){
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_switcherScrolledWindow));
     gtk_box_append(GTK_BOX(m_base), GTK_WIDGET(m_stack));
     SetContentWidget(GTK_WIDGET(m_base));
-    session::SetFocusedTabLayout(this);
+    context.sessionManager->GetTabManager().SetFocusedTabLayout(this);
 }
 
 CfTabLayout::~CfTabLayout(){

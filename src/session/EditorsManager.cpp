@@ -5,7 +5,7 @@
 #include "layouts/tab/CfTabSwitcher.h"
 #include "src/AppContext.h"
 #include "src/filemanagement/FileTree.h"
-#include "src/session/TabData.h"
+#include "src/session/TabManager.h"
 #include "toolset/event/Event.h"
 
 #include <memory>
@@ -28,10 +28,6 @@ EditArea& EditorsManager::EditNewFile(){
 }
 
 EditArea& EditorsManager::EditFile(FileBranch& file){
-    CfTabLayout* tablayout = session::GetFocusedTabLayout();
-    if (!tablayout) {
-        //return ;
-    }
     EditArea* ea = file.GetEditArea();
 
     if (!ea) {
@@ -90,6 +86,6 @@ EditArea& EditorsManager::CreateEditArea(FileBranch& file){
         }
     }
 
-    session::GetFocusedTabLayout()->Add(std::move(ea));
+    m_context.sessionManager->GetTabManager().GetFocusedTabLayout()->Add(std::move(ea));
     return ref;
 }

@@ -3,6 +3,8 @@
 
 #include "EditorsManager.h"
 #include "src/session/EditorsManager.h"
+#include "src/session/TabManager.h"
+
 #include <memory>
 
 // forward declare
@@ -14,12 +16,13 @@ public:
     ~SessionManager();
 
     EditorsManager& GetEditorsManager() const;
+    TabManager& GetTabManager() const;
 
     void Save();
 
 private:
     std::unique_ptr<EditorsManager> m_editorsManager;
-
+    std::unique_ptr<TabManager> m_tabManager;
 };
 
 #endif

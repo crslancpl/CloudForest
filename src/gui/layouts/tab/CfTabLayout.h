@@ -6,13 +6,16 @@
 #include "components/CfContent.h"
 #include "CfTabSwitcher.h"
 
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
+typedef struct AppContext AppContext;
+
 class CfTabLayout : public CfContent{
 public:
-    CfTabLayout();
+    CfTabLayout(AppContext& context);
     ~CfTabLayout();
 
     CfTabSwitcher& Add(std::unique_ptr<CfContent> content);

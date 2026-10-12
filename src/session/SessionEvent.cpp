@@ -10,7 +10,7 @@ namespace session {
 static std::unordered_map<Signal, SimpleEvent> event_map = {
     {EDITAREA_FOCUSED_CHANGED, SimpleEvent()},
     {EDITAREA_LANG_CHANGED, SimpleEvent()},
-    {NEW_WORKSPACE, SimpleEvent()}
+    //{NEW_WORKSPACE, SimpleEvent()}
 };
 
 void Listen(Signal signal, EventCallback callback){

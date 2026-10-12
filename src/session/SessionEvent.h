@@ -9,7 +9,6 @@ namespace session {
 enum Signal{
     EDITAREA_FOCUSED_CHANGED,
     EDITAREA_LANG_CHANGED,
-    NEW_WORKSPACE
 };
 
 void Listen(Signal signal, EventCallback callback);
