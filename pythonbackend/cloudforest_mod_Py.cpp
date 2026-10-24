@@ -8,7 +8,6 @@
 #include "src/AppContext.h"
 #include "src/filemanagement/FileCallback.h"
 #include "src/filemanagement/FileManager.h"
-#include "src/session/SessionEvent.h"
 
 #include <cstdio>
 #include <abstract.h>
@@ -130,7 +129,7 @@ PyMODINIT_FUNC PyInit_cloudforest_module(){
     PyModule_AddObject(cfmodule, "language", (PyObject*)PyInit_language_module());
     PyModule_AddObject(cfmodule, "setting", (PyObject*)PyInit_setting_module());
 
-    pybackend::GetAppContext().fileManager->Listen(FileManager::NEW_WORKSPACE, (EventCallback)on_new_workspace);
+    pybackend::GetAppContext().fileManager->EWorkspaceCreated.Connect(on_new_workspace);
 
     return cfmodule;
 }

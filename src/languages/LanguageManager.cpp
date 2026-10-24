@@ -4,6 +4,7 @@
 #include "datatypes/common.h"
 #include "src/AppContext.h"
 #include "toolset/event/Event.h"
+#include "toolset/lspbackend/LspClient.h"
 #include "toolset/tools/Tool.h"
 
 #include <memory>
@@ -39,10 +40,7 @@ Language& LanguageManager::CreateLanguage(std::unique_ptr<LanguageInfo> langinfo
         m_fileExtensionToLangMap.emplace(fileext, raw);
     }
 
-    const SimpleEvent &event = event_map.at(LANG_MANAGER_NEW_LANG);
-    for(EventCallback callback : event.GetCallbackSet()){
-        ((NewLanguageCallback)callback)(raw);
-    }
+    ENewLanguage.Invoke(raw);
 
     return *raw;
 }
@@ -50,6 +48,14 @@ Language& LanguageManager::CreateLanguage(std::unique_ptr<LanguageInfo> langinfo
 void LanguageManager::ClearLanguages(){
     m_languages.clear();
 }
+
+LspClient& LanguageManager::StartLsp(Language* lang, const std::string& command){
+    std::unique_ptr<LspClient> cl = std::make_unique<LspClient>(command, lang->GetInfo()->id);
+    LspClient& ref = *cl;
+    m_lspClients.emplace(lang, std::move(cl));
+    return ref;
+}
+
 
 Language* LanguageManager::FindByName(const std::string& langname) const{
     auto result = m_langNameToLangMap.find(langname);
@@ -68,19 +74,4 @@ Language* LanguageManager::FindByFileExtension(const std::string& filename) cons
 
 const std::vector<std::unique_ptr<Language>> &LanguageManager::GetLanguages() const{
     return m_languages;
-}
-
-
-void LanguageManager::Listen(Signal signal, void (*callback)()){
-    auto itr = event_map.find(signal);
-    if(itr != event_map.end()){
-        itr->second.Connect(callback);
-    }
-}
-
-void LanguageManager::StopListen(Signal signal, void (*callback)()){
-    auto itr = event_map.find(signal);
-    if(itr != event_map.end()){
-        itr->second.Disconnect(callback);
-    }
 }

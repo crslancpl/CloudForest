@@ -23,5 +23,6 @@ build.ninja
 build
 .cache
 *.a
+*.so
 *.lib
 __pycache__

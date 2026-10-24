@@ -1,12 +1,9 @@
 #include "FilePanel.h"
 
-#include "AppUI.h"
 #include "FilePanelButtons.h"
 #include "editarea/CompletionTool.h"
 #include "src/AppContext.h"
-#include "src/session/SessionEvent.h"
 
-#include <cstdio>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>
@@ -55,7 +52,7 @@ FilePanel::FilePanel(AppContext& context) :
     GtkBuilder *builder =  gtk_builder_new_from_file("data/ui/FilePanel.ui");
     m_workspaceArea = GTK_BOX(gtk_builder_get_object(builder, "ws-area"));
 
-    context.fileManager->ConnectWorkspaceCreated(this, (void (EventReceiver::*)(Workspace*))&FilePanel::OnWorkspaceCreated);
+    context.fileManager->EWorkspaceCreated.Connect(this, (void (EventReceiver::*)(Workspace*))&FilePanel::OnWorkspaceCreated);
 
     SetDefaultSize(270, 20);
     SetHorizontalExpand(false);

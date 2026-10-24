@@ -21,12 +21,6 @@ class FPFileButton;
 class FPFolderButton;
 typedef struct AppContext AppContext;
 
-typedef struct {
-    EventReceiver* receiver;
-    void (EventReceiver::*funtion)(FileBranch*);
-} cb_FileBranchBasic;
-
-
 class Branch {
 public:
     Branch(std::unique_ptr<FileData> file);
@@ -62,11 +56,11 @@ public:
     EditArea* GetEditArea() const;
     void SetEditArea(EditArea* editarea);
 
-    void ConnectFocused(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
-    void ConnectOpened(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
-    void ConnectSaved(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
-    void ConnectClosed(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
-    void ConnectDataChanged(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*));
+    Event<FileBranch*> EFocused;
+    Event<FileBranch*> EOpened;
+    Event<FileBranch*> ESaved;
+    Event<FileBranch*> EClosed;
+    Event<FileBranch*> EDataChanged;
 
     void OnSaved(std::unique_ptr<FileData> filedata);
 
@@ -75,12 +69,6 @@ private:
 
     const char* m_latestContent;
     FPFileButton* m_filePanelButton = nullptr;
-
-    std::vector<cb_FileBranchBasic*> m_focusedCallbacks;
-    std::vector<cb_FileBranchBasic*> m_openedCallbacks;
-    std::vector<cb_FileBranchBasic*> m_closedCallbacks;
-    std::vector<cb_FileBranchBasic*> m_savedCallbacks;
-    std::vector<cb_FileBranchBasic*> m_dataChangedCallbacks;
 };
 
 

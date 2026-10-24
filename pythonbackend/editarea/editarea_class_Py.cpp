@@ -55,8 +55,8 @@ static void on_edit_area_closed(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void on_edit_area_completion_requested(EditArea *ea, const ZPosition& zpos){
-    py_EditArea* py_ea = ea->GetPyEditArea();
+static void on_edit_area_completion_requested(const CompletionRequstedArgs& e_args){
+    py_EditArea* py_ea = e_args.ea->GetPyEditArea();
     if (py_ea == nullptr) {
         return;
     }
@@ -65,7 +65,7 @@ static void on_edit_area_completion_requested(EditArea *ea, const ZPosition& zpo
     }
     PauseExtensionCall();
 
-    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(zpos.line), PyLong_FromLong(zpos.column));
+    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(e_args.zpos.line), PyLong_FromLong(e_args.zpos.column));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_COMPLETION_REQUESTED);
     event.Invoke(args);
     Py_DECREF(args);
@@ -74,8 +74,8 @@ static void on_edit_area_completion_requested(EditArea *ea, const ZPosition& zpo
     ResumeExtensionCall();
 }
 
-static void on_edit_area_cursor_moved(EditArea *ea, const ZPosition &pos){
-    py_EditArea* py_ea = ea->GetPyEditArea();
+static void on_edit_area_cursor_moved(const CursorMovedArgs& e_args){
+    py_EditArea* py_ea = e_args.ea->GetPyEditArea();
     if (py_ea == nullptr) {
         return;
     }
@@ -83,7 +83,7 @@ static void on_edit_area_cursor_moved(EditArea *ea, const ZPosition &pos){
         return;
     }
 
-    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(pos.line), PyLong_FromLong(pos.column));
+    PyObject* args = PyTuple_Pack(3, py_ea, PyLong_FromLong(e_args.curPos.line), PyLong_FromLong(e_args.curPos.column));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_CURSOR_MOVED);
     event.Invoke(args);
     Py_DECREF(args);
@@ -122,8 +122,8 @@ static void on_edit_area_file_saved(EditArea *ea){
     ReleaseThreadLock();
 }
 
-static void on_edit_area_lang_changed(EditArea *ea, const Language* oldlang, const Language* newlang){
-    py_EditArea* py_ea = ea->GetPyEditArea();
+static void on_edit_area_lang_changed(const LangChangedArgs& e_args){
+    py_EditArea* py_ea = e_args.ea->GetPyEditArea();
     if (py_ea == nullptr) {
         return;
     }
@@ -138,15 +138,15 @@ static void on_edit_area_lang_changed(EditArea *ea, const Language* oldlang, con
     ReleaseThreadLock();
 }
 
-static void on_edit_area_text_changed(EditArea *ea, const Difference& diff){
+static void on_edit_area_text_changed(const TextChangedArgs& e_args){
     static std::list<Difference> pendingdiffs;
-    py_EditArea* py_ea = ea->GetPyEditArea();
+    py_EditArea* py_ea = e_args.ea->GetPyEditArea();
 
     if (py_ea == nullptr) {
         return;
     }
 
-    pendingdiffs.emplace_back(diff);
+    pendingdiffs.emplace_back(e_args.diff);
 
     if (!TryRestoreThreadLock()) {
         return;
@@ -168,7 +168,7 @@ static void on_edit_area_text_changed(EditArea *ea, const Difference& diff){
         PyList_Append(contentchanges, item);
     }
 
-    PyObject* args = PyTuple_Pack(3, py_ea, contentchanges, PyLong_FromLong(ea->GetFileVersion()));
+    PyObject* args = PyTuple_Pack(3, py_ea, contentchanges, PyLong_FromLong(e_args.ea->GetFileVersion()));
     PythonEvent &event = py_ea->eventMap->at(PY_EDITAREA_EVENT_TEXT_CHANGED);
 
     event.Invoke(args);
@@ -456,15 +456,14 @@ PyTypeObject py_EditArea_class = {
 };
 
 void py_EditArea_connect_events(py_EditArea* py_ea){
-    //
     EditArea* ea = py_ea->editarea;
-    ea->Listen(EditArea::CLOSED, (EventCallback)on_edit_area_closed);
-    ea->Listen(EditArea::COMPLETION_REQUESTED, (EventCallback)on_edit_area_completion_requested);
-    ea->Listen(EditArea::CURSOR_MOVED, (EventCallback)on_edit_area_cursor_moved);
-    ea->Listen(EditArea::FILE_DATA_CHANGED, (EventCallback)on_edit_area_file_data_changed);
-    ea->Listen(EditArea::FILE_SAVED, (EventCallback)on_edit_area_file_saved);
-    ea->Listen(EditArea::LANG_CHANGED, (EventCallback)on_edit_area_lang_changed);
-    ea->Listen(EditArea::TEXT_CHANGED, (EventCallback)on_edit_area_text_changed);
+    ea->EClosed.Connect(on_edit_area_closed);
+    ea->ECompletionRequested.Connect(on_edit_area_completion_requested);
+    ea->ECursorMoved.Connect(on_edit_area_cursor_moved);
+    ea->EFileDataChanged.Connect(on_edit_area_file_data_changed);
+    ea->EFileSaved.Connect(on_edit_area_file_saved);
+    ea->ELangChanged.Connect(on_edit_area_lang_changed);
+    ea->ETextChanged.Connect(on_edit_area_text_changed);
 }
 
 py_EditArea* py_EditArea_create_object(EditArea* ea){

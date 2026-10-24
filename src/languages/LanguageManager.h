@@ -5,6 +5,7 @@
 #include "Language.h"
 #include "editarea/EditArea.h"
 #include "toolset/event/Event.h"
+#include "toolset/lspbackend/LspClient.h"
 
 #include <unordered_map>
 #include <string>
@@ -23,21 +24,16 @@ public:
     Language& CreateLanguage(std::unique_ptr<LanguageInfo> langinfo);
     void ClearLanguages();
 
+    LspClient& StartLsp(Language* lang, const std::string& command);
+
     Language* FindByName(const std::string& name) const;
     Language* FindByFileExtension(const std::string& name) const;
 
     const std::vector<std::unique_ptr<Language>>& GetLanguages() const;
 
-    enum Signal{
-        LANG_MANAGER_NEW_LANG,
-    };
-
-    void Listen(Signal signal, EventCallback callback);
-    void StopListen(Signal signal, EventCallback callback);
+    Event<Language*> ENewLanguage;
 
 private:
-    void EditAreaLangChanged(EditArea* ea);
-
     AppContext& m_context;
 
     Language* m_unknownLang;
@@ -46,9 +42,7 @@ private:
     std::unordered_map<std::string, Language*> m_langNameToLangMap;
     std::unordered_map<std::string, Language*> m_fileExtensionToLangMap;
 
-    std::unordered_map<Signal, SimpleEvent> event_map = {
-        {LANG_MANAGER_NEW_LANG, SimpleEvent()}
-    };
+    std::unordered_map<const Language*, std::unique_ptr<LspClient>> m_lspClients;
 };
 
 #endif

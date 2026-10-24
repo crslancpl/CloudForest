@@ -153,42 +153,13 @@ std::vector<std::unique_ptr<Workspace>> &FileManager::GetWorkspaces(){
     return m_workspaces;
 }
 
-void FileManager::ConnectWorkspaceCreated(EventReceiver* receiver, void (EventReceiver::*callback)(Workspace*)){
-    cb_WorkspaceCreated *newcallback = new cb_WorkspaceCreated();
-    newcallback->receiver = receiver;
-    newcallback->callback = callback;
-    m_workspaceCreatedCbs.emplace_back(newcallback);
-}
-
-void FileManager::Listen(Signal signal, EventCallback callback){
-    auto itr = eventMap.find(signal);
-    if(itr != eventMap.end()){
-        itr->second.Connect(callback);
-    }
-}
-
-void FileManager::StopListen(Signal signal, EventCallback callback){
-    auto itr = eventMap.find(signal);
-    if(itr != eventMap.end()){
-        itr->second.Disconnect(callback);
-    }
-}
 
 void FileManager::OnNewFileSelected(GFile* file){
     GError *err;
     GFileInfo* info = g_file_query_info(file, "*", G_FILE_QUERY_INFO_NONE, nullptr, &err);
     std::unique_ptr<FileData> filedata = filemanager::LoadFileData(file, info, true);
-    /*
-    const SimpleEvent& event = filemanager::GetEvent(filemanager::FILE_EVENT_FILE_CHOOSEN);
-    for (EventCallback callback : event.GetCallbackSet()) {
-        ((LocationChoosenCallback)callback)(filedata.get());
-    }
-    */
-    for (cb_SingleFileOpened* callbackdata : m_singleFileOpenedCbs) {
-        EventReceiver* r = callbackdata->receiver;
-        void (EventReceiver::*f)(FileData*) = callbackdata->callback;
-        (r->*f)(filedata.get());
-    }
+
+    ESingleFileOpened.Invoke(filedata.get());
 
     std::unique_ptr<FileBranch> branch = std::make_unique<FileBranch>(std::move(filedata));
     FileBranch& b = *branch;
@@ -208,11 +179,7 @@ void FileManager::OnNewFolderSelected(GFile* file){
 
     std::unique_ptr<Workspace> workspace = std::make_unique<Workspace>(std::move(filedata));
 
-    for (cb_WorkspaceCreated* callbackdata : m_workspaceCreatedCbs) {
-        EventReceiver* r = callbackdata->receiver;
-        void (EventReceiver::*f)(Workspace*) = callbackdata->callback;
-        (r->*f)(workspace.get());
-    }
+    EWorkspaceCreated.Invoke(workspace.get());
 
     m_workspaces.emplace_back(std::move(workspace));
 }

@@ -99,17 +99,6 @@ static void on_file_saved(FileData* file){
 EditArea::EditArea(FileBranch& filebranch, AppContext& context) :
     m_context(context)
     {
-    /* Load gui */
-    m_eventMap = {
-        {EditArea::CLOSED, SimpleEvent()},
-        {EditArea::COMPLETION_REQUESTED, SimpleEvent()},
-        {EditArea::CURSOR_MOVED, SimpleEvent()},
-        {EditArea::FILE_DATA_CHANGED, SimpleEvent()},
-        {EditArea::FILE_SAVED, SimpleEvent()},
-        {EditArea::LANG_CHANGED, SimpleEvent()},
-        {EditArea::TEXT_CHANGED, SimpleEvent()}
-    };
-
     m_py_EditArea = py_EditArea_create_object(this);
 
     this->LoadGui();
@@ -171,10 +160,7 @@ EditArea::~EditArea(){
      * remove data
      */
 
-    const SimpleEvent &event =  m_eventMap.at(EditArea::CLOSED);
-    for (EventCallback callback : event.GetCallbackSet()) {
-        ((EditAreaBasicCallback)callback)(this);
-    }
+    EClosed.Invoke(this);
 
     m_py_EditArea = nullptr;
     if (m_language) {
@@ -236,8 +222,8 @@ void EditArea::ConnectSignals(){
     g_signal_connect(m_langBut, "clicked", G_CALLBACK(on_lang_button_clicked), this);
     g_signal_connect(m_diagnBut, "clicked", G_CALLBACK(on_diagnostic_button_clicked), this);
 
-    m_fileBranch->ConnectSaved(this, (void (EventReceiver::*)(FileBranch*))&EditArea::OnSaved);
-    m_fileBranch->ConnectDataChanged(this, (void (EventReceiver::*)(FileBranch*))&EditArea::OnFileDataChanged);
+    m_fileBranch->ESaved.Connect(this, (void (EventReceiver::*)(FileBranch*))&EditArea::onSaved);
+    m_fileBranch->EDataChanged.Connect(this, (void (EventReceiver::*)(FileBranch*))&EditArea::onFileDataChanged);
 }
 
 void EditArea::LoadCursorPos(){
@@ -304,10 +290,12 @@ void EditArea::SetLanguage(Language* newlang){
     m_language->Add(this);
 
     //call callbacks
-    const SimpleEvent &event =  m_eventMap.at(EditArea::LANG_CHANGED);
-    for (EventCallback callback : event.GetCallbackSet()) {
-        ((LangChangedCallback)callback)(this, oldlang, newlang);
-    }
+    const LangChangedArgs arg {
+        this,
+        oldlang
+    };
+
+    ELangChanged.Invoke(arg);
 }
 
 
@@ -346,12 +334,9 @@ void EditArea::LoadFile(FileBranch* filebranch){
         m_child->ParentDataChanged(this);
     }
 
-    SimpleEvent &event = m_eventMap.at(EditArea::FILE_DATA_CHANGED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
-    }
+    EFileDataChanged.Invoke(this);
 
-    this->OnSaved(m_fileBranch);
+    this->onSaved(m_fileBranch);
 }
 
 void EditArea::Save(){
@@ -363,17 +348,7 @@ void EditArea::Save(){
 }
 
 void EditArea::Close(){
-
-    SimpleEvent &event = m_eventMap.at(EditArea::CLOSED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
-    }
-
-    for (auto cb : m_closedCallback) {
-        EventReceiver* receiver = cb.first;
-        void (EventReceiver::*callback)(EditArea*) = cb.second;
-        (receiver->*callback)(this);
-    }
+    EClosed.Invoke(this);
 }
 
 void EditArea::ShowSearchDialog() {
@@ -576,10 +551,13 @@ void EditArea::TextChanged(){
     m_isTextChanged = true;
 
     cf::FastHighlight(this);
-    SimpleEvent &event = m_eventMap.at(EditArea::TEXT_CHANGED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaTextChangedCallback)callback)(this, m_pendingDif);
-    }
+
+    const TextChangedArgs args{
+        this,
+        m_pendingDif
+    };
+
+    ETextChanged.Invoke(args);
 
     this->LoadCursorPos();
 
@@ -591,10 +569,11 @@ void EditArea::TextChanged(){
         bool result = CompletionTool::IsCompletionTriggerChar(charbefore);
         if (result) {
             m_completionTool->Clear();
-            SimpleEvent& event = m_eventMap.at(COMPLETION_REQUESTED);
-            for (EventCallback callback : event.GetCallbackSet()) {
-                ((CompletionRequestedCallback)callback)(this, m_cursorZPos);
-            }
+            const CompletionRequstedArgs args{
+                this,
+                m_cursorZPos
+            };
+            ECompletionRequested.Invoke(args);
         } else {
             m_completionTool->HidePopover();
             m_completionTool->Clear();
@@ -609,10 +588,12 @@ void EditArea::TextChanged(){
 void EditArea::CursorPosChanged(){
     this->LoadCursorPos();
 
-    SimpleEvent &event = m_eventMap.at(EditArea::CURSOR_MOVED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
-    }
+    const CursorMovedArgs args {
+        this,
+        m_cursorZPos
+    };
+
+    ECursorMoved.Invoke(args);
 
     if(m_isCurMovedByKey == true){
         gtk_text_view_scroll_to_iter(m_textView, &m_cursorItr, 0.4 ,false, 0.4, 0.4);
@@ -636,28 +617,13 @@ void EditArea::LangButtonClicked(){
 }
 
 
-void EditArea::Listen(Signal signal, EventCallback callback){
-    auto itr = m_eventMap.find(signal);
-    if(itr != m_eventMap.end()){
-        itr->second.Connect(callback);
-    }
-}
-
-void EditArea::StopListen(Signal signal, EventCallback callback){
-    auto itr = m_eventMap.find(signal);
-    if(itr != m_eventMap.end()){
-        itr->second.Disconnect(callback);
-    }
-}
-
-
 
 
 /*
  * Private methods
  */
 
-void EditArea::OnSaved(FileBranch* filebranch){
+void EditArea::onSaved(FileBranch* filebranch){
     if (filebranch == nullptr) {
         return;
     }
@@ -668,13 +634,10 @@ void EditArea::OnSaved(FileBranch* filebranch){
     isSaved = true;
     gtk_button_set_label(m_saveBut, "Saved");
 
-    SimpleEvent &event = m_eventMap.at(EditArea::FILE_SAVED);
-    for (EventCallback callback : event.GetCallbackSet()){
-        ((EditAreaBasicCallback)callback)(this);
-    }
+    EFileSaved.Invoke(this);
 }
 
-void EditArea::OnFileDataChanged(FileBranch *filebranch){
+void EditArea::onFileDataChanged(FileBranch *filebranch){
     if (filebranch == nullptr) {
         return;
     }

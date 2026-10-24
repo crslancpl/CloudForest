@@ -150,6 +150,6 @@ PyMODINIT_FUNC PyInit_editarea_module(){
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());
-    pybackend::GetAppContext().sessionManager->GetEditorsManager().Listen(EditorsManager::EDITAREA_CREATED, (EventCallback)editarea_py_register);
+    pybackend::GetAppContext().sessionManager->GetEditorsManager().EEditAreaCreated.Connect(editarea_py_register);
     return eamodule;
 }

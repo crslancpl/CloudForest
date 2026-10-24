@@ -7,6 +7,7 @@
 #include "datatypes/file.h"
 #include "src/filemanagement/FileManager.h"
 #include "src/filemanagement/FileReader.h"
+#include "toolset/event/Event.h"
 #include "toolset/tools/StringSorting.h"
 #include "toolset/tools/Tool.h"
 #include "windows/MainWindow.h"
@@ -146,11 +147,7 @@ void FileBranch::Save(const char* content, AppContext& context){
 
         m_latestContent = content;
 
-        for (cb_FileBranchBasic* callback : m_savedCallbacks) {
-            auto f = callback->funtion;
-            auto r = callback->receiver;
-            (r->*f)(this);
-        }
+        ESaved.Invoke(this);
     }
 }
 
@@ -158,41 +155,6 @@ const char* FileBranch::ReadContent(){
     char* content;
     filemanager::ReadFileText(m_fileData.get(), &content);
     return content;
-}
-
-void FileBranch::ConnectFocused(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
-    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
-    callbackdata->receiver = receiver;
-    callbackdata->funtion = callback;
-    m_focusedCallbacks.emplace_back(callbackdata);
-}
-
-void FileBranch::ConnectOpened(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
-    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
-    callbackdata->receiver = receiver;
-    callbackdata->funtion = callback;
-    m_openedCallbacks.emplace_back(callbackdata);
-}
-
-void FileBranch::ConnectSaved(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
-    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
-    callbackdata->receiver = receiver;
-    callbackdata->funtion = callback;
-    m_savedCallbacks.emplace_back(callbackdata);
-}
-
-void FileBranch::ConnectClosed(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
-    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
-    callbackdata->receiver = receiver;
-    callbackdata->funtion = callback;
-    m_closedCallbacks.emplace_back(callbackdata);
-}
-
-void FileBranch::ConnectDataChanged(EventReceiver* receiver, void (EventReceiver::*callback)(FileBranch*)){
-    cb_FileBranchBasic* callbackdata = new cb_FileBranchBasic();
-    callbackdata->receiver = receiver;
-    callbackdata->funtion = callback;
-    m_dataChangedCallbacks.emplace_back(callbackdata);
 }
 
 void FileBranch::OnSaved(std::unique_ptr<FileData> filedata){
@@ -205,11 +167,7 @@ void FileBranch::OnSaved(std::unique_ptr<FileData> filedata){
         m_fileData = std::move(filedata);
     }
 
-    for (cb_FileBranchBasic* callbackdata : m_dataChangedCallbacks) {
-        auto r = callbackdata->receiver;
-        auto f = callbackdata->funtion;
-        (r->*f)(this);
-    }
+    EDataChanged.Invoke(this);
 }
 
 

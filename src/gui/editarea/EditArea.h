@@ -22,20 +22,32 @@ class SearchReplaceDialog;
 class FileBranch;
 typedef struct AppContext AppContext;
 
+typedef struct {
+    EditArea* ea;
+    Language* old;
+} LangChangedArgs;
+
+typedef struct {
+    EditArea* ea;
+    const ZPosition& zpos;
+} CompletionRequstedArgs;
+
+typedef struct {
+    EditArea* ea;
+    const Difference &diff;
+} TextChangedArgs;
+
+typedef struct {
+    EditArea* ea;
+    const ZPosition& curPos;
+} CursorMovedArgs;
+
+
+
 class EditArea : public TextArea, public EventReceiver {
 public:
     EditArea(FileBranch& file, AppContext& context);
     ~EditArea();
-
-    enum Signal{
-        CLOSED,
-        COMPLETION_REQUESTED,
-        CURSOR_MOVED,
-        FILE_DATA_CHANGED,
-        FILE_SAVED,
-        LANG_CHANGED,
-        TEXT_CHANGED
-    };
 
     bool isSaved = true;
 
@@ -78,12 +90,17 @@ public:
     void RangeSelected(ZRange* range);
     void DiagnosticButtonClicked();
 
-    void Listen(Signal signal, EventCallback callback);
-    void StopListen(Signal signal, EventCallback callback);
+    Event<EditArea*> EClosed;
+    Event<const CompletionRequstedArgs&> ECompletionRequested;
+    Event<const CursorMovedArgs&> ECursorMoved;
+    Event<EditArea*> EFileDataChanged;
+    Event<EditArea*> EFileSaved;
+    Event<const LangChangedArgs&> ELangChanged;
+    Event<const TextChangedArgs&> ETextChanged;
 
 private:
-    void OnSaved(FileBranch *filebranch);
-    void OnFileDataChanged(FileBranch *filebranch);
+    void onSaved(FileBranch *filebranch);
+    void onFileDataChanged(FileBranch *filebranch);
 
     // dependencies
     AppContext& m_context;

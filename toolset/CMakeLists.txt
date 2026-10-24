@@ -28,3 +28,5 @@ target_link_libraries( ${PROJECT_NAME} ${CFLIBPATH}
   PkgConfig::GTK4
   Python::Python
 )
+
+add_subdirectory(lspbackend)

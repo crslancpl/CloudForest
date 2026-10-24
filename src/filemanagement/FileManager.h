@@ -13,25 +13,11 @@
 typedef struct AppContext AppContext;
 typedef struct FileData FileData;
 
-typedef struct {
-    EventReceiver* receiver;
-    void (EventReceiver::*callback)(FileData*);
-} cb_SingleFileOpened;
-
-typedef struct {
-    EventReceiver* receiver;
-    void (EventReceiver::*callback)(Workspace*);
-} cb_WorkspaceCreated;
-
 
 class FileManager : EventReceiver{
 public:
     FileManager(AppContext &context);
     ~FileManager();
-
-    enum Signal{
-        NEW_WORKSPACE
-    };
 
 
     FileBranch& CreateFile(const char* name, FolderBranch* parent);
@@ -48,11 +34,8 @@ public:
 
     std::vector<std::unique_ptr<Workspace>> &GetWorkspaces();
 
-    void ConnectWorkspaceCreated(EventReceiver* receiver, void (EventReceiver::*callback)(Workspace*));
-
-    void Listen(Signal signal, EventCallback callback);
-    void StopListen(Signal signal, EventCallback callback);
-
+    Event<Workspace*> EWorkspaceCreated;
+    Event<FileData*> ESingleFileOpened;
     //callbacks for GTK events
     void OnNewFileSelected(GFile* file);
     void OnNewFolderSelected(GFile* file);
@@ -62,13 +45,6 @@ private:
 
     std::vector<std::unique_ptr<Workspace>> m_workspaces;
     std::vector<std::unique_ptr<FileBranch>> m_singleFiles;
-
-    std::vector<cb_SingleFileOpened*> m_singleFileOpenedCbs;
-    std::vector<cb_WorkspaceCreated*> m_workspaceCreatedCbs;
-
-    std::unordered_map<Signal, SimpleEvent> eventMap = {
-        {NEW_WORKSPACE, SimpleEvent()}
-    };
 };
 
 #endif

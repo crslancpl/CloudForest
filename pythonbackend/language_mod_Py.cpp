@@ -93,7 +93,7 @@ static PyObject *language_module_add_language(PyObject *self, PyObject *args){
     }
 
     Language& lang = pybackend::GetAppContext().langManager->CreateLanguage(std::move(info));
-    lang.Listen(Language::LANG_FIRST_USED, (EventCallback)on_language_used);
+    lang.EFirstUsed.Connect(on_language_used);
 
     Py_RETURN_NONE;
 }
@@ -150,7 +150,7 @@ static PyObject *language_module_listen_for_editarea(PyObject *self, PyObject *a
     Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
 
     if(lang != nullptr){
-        lang->Listen(Language::EDITAREA_ADDED, (EventCallback)on_new_edit_area);
+        lang->EEditAreaAdded.Connect(on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -170,7 +170,7 @@ static PyObject *language_module_stop_listen_for_editarea(PyObject *self, PyObje
     Language* lang = pybackend::GetAppContext().langManager->FindByName(langname);
 
     if(lang != nullptr){
-        lang->StopListen(Language::EDITAREA_ADDED, (EventCallback)on_new_edit_area);
+        lang->EEditAreaAdded.Disconnect(on_new_edit_area);
     }
 
     Py_RETURN_NONE;
@@ -196,6 +196,6 @@ static struct PyModuleDef language_module = {
 
 PyMODINIT_FUNC PyInit_language_module(){
     PyObject *langmodule = PyModule_Create(&language_module);
-    pybackend::GetAppContext().langManager->Listen(LanguageManager::LANG_MANAGER_NEW_LANG, (EventCallback) on_new_language_added);
+    pybackend::GetAppContext().langManager->ENewLanguage.Connect(on_new_language_added);
     return langmodule;
 }
