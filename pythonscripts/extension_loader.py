@@ -72,8 +72,8 @@ def read_setting_file(setting_file: TextIOWrapper):
 
 
 def load_setting():
-    setting.add_callback("extension-enabled", extension_enabled)
-    setting.add_callback("extension-disabled", extension_disabled)
+    setting.connect("extension-enabled", extension_enabled)
+    setting.connect("extension-disabled", extension_disabled)
 
     try:
         with open(USER_SETTING_FILE) as extension_list_file:

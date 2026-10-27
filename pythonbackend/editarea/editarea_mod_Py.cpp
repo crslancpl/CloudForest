@@ -18,7 +18,6 @@
 #include <object.h>
 #include <pytypedefs.h>
 #include <unicodeobject.h>
-#include <unordered_map>
 #include <unordered_set>
 
 
@@ -29,24 +28,21 @@
  * Module
  */
 
-static PythonEventMap event_map = {
-    {EVENT_LANGUAGE_CHANGED, PythonEvent()},
-    {EVENT_NEW_EDITAREA, PythonEvent()}
-};
+static PythonEventContainer events;
 
 static PyObject *editarea_module_add_callback(PyObject *self, PyObject *args){
-    char* event;
+    char* signal;
     PyObject* callback;
-    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
+    if(!PyArg_ParseTuple(args, "sO", &signal, &callback)){
         return nullptr;
     }
     if(!PyCallable_Check(callback)){
         return nullptr;
     }
 
-    auto itr = event_map.find(event);
-    if (itr != event_map.end()){
-        itr->second.Connect(callback);
+    PythonEvent* event = events.Find(signal);
+    if (event) {
+        event->Connect(callback);
     }
 
     Py_RETURN_NONE;
@@ -134,19 +130,21 @@ void editarea_py_register(EditArea *ea){
 
     py_EditArea *py_ea = ea->GetPyEditArea();
 
-    py_EditArea_connect_events(py_ea);
-    // we are trying to make filepath a variable
-    PyObject *args = PyTuple_Pack(1, py_ea);
+    PythonEvent* event = events.Find(EVENT_NEW_EDITAREA);
 
-    PythonEvent &event = event_map.at(EVENT_NEW_EDITAREA);
-    event.Invoke(args);
-
-    Py_DECREF(args);
+    if (event) {
+        PyObject *args = PyTuple_Pack(1, py_ea);
+        event->Invoke(args);
+        Py_DECREF(args);
+    }
 
     ReleaseThreadLock();
 }
 
 PyMODINIT_FUNC PyInit_editarea_module(){
+    events.Add(EVENT_NEW_EDITAREA);
+    events.Add(EVENT_LANGUAGE_CHANGED);
+
     PyObject *eamodule = PyModule_Create(&editarea_module);
 
     PyModule_AddObject(eamodule, "EditArea", (PyObject*)PyInit_py_EditArea_class());

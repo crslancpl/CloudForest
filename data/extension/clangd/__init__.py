@@ -2,12 +2,13 @@ from cloudforest import language
 
 from pythonscripts.lsp.lsp_client_class import LspClient
 
-
-def language_used(lang: str):
+def language_used(lang: language.Language):
     command = ["clangd"]
-    client = LspClient(command, "C++", "cpp", False)
+    client = LspClient(command, lang, False)
     if not client.start():
         print("cannot find command")
 
+lang : language.Language | None = language.find("C++")
 
-language.listen_language_used("C++", language_used)
+if lang:
+    lang.connect("first-used", language_used)

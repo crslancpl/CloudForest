@@ -1,4 +1,4 @@
 {
-  "enabled": ["clangd", "rust-analyzer"],
-  "disabled": ["testing"]
+  "enabled": [],
+  "disabled": ["testing", "clangd", "rust-analyzer"]
 }

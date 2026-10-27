@@ -2,14 +2,16 @@
 
 #include "components/ToggleBlock.h"
 #include "datatypes/extension.h"
-#include "src/Setting.h"
+#include "src/AppContext.h"
+#include "src/session/ExtensionManager.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
 
-ExtensionBlock::ExtensionBlock(Extension* extension): ToggleBlock(extension->name, extension->description, extension->enabled)
+ExtensionBlock::ExtensionBlock(Extension* extension, AppContext& context): ToggleBlock(extension->name, extension->description, extension->enabled)
     , m_extension(extension)
+    , m_context(context)
 {
     //
 }
@@ -23,11 +25,11 @@ void ExtensionBlock::SetState(bool state){
     gtk_switch_set_state(m_switchBtn, state);
 
     m_toggleState = state;
-
+    ExtensionManager& manager = m_context.sessionManager->GetExtensionManager();
     if (state) {
-        setting::EnableExtension(m_extension);
+        manager.EnableExtension(m_extension);
     }else{
-        setting::DisableExtension(m_extension);
+        manager.DisableExtension(m_extension);
     }
 }
 
@@ -35,7 +37,9 @@ void ExtensionBlock::SetState(bool state){
 
 
 
-ExtensionPage::ExtensionPage(){
+ExtensionPage::ExtensionPage(AppContext& context) :
+    m_context(context)
+    {
     this->AddHeader1("Extension");
     this->AddParagraph("Restart the app to take effect");
     this->AddHeader2("Enabled");
@@ -52,9 +56,12 @@ ExtensionPage::~ExtensionPage(){
 }
 
 void ExtensionPage::ShowExtensions(){
-    const std::vector<std::unique_ptr<Extension>>& allExtensions = setting::GetAllExtensions();
+    ExtensionManager& manager = m_context.sessionManager->GetExtensionManager();
+
+    const std::vector<std::unique_ptr<Extension>>& allExtensions = manager.GetAllExtensions();
+
     for( const std::unique_ptr<Extension>& extension : allExtensions){
-        std::unique_ptr<ExtensionBlock> block = std::make_unique<ExtensionBlock>(extension.get());
+        std::unique_ptr<ExtensionBlock> block = std::make_unique<ExtensionBlock>(extension.get(), m_context);
         if(extension->enabled){
             gtk_box_append(m_enabledExtensonBox, block->GetBaseWidget());
         }else{

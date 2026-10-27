@@ -1,16 +1,10 @@
 #ifndef EDITAREA_CLASS_PY_H_
 #define EDITAREA_CLASS_PY_H_
 
-#include "pythonbackend/python_tool.h"
-#include <Python.h>
+#include "pythonbackend/python_event.h"
 
-#define PY_EDITAREA_EVENT_CLOSED "closed"
-#define PY_EDITAREA_EVENT_COMPLETION_REQUESTED "completion-requested"
-#define PY_EDITAREA_EVENT_CURSOR_MOVED "cursor-moved"
-#define PY_EDITAREA_EVENT_FILE_DATA_CHANGED "file-data-changed"
-#define PY_EDITAREA_EVENT_FILE_SAVED "file-saved"
-#define PY_EDITAREA_EVENT_LANG_CHANGED "lang-changed"
-#define PY_EDITAREA_EVENT_TEXT_CHANGED "text-changed"
+#include <Python.h>
+#include <memory>
 
 
 class EditArea;
@@ -20,12 +14,21 @@ class EditArea;
 typedef struct py_EditArea{
     PyObject_HEAD;
     EditArea *editarea;
-    PythonEventMap *eventMap;
-}py_EditArea;
+    std::unique_ptr<PythonEventContainer> events;
+} py_EditArea;
 
-void py_EditArea_connect_events(py_EditArea* py_ea);
+
+/*
+ * type initializer
+ */
+
+PyTypeObject* PyInit_py_EditArea_class();
+
+/*
+ * public function
+ */
 
 py_EditArea* py_EditArea_create_object(EditArea* ea);
-PyTypeObject* PyInit_py_EditArea_class();
+
 
 #endif

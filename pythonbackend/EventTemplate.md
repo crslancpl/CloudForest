@@ -1,9 +1,7 @@
 # Template for PythonEvent
 ## Create map
 ```cpp
-static PythonEventMap event_map = {
-    {EVENT___, PythonEvent()}
-}
+static PythonEventContainer events;
 ```
 ## Calling callback
 ```cpp
@@ -19,40 +17,40 @@ static void Call(){
 ## Add callback
 ```cpp
 // add
-static PyObject* ___add_callback(PyObject *self, PyObject *args){
-    char* event;
+static PyObject* _connect(PyObject *self, PyObject *args){
+    char* signal;
     PyObject* callback;
 
-    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
+    if(!PyArg_ParseTuple(args, "sO", &signal, &callback)){
         Py_RETURN_NAN;
     }
     if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
 
-    auto itr = event_map.find(event);
-    if (itr != event_map.end()){
-        itr->second.Connect(callback);
+    PythonEvent* event = events.Find(signal);
+    if (event) {
+        event.Connect(callback);
     }
 
     Py_RETURN_NONE;
 }
 
 // remove
-static PyObject* ___rm_callback(PyObject *self, PyObject *args){
-    char* event;
+static PyObject* _disconnect(PyObject *self, PyObject *args){
+    char* signal;
     PyObject* callback;
 
-    if(!PyArg_ParseTuple(args, "sO", &event, &callback)){
+    if(!PyArg_ParseTuple(args, "sO", &signal, &callback)){
         Py_RETURN_NAN;
     }
     if(!PyCallable_Check(callback)){
         Py_RETURN_NAN;
     }
 
-    auto itr = event_map.find(event);
-    if (itr != event_map.end()){
-        itr->second.Disconnect(callback);
+    PythonEvent* event = events.Find(signal);
+    if (event) {
+        event.Disconnect(callback);
     }
 
     Py_RETURN_NONE;

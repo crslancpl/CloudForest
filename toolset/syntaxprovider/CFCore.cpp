@@ -8,6 +8,7 @@
 
 #include "src/AppContext.h"
 #include "src/filemanagement/FileTree.h"
+#include "src/languages/Language.h"
 #include "toolset/tools/Tool.h"
 #include "src/gui/editarea/EditArea.h"
 #include "CFEmbed.h"
@@ -94,5 +95,11 @@ void cf::ReadFile(const char *filepath, const char *lang){
 
 void cf::FastHighlight(EditArea* ea){
     ea->ClearHighlight();
-    cf::ReadFile(ea->GetFileBranch().GetFileData()->absoPath.c_str(), ea->GetLanguage()->GetInfo()->id.c_str());
+    Language* lang =  ea->GetLanguage();
+    if (lang) {
+        cf::ReadFile(
+            ea->GetFileBranch().GetFileData()->absoPath.c_str(),
+            lang->GetInfo()->id.c_str()
+        );
+    }
 }

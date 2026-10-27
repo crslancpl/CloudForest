@@ -46,14 +46,13 @@ class LspClient:
     def __init__(
         self,
         lsp_command: list[str],
-        lang: str,
-        language_id: str,
+        lang: language.Language,
         enable_stderr: bool,
     ):
         self.file_version_dict: dict[str, int] = {}
         self.lsp_command = lsp_command
-        self.language = lang
-        self.language_id: str = language_id
+        self.lang: language.Language = lang
+        self.lang_id: str = self.lang.get_id()
         self.server_data = LspServerData()
         self.enable_stderr = enable_stderr
         self.lsp_reader = LspReader()
@@ -87,7 +86,7 @@ class LspClient:
             self.err_event = IOEvent(self.LSP.stderr)
             self.err_event.add_listener("line", self.read_err)
 
-        cloudforest.add_callback("app-closed", self.exit)
+        cloudforest.connect("app-closed", self.exit)
         self.send(lsp_msg_writer.initialize_message())
         self.send(lsp_msg_writer.initialized_notification())
 
@@ -105,16 +104,16 @@ class LspClient:
     def listen_editarea(self, ea: editarea.EditArea):
         path = ea.get_file_path()
         version = ea.get_file_version()
-        message = lsp_msg_writer.did_open_message(ea, self.language_id)
+        message = lsp_msg_writer.did_open_message(ea, self.lang_id)
         self.file_version_dict[path] = version
 
         # print(f"listening editarea {ea.get_file_path()}")
 
-        ea.add_callback("text-changed", self.__editarea_text_changed)
-        ea.add_callback("lang-changed", self.__editarea_lang_changed)
-        ea.add_callback("file-saved", self.__editarea_file_saved)
-        ea.add_callback("closed", self.__editarea_closed)
-        ea.add_callback("completion-requested", self.__editarea_completion_requested)
+        ea.connect("text-changed", self.__editarea_text_changed)
+        ea.connect("lang-changed", self.__editarea_lang_changed)
+        ea.connect("file-saved", self.__editarea_file_saved)
+        ea.connect("closed", self.__editarea_closed)
+        ea.connect("completion-requested", self.__editarea_completion_requested)
 
         self.send(message)
 
@@ -128,21 +127,21 @@ class LspClient:
         self.server_data.load_server_data(result)
         print(f"{self.server_data.name} running version {self.server_data.version}")
 
-        ea_list: list[editarea.EditArea] = editarea.get_by_language(self.language)
+        ea_list: list[editarea.EditArea] = editarea.get_by_language(self.lang.get_name())
 
         for ea in ea_list:
             self.listen_editarea(ea)
 
-        language.listen_for_editarea(self.language, self.listen_editarea)
+        self.lang.connect("new-editarea", self.listen_editarea)
 
     def __editarea_closed(self, ea: editarea.EditArea):
         message = lsp_msg_writer.did_close_notification(ea)
         self.send(message)
-        ea.rm_callback("text-changed", self.__editarea_text_changed)
-        ea.rm_callback("lang-changed", self.__editarea_lang_changed)
-        ea.rm_callback("file-saved", self.__editarea_file_saved)
-        ea.rm_callback("closed", self.__editarea_closed)
-        ea.rm_callback("completion-requested", self.__editarea_completion_requested)
+        ea.disconnect("text-changed", self.__editarea_text_changed)
+        ea.disconnect("lang-changed", self.__editarea_lang_changed)
+        ea.disconnect("file-saved", self.__editarea_file_saved)
+        ea.disconnect("closed", self.__editarea_closed)
+        ea.disconnect("completion-requested", self.__editarea_completion_requested)
 
     def __editarea_completion_requested(
         self, ea: editarea.EditArea, line: int, column: int
@@ -154,14 +153,14 @@ class LspClient:
         self.send(message)
 
     def __editarea_lang_changed(self, ea: editarea.EditArea):
-        if ea.get_language() == self.language:
+        if ea.get_language() == self.lang:
             return
 
         self.send(lsp_msg_writer.did_close_notification(ea.get_file_path()))
-        ea.rm_callback("text-changed", self.__editarea_text_changed)
-        ea.rm_callback("lang-changed", self.__editarea_lang_changed)
-        ea.rm_callback("file-saved", self.__editarea_file_saved)
-        ea.rm_callback("closed", self.__editarea_closed)
+        ea.disconnect("text-changed", self.__editarea_text_changed)
+        ea.disconnect("lang-changed", self.__editarea_lang_changed)
+        ea.disconnect("file-saved", self.__editarea_file_saved)
+        ea.disconnect("closed", self.__editarea_closed)
 
     def __editarea_text_changed(
         self, ea: editarea.EditArea, content_changes: list[dict], version
@@ -172,7 +171,7 @@ class LspClient:
             path,
             content_changes,
             version,
-            self.language_id,
+            self.lang_id,
         )
 
         self.send(message)

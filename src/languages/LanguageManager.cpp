@@ -12,36 +12,28 @@
 #include <string>
 #include <vector>
 
-typedef void (*NewLanguageCallback)(Language*);
-
 LanguageManager::LanguageManager(AppContext& context) :
     m_context(context)
 {
-    std::unique_ptr<LanguageInfo> unknown = std::make_unique<LanguageInfo>();
-    unknown->id = "unknown";
-    unknown->name = "Unknown";
-    unknown->fileExtensions = {};
-    unknown->syntaxTemplateFile = "unknown.txt";
-
-    m_unknownLang = &this->CreateLanguage(std::move(unknown));
+    //
 }
 
 LanguageManager::~LanguageManager(){}
 
 Language& LanguageManager::CreateLanguage(std::unique_ptr<LanguageInfo> langinfo){
+    const LanguageInfo* rawinfo = langinfo.get();
     std::unique_ptr<Language> newlang = std::make_unique<Language>(std::move(langinfo));
     Language* raw = newlang.get();
-    const LanguageInfo* info = raw->GetInfo();
 
     // storing new language to containers
     m_languages.emplace_back(std::move(newlang));
-    m_langNameToLangMap.emplace(info->name, raw);
-    for (const std::string& fileext: info->fileExtensions) {
+    m_langNameToLangMap.emplace(rawinfo->name, raw);
+
+    for (const std::string& fileext: rawinfo->fileExtensions) {
         m_fileExtensionToLangMap.emplace(fileext, raw);
     }
 
     ENewLanguage.Invoke(raw);
-
     return *raw;
 }
 
@@ -59,17 +51,17 @@ LspClient& LanguageManager::StartLsp(Language* lang, const std::string& command)
 
 Language* LanguageManager::FindByName(const std::string& langname) const{
     auto result = m_langNameToLangMap.find(langname);
-    return result != m_langNameToLangMap.end() ? result->second : m_unknownLang;
+    return result != m_langNameToLangMap.end() ? result->second : nullptr;
 }
 
 Language* LanguageManager::FindByFileExtension(const std::string& filename) const{
     auto file_ext_pair = tools::TrimText(filename, ".");//"/path/file.txt" -> "/path/file" and "txt"
     if(file_ext_pair.size() != 2){
-        return m_unknownLang;
+        return nullptr;
     }
 
     auto result = m_fileExtensionToLangMap.find(file_ext_pair[1]);
-    return result != m_fileExtensionToLangMap.end() ? result->second : m_unknownLang;
+    return result != m_fileExtensionToLangMap.end() ? result->second : nullptr;
 }
 
 const std::vector<std::unique_ptr<Language>> &LanguageManager::GetLanguages() const{

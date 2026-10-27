@@ -3,6 +3,7 @@
 
 #include "EditorsManager.h"
 #include "src/session/EditorsManager.h"
+#include "src/session/ExtensionManager.h"
 #include "src/session/TabManager.h"
 
 #include <memory>
@@ -16,12 +17,14 @@ public:
     ~SessionManager();
 
     EditorsManager& GetEditorsManager() const;
+    ExtensionManager& GetExtensionManager() const;
     TabManager& GetTabManager() const;
 
     void Save();
 
 private:
     std::unique_ptr<EditorsManager> m_editorsManager;
+    std::unique_ptr<ExtensionManager> m_extensionManager;
     std::unique_ptr<TabManager> m_tabManager;
 };
 

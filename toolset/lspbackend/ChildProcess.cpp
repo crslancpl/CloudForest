@@ -2,10 +2,8 @@
 
 #include <string.h>
 #include <string>
-#include <sys/poll.h>
 #include <thread>
 #include <unistd.h>
-#include <sys/epoll.h>
 
 ChildProcess::ChildProcess(){}
 

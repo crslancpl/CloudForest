@@ -143,7 +143,7 @@ void AppUI::OnActivated(){
     m_filePanel = filepanel.get();
     m_mainWindow->Insert(std::move(filepanel));
 
-    m_settingPanel = std::make_unique<SettingPanel>(*this);
+    m_settingPanel = std::make_unique<SettingPanel>(m_context);
 
     m_langPanel = std::make_unique<LangPanel>(m_context);
 

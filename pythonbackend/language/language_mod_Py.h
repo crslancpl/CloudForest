@@ -3,8 +3,6 @@
 
 #include <Python.h>
 
-class EditArea;
-
 PyMODINIT_FUNC PyInit_language_module();
 
 #endif

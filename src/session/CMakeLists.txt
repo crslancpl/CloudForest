@@ -3,6 +3,7 @@ project(SESSIONLIB)
 add_library(${PROJECT_NAME}
   SessionManager.cpp
   EditorsManager.cpp
+  ExtensionManager.cpp
   TabManager.cpp
 )
 

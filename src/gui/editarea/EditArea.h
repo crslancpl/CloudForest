@@ -13,38 +13,37 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkshortcut.h>
 #include <memory>
-#include <unordered_map>
 #include <mutex>
-#include <vector>
 
 // Forward declaration
 class SearchReplaceDialog;
 class FileBranch;
 typedef struct AppContext AppContext;
 
-typedef struct {
-    EditArea* ea;
-    Language* old;
-} LangChangedArgs;
-
-typedef struct {
-    EditArea* ea;
-    const ZPosition& zpos;
-} CompletionRequstedArgs;
-
-typedef struct {
-    EditArea* ea;
-    const Difference &diff;
-} TextChangedArgs;
-
-typedef struct {
-    EditArea* ea;
-    const ZPosition& curPos;
-} CursorMovedArgs;
-
 
 
 class EditArea : public TextArea, public EventReceiver {
+public:
+    typedef struct {
+        EditArea* ea;
+        Language* old;
+    } LangChangedArgs;
+
+    typedef struct {
+        EditArea* ea;
+        const ZPosition& zpos;
+    } CompletionRequstedArgs;
+
+    typedef struct {
+        EditArea* ea;
+        const Difference &diff;
+    } TextChangedArgs;
+
+    typedef struct {
+        EditArea* ea;
+        const ZPosition& curPos;
+    } CursorMovedArgs;
+
 public:
     EditArea(FileBranch& file, AppContext& context);
     ~EditArea();
@@ -106,14 +105,14 @@ private:
     AppContext& m_context;
     FileBranch* m_fileBranch = nullptr;
 
-    std::vector<std::pair<EventReceiver*, void (EventReceiver::*)(EditArea*)>> m_closedCallback;
-
-    std::unordered_map<Signal, SimpleEvent> m_eventMap;
     GdkRectangle m_cursorRec;
 
-    py_EditArea *m_py_EditArea;
+    py_EditArea *m_py_EditArea = nullptr;
+
     std::unique_ptr<DiagnosticTool> m_diagnosticTool;
     std::unique_ptr<CompletionTool> m_completionTool;
+    // Search and replace
+    std::unique_ptr<SearchReplaceDialog> searchDialog;
 
     std::mutex m_mutex;
 
@@ -140,9 +139,6 @@ private:
 
     Difference m_pendingDif;
     ZRange m_currentDiagnosticRange;
-
-    // Search and replace
-    std::unique_ptr<SearchReplaceDialog> searchDialog;
 
     void LoadGui();
     void ConnectSignals();

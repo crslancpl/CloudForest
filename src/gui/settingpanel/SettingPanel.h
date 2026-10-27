@@ -14,11 +14,10 @@
 
 //forward declaration
 class CfLayout;
-typedef struct AppUI AppUI ;
 
 class SettingPanel : public Window{
 public:
-    SettingPanel(AppUI& appui);
+    SettingPanel(AppContext& context);
     ~SettingPanel();
 
     void Show() override;
@@ -29,7 +28,7 @@ public:
 private:
     void BindUI(GtkBuilder* builder);
 
-    AppUI& m_appUI;
+    AppContext& m_context;
     GtkWindow *m_parentWindow;
 
     std::unique_ptr<CfLayout> m_baseLayout;// Saperates TabButtonBox and Stack

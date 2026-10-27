@@ -36,8 +36,6 @@ public:
 private:
     AppContext& m_context;
 
-    Language* m_unknownLang;
-
     std::vector<std::unique_ptr<Language>> m_languages;
     std::unordered_map<std::string, Language*> m_langNameToLangMap;
     std::unordered_map<std::string, Language*> m_fileExtensionToLangMap;

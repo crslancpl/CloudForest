@@ -4,11 +4,13 @@
 #include "cloudforest_mod_Py.h"
 #include "datatypes/extension.h"
 #include "python_tool.h"
-#include "src/Setting.h"
+#include "src/session/ExtensionManager.h"
+#include "src/session/SessionManager.h"
 #include "src/AppContext.h"
 
 #include <Python.h>
 #include <ceval.h>
+#include <cstdio>
 #include <import.h>
 #include <memory>
 #include <pystate.h>
@@ -41,7 +43,6 @@ void Start(AppContext& context){
     }
     PyConfig_Clear(&config);
 
-
     ExecuteFile("pythonscripts/init.py");
     ExecuteFile("pythonscripts/entry.py");
 
@@ -59,6 +60,7 @@ void End(){
         return;
     }
     cloudforest_module_invoke_app_closed();
+
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
@@ -72,7 +74,9 @@ void RunEnabledExtensions(){
     if (!TryRestoreThreadLock()) {
         return;
     }
-    const std::vector<std::unique_ptr<Extension>>& extensions = setting::GetAllExtensions();
+
+    ExtensionManager& manager = pybackend::GetAppContext().sessionManager->GetExtensionManager();
+    const std::vector<std::unique_ptr<Extension>>& extensions = manager.GetAllExtensions();
 
     for(const std::unique_ptr<Extension>& ext : extensions){
         if(ext->enabled){

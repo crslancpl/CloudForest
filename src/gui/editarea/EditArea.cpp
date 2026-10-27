@@ -31,15 +31,6 @@
 #include <string>
 
 /*
- * Yupedef
- */
-
-typedef void (*EditAreaBasicCallback)(EditArea*);
-typedef void (*EditAreaTextChangedCallback)(EditArea*, const Difference&) ;
-typedef void (*EditAreaLangChangedCallback)(EditArea*,Language*,Language*);
-typedef void (*CompletionRequestedCallback)(EditArea*, const ZPosition&);
-
-/*
  * EditArea class
  */
 
@@ -143,16 +134,11 @@ EditArea::EditArea(FileBranch& filebranch, AppContext& context) :
     /* Initialize variables */
     m_cursorIndex = 0;
     m_isCurMovedByKey = false;
-
     /* Set properties */
     gtk_button_set_label(m_saveBut, "Saved");
 
     this->LoadCursorPos();
     this->ConnectSignals();
-
-    if(m_language == nullptr){
-        this->SetLanguage(m_context.langManager->FindByName("Unknown"));
-    }
 }
 
 EditArea::~EditArea(){
@@ -285,9 +271,15 @@ void EditArea::SetLanguage(Language* newlang){
 
     Language* oldlang = m_language;
     m_language = newlang;
-    gtk_button_set_label(m_langBut, m_language->GetInfo()->name.c_str());
+
+    if (m_language != nullptr) {
+        gtk_button_set_label(m_langBut, m_language->GetInfo()->name.c_str());
+        m_language->Add(this);
+    } else {
+        gtk_button_set_label(m_langBut, "unknown");
+    }
+
     cf::FastHighlight(this);
-    m_language->Add(this);
 
     //call callbacks
     const LangChangedArgs arg {
@@ -318,6 +310,7 @@ void EditArea::LoadFile(FileBranch* filebranch){
 
     gtk_button_set_label(m_locationBut, filedata->absoPath.c_str());
 
+    // may be nullptr
     Language* lang = m_context.langManager->FindByFileExtension(filedata->fileName.c_str());
 
     if (lang != m_language) {

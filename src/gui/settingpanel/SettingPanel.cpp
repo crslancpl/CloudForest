@@ -6,6 +6,7 @@
 #include "components/CfContent.h"
 #include "settingpanel/ExtensionPage.h"
 #include "settingpanel/SettingPage.h"
+#include "src/AppContext.h"
 #include "windows/MainWindow.h"
 #include "windows/Window.h"
 
@@ -22,8 +23,8 @@ static void OnSwitcherClicked(GtkButton *self, SettingPanel* parent){
     parent->SwitchPage(gtk_button_get_label(self));
 }
 
-SettingPanel::SettingPanel(AppUI& appui): Window(false)
-    ,m_appUI(appui)
+SettingPanel::SettingPanel(AppContext& context): Window(false)
+    , m_context(context)
     {
     /*
      * The ui is constructed from UI/SettingPanel.ui
@@ -52,10 +53,10 @@ SettingPanel::SettingPanel(AppUI& appui): Window(false)
     stack->SetVerticalExpand(true);
     m_baseLayout->Insert(std::move(stack));
 
-    m_extensionPage = std::make_unique<ExtensionPage>();
+    m_extensionPage = std::make_unique<ExtensionPage>(m_context);
     this->AddPage("Extension", m_extensionPage.get());
 
-    m_parentWindow = GTK_WINDOW(m_appUI.GetMainWindow()->GetGtkWindow());
+    m_parentWindow = GTK_WINDOW(m_context.appUI->GetMainWindow()->GetGtkWindow());
 
     g_object_unref(builder);
 }
@@ -110,7 +111,11 @@ void SettingPanel::BindUI(GtkBuilder* builder){
 
 
     gtk_window_set_decorated(m_window, false);
-    gtk_window_set_transient_for(m_window, m_appUI.GetMainWindow()->GetGtkWindow());
+    gtk_window_set_transient_for(
+        m_window,
+        m_context.appUI->GetMainWindow()->GetGtkWindow()
+    );
+
     gtk_widget_set_hexpand(GTK_WIDGET(m_tabButtonBox), false);
     gtk_widget_set_hexpand(GTK_WIDGET(m_stack), true);
 
